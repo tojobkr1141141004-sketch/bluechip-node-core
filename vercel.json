@@ -4,7 +4,7 @@
   "git": {
     "deploymentEnabled": true
   },
-  "installCommand": "pnpm install --no-frozen-lockfile --fetch-retries=5 --fetch-timeout=120000 --registry=https://registry.npmjs.org/",
-  "buildCommand": "cd apps/web && pnpm exec next build && rm -rf ../../.next && cp -a .next ../../.next",
+  "installCommand": "npm install --include=dev",
+  "buildCommand": "npm run build --workspace=@apex-matrix/web && rm -rf .next && cp -a apps/web/.next .next",
   "outputDirectory": ".next"
 }
