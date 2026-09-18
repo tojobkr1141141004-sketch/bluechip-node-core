@@ -34,7 +34,7 @@ export function LoginForm() {
         if (error) throw error;
 
         if (data.session) {
-          router.push("/");
+          router.push("/dashboard");
           router.refresh();
         } else {
           setMessage("가입이 완료되었습니다. 이메일 인증을 확인하세요.");
@@ -48,7 +48,7 @@ export function LoginForm() {
       });
 
       if (error) throw error;
-      router.push("/");
+      router.push("/dashboard");
       router.refresh();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "인증 처리에 실패했습니다.");
