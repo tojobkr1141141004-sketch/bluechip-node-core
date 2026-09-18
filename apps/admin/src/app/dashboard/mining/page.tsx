@@ -3,6 +3,7 @@ import {
   getActiveAssets,
   getAdminMiningCalculationErrors,
   getAdminMiningCalculationRuns,
+  getAdminMiningIssuanceControls,
   getAdminMiningContractCancellations,
   getAdminMiningDailySummary,
   getAdminMiningReconciliationSummary,
@@ -27,6 +28,7 @@ import {
   submitMiningContract,
   submitMiningProduct,
   submitMiningVersion,
+  saveMiningIssuancePolicy,
   updateProduct
 } from "./actions";
 
@@ -77,7 +79,8 @@ function Notice({ success, error }: { success?: string; error?: string }) {
       contract_recalculated: "선택한 채굴 계약을 즉시 재계산했습니다.",
       calculation_retried: "계산 오류 재처리를 실행했습니다.",
       stale_recovered: "중단된 계산 실행을 복구 점검했습니다.",
-      reward_correction_applied: "채굴 보상 정정 기록을 적용했습니다."
+      reward_correction_applied: "채굴 보상 정정 기록을 적용했습니다.",
+      issuance_policy_saved: "채굴 보상 발행 안전설정을 저장했습니다."
     };
 
     return (
@@ -121,7 +124,8 @@ export default async function MiningAdminPage({
     dailySummaryResult,
     rewardEventsResult,
     cancellationsResult,
-    correctionsResult
+    correctionsResult,
+    issuanceControlsResult
   ] = await Promise.all([
     getAdminMiningProducts(supabase),
     getAdminMiningProductVersions(supabase),
@@ -135,7 +139,8 @@ export default async function MiningAdminPage({
     getAdminMiningDailySummary(supabase),
     getAdminMiningRewardEvents(supabase),
     getAdminMiningContractCancellations(supabase),
-    getAdminMiningRewardCorrections(supabase)
+    getAdminMiningRewardCorrections(supabase),
+    getAdminMiningIssuanceControls(supabase)
   ]);
 
   if (
@@ -151,7 +156,8 @@ export default async function MiningAdminPage({
     dailySummaryResult.error ||
     rewardEventsResult.error ||
     cancellationsResult.error ||
-    correctionsResult.error
+    correctionsResult.error ||
+    issuanceControlsResult.error
   ) {
     return (
       <section className="rounded-3xl border border-rose-300/10 bg-rose-300/[0.04] p-6 sm:p-8">
@@ -1011,6 +1017,113 @@ export default async function MiningAdminPage({
             <button type="submit" className="rounded-xl bg-white px-4 py-3 text-xs font-bold text-zinc-950">계산 설정 저장</button>
           </div>
         </form>
+
+      
+      <section className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-sm font-semibold">채굴 보상 발행 안전 제어</h2>
+            <p className="mt-1 text-[11px] leading-5 text-zinc-600">
+              보상 계산 기록은 유지하면서 실제 Ledger 지급만 자산별 안전조건으로 통제합니다. 기본값은 발행 중지이며, 운영자가 직접 한도를 설정해야 발행을 허용할 수 있습니다.
+            </p>
+          </div>
+        </div>
+        <div className="mt-4 grid gap-4 lg:grid-cols-2">
+          {(issuanceControlsResult.data ?? []).map((control) => {
+            const stateLabel =
+              control.issuance_state === "ready"
+                ? "발행 허용"
+                : control.issuance_state === "blocked"
+                  ? "안전장치로 중지"
+                  : "발행 중지";
+            const stateClass =
+              control.issuance_state === "ready"
+                ? "border-emerald-300/15 bg-emerald-300/[0.04] text-emerald-200"
+                : control.issuance_state === "blocked"
+                  ? "border-amber-300/15 bg-amber-300/[0.04] text-amber-200"
+                  : "border-white/[0.06] bg-black/10 text-zinc-400";
+            return (
+              <div key={control.asset_id} className="rounded-2xl border border-white/[0.06] bg-black/10 p-4">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <div className="text-sm font-semibold text-zinc-100">
+                      {control.asset_code} · {control.asset_name}
+                    </div>
+                    <div className="mt-1 text-[10px] text-zinc-600">자산 소수점 {control.asset_decimals}자리</div>
+                  </div>
+                  <span className={`rounded-full border px-3 py-1 text-[10px] font-semibold ${stateClass}`}>
+                    {stateLabel}
+                  </span>
+                </div>
+                {control.block_reason ? (
+                  <div className="mt-3 rounded-xl border border-amber-300/10 bg-amber-300/[0.03] p-3 text-[11px] text-amber-200">
+                    현재 차단 사유: {control.block_reason}
+                  </div>
+                ) : null}
+                <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                  <div className="rounded-xl border border-white/[0.05] p-3">
+                    <div className="text-[10px] text-zinc-600">오늘 지급량 / 잔여</div>
+                    <div className="mt-1 text-sm font-semibold text-zinc-200">{formatAmount(control.daily_issued)} / {formatAmount(control.daily_remaining)}</div>
+                  </div>
+                  <div className="rounded-xl border border-white/[0.05] p-3">
+                    <div className="text-[10px] text-zinc-600">누적 지급량 / 잔여</div>
+                    <div className="mt-1 text-sm font-semibold text-zinc-200">{formatAmount(control.total_issued)} / {formatAmount(control.total_remaining)}</div>
+                  </div>
+                  <div className="rounded-xl border border-white/[0.05] p-3">
+                    <div className="text-[10px] text-zinc-600">보상 발행 계정 잔액</div>
+                    <div className="mt-1 text-sm font-semibold text-zinc-200">{formatAmount(control.source_balance)}</div>
+                  </div>
+                  <div className="rounded-xl border border-white/[0.05] p-3">
+                    <div className="text-[10px] text-zinc-600">발행 계정 허용 여유</div>
+                    <div className="mt-1 text-sm font-semibold text-zinc-200">{formatAmount(control.source_headroom)}</div>
+                  </div>
+                  <div className="rounded-xl border border-white/[0.05] p-3">
+                    <div className="text-[10px] text-zinc-600">준비금 잔액 / 최소 기준</div>
+                    <div className="mt-1 text-sm font-semibold text-zinc-200">{formatAmount(control.reserve_balance)} / {formatAmount(control.minimum_reserve_balance)}</div>
+                  </div>
+                  <div className="rounded-xl border border-white/[0.05] p-3">
+                    <div className="text-[10px] text-zinc-600">누적 발행 차단 횟수</div>
+                    <div className="mt-1 text-sm font-semibold text-zinc-200">{control.blocked_payment_count.toLocaleString("ko-KR")}</div>
+                  </div>
+                </div>
+                <form action={saveMiningIssuancePolicy} className="mt-4 grid gap-3 sm:grid-cols-2">
+                  <input type="hidden" name="asset_id" value={control.asset_id} />
+                  <input type="hidden" name="idempotency_key" value={`mining-issuance-policy:${randomUUID()}`} />
+                  <label className="grid gap-2 text-xs text-zinc-400 sm:col-span-2">
+                    발행 상태
+                    <select name="issuance_enabled" defaultValue={control.issuance_enabled ? "true" : "false"} className="rounded-xl border border-white/10 bg-black/20 px-3 py-3 text-sm text-white outline-none">
+                      <option value="false">발행 중지</option>
+                      <option value="true">안전조건 충족 시 발행 허용</option>
+                    </select>
+                  </label>
+                  <label className="grid gap-2 text-xs text-zinc-400">
+                    일일 발행 한도
+                    <input name="daily_limit" inputMode="decimal" defaultValue={control.daily_limit == null ? "" : String(control.daily_limit)} placeholder="설정하지 않으려면 비워두세요" className="rounded-xl border border-white/10 bg-black/20 px-3 py-3 text-sm text-white outline-none" />
+                  </label>
+                  <label className="grid gap-2 text-xs text-zinc-400">
+                    누적 발행 한도
+                    <input name="total_limit" inputMode="decimal" defaultValue={control.total_limit == null ? "" : String(control.total_limit)} placeholder="설정하지 않으려면 비워두세요" className="rounded-xl border border-white/10 bg-black/20 px-3 py-3 text-sm text-white outline-none" />
+                  </label>
+                  <label className="grid gap-2 text-xs text-zinc-400">
+                    발행 계정 최대 음수 허용량
+                    <input name="max_source_negative_balance" inputMode="decimal" defaultValue={control.max_source_negative_balance == null ? "" : String(control.max_source_negative_balance)} placeholder="설정하지 않으려면 비워두세요" className="rounded-xl border border-white/10 bg-black/20 px-3 py-3 text-sm text-white outline-none" />
+                  </label>
+                  <label className="grid gap-2 text-xs text-zinc-400">
+                    최소 준비금 기준
+                    <input name="minimum_reserve_balance" inputMode="decimal" defaultValue={control.minimum_reserve_balance == null ? "" : String(control.minimum_reserve_balance)} placeholder="설정하지 않으려면 비워두세요" className="rounded-xl border border-white/10 bg-black/20 px-3 py-3 text-sm text-white outline-none" />
+                  </label>
+                  <div className="sm:col-span-2">
+                    <button type="submit" className="rounded-xl bg-white px-4 py-3 text-xs font-bold text-zinc-950">안전설정 저장</button>
+                  </div>
+                </form>
+                <p className="mt-3 text-[10px] leading-5 text-zinc-600">
+                  준비금 기준을 설정하면 자산별 준비금 계정이 참조되며, 시스템이 해당 계정에 임의로 자금을 충전하지는 않습니다.
+                </p>
+              </div>
+            );
+          })}
+        </div>
+      </section>
       </section>
     </section>
   );
