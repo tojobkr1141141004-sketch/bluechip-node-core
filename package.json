@@ -1,0 +1,39 @@
+{
+  "name": "bluechip-node-core",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Production-ready edge telemetry dashboard demo built with Next.js.",
+  "license": "UNLICENSED",
+  "packageManager": "pnpm@12.4.2",
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "geist": "1.7.2",
+    "lucide-react": "1.47.0",
+    "motion": "13.4.0",
+    "next": "16.3.5",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "@tailwindcss/postcss": "4.3.3",
+    "@types/node": "24.13.5",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "babel-plugin-react-compiler": "1.0.0",
+    "eslint": "10.10.0",
+    "eslint-config-next": "16.3.5",
+    "tailwindcss": "4.3.3",
+    "typescript": "7.0.2"
+  }
+}
