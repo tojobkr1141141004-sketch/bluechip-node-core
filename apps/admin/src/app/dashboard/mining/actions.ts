@@ -1,10 +1,13 @@
 "use server";
 
+import { randomUUID } from "crypto";
 import { redirect } from "next/navigation";
 import {
+  createMiningContract,
   createMiningProduct,
   createMiningProductVersion,
   publishMiningProductVersion,
+  runMiningCalculationNow,
   updateMiningProduct,
   updateMiningSettings
 } from "@apex-matrix/database";
@@ -20,6 +23,10 @@ function uuid(valueToCheck: string) {
 
 function positiveInteger(valueToCheck: string) {
   return /^\d+$/.test(valueToCheck) && Number(valueToCheck) > 0;
+}
+
+function decimal(valueToCheck: string) {
+  return /^(?:\d+)(?:\.\d{1,18})?$/.test(valueToCheck) && Number(valueToCheck) > 0;
 }
 
 function redirectFailed() {
@@ -41,7 +48,7 @@ export async function submitMiningProduct(formData: FormData) {
     code,
     name,
     description,
-    sortOrder: positiveInteger(sortOrder) ? Number(sortOrder) : 0
+    sortOrder: /^\d+$/.test(sortOrder) ? Number(sortOrder) : 0
   });
 
   if (result.error) redirectFailed();
@@ -65,7 +72,7 @@ export async function updateProduct(formData: FormData) {
     productId,
     name,
     description,
-    sortOrder: positiveInteger(sortOrder) ? Number(sortOrder) : 0,
+    sortOrder: /^\d+$/.test(sortOrder) ? Number(sortOrder) : 0,
     status,
     isPublic
   });
@@ -88,8 +95,9 @@ export async function submitMiningVersion(formData: FormData) {
     !uuid(productId) ||
     !uuid(rewardAssetId) ||
     !capacityUnit ||
-    !rewardPerUnitPerDay ||
-    !minCapacity ||
+    !decimal(rewardPerUnitPerDay) ||
+    !decimal(minCapacity) ||
+    (maxCapacity && !decimal(maxCapacity)) ||
     !positiveInteger(termDays)
   ) {
     redirect("/dashboard/mining?error=invalid" as never);
@@ -120,6 +128,42 @@ export async function publishVersion(formData: FormData) {
   redirect("/dashboard/mining?success=version_published" as never);
 }
 
+export async function submitMiningContract(formData: FormData) {
+  const { supabase } = await requireAdminUser();
+  const userId = value(formData, "user_id");
+  const productVersionId = value(formData, "product_version_id");
+  const capacity = value(formData, "capacity");
+  const idempotencyKey = value(formData, "idempotency_key");
+
+  if (
+    !uuid(userId) ||
+    !uuid(productVersionId) ||
+    !decimal(capacity) ||
+    !/^mining-contract:[0-9a-f-]{36}$/i.test(idempotencyKey)
+  ) {
+    redirect("/dashboard/mining?error=invalid" as never);
+  }
+
+  const result = await createMiningContract(supabase, {
+    userId,
+    productVersionId,
+    capacity,
+    startedAt: new Date().toISOString(),
+    idempotencyKey
+  });
+
+  if (result.error) redirectFailed();
+  redirect("/dashboard/mining?success=contract_created" as never);
+}
+
+export async function runMiningNow() {
+  const { supabase } = await requireAdminUser();
+  const result = await runMiningCalculationNow(supabase);
+
+  if (result.error) redirectFailed();
+  redirect("/dashboard/mining?success=calculation_run" as never);
+}
+
 export async function saveMiningSettings(formData: FormData) {
   const { supabase } = await requireAdminUser();
   const enabled = value(formData, "calculation_enabled") === "true";
@@ -129,8 +173,10 @@ export async function saveMiningSettings(formData: FormData) {
 
   if (
     ![60, 300, 900, 1800, 3600, 7200, 14400, 86400].includes(interval) ||
+    !Number.isInteger(precision) ||
     precision < 0 ||
     precision > 18 ||
+    !Number.isInteger(batch) ||
     batch < 1 ||
     batch > 100000
   ) {

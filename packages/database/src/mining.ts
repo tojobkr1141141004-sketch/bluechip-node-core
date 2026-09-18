@@ -3,6 +3,10 @@ import type { Database } from "./types";
 
 type DatabaseClient = SupabaseClient<Database>;
 
+function safeLimit(limit: number, fallback: number, max: number) {
+  return Math.min(Math.max(Number.isFinite(limit) ? Math.trunc(limit) : fallback, 1), max);
+}
+
 export async function getUserMiningProducts(client: DatabaseClient) {
   return client
     .from("user_mining_products")
@@ -50,6 +54,74 @@ export async function getMiningSettings(client: DatabaseClient) {
     )
     .eq("id", 1)
     .maybeSingle();
+}
+
+export async function getUserMiningContracts(client: DatabaseClient) {
+  return client
+    .from("user_mining_contracts")
+    .select(
+      "contract_id, product_id, product_code, product_name, product_version_id, version, capacity, capacity_unit, reward_per_unit_per_day, status, started_at, scheduled_end_at, last_calculated_at, total_reward_earned, total_reward_paid, pending_reward, reward_asset_id, reward_asset_code, reward_asset_name, reward_asset_decimals, created_at"
+    )
+    .order("status", { ascending: true })
+    .order("started_at", { ascending: false });
+}
+
+export async function getUserMiningRewardHistory(
+  client: DatabaseClient,
+  limit = 100
+) {
+  return client
+    .from("user_mining_reward_history")
+    .select(
+      "accrual_id, contract_id, product_version_id, product_code, product_name, asset_id, reward_asset_code, reward_asset_name, period_start, period_end, elapsed_seconds, reward_amount, created_at"
+    )
+    .order("period_end", { ascending: false })
+    .limit(safeLimit(limit, 100, 100));
+}
+
+export async function getUserMiningRewardPayments(
+  client: DatabaseClient,
+  limit = 100
+) {
+  return client
+    .from("user_mining_reward_payments")
+    .select(
+      "payment_id, contract_id, accrual_id, asset_id, reward_asset_code, reward_asset_name, amount, ledger_transaction_id, created_at"
+    )
+    .order("created_at", { ascending: false })
+    .limit(safeLimit(limit, 100, 100));
+}
+
+export async function getAdminMiningContracts(
+  client: DatabaseClient,
+  limit = 100
+) {
+  return client
+    .from("admin_mining_contracts")
+    .select(
+      "contract_id, user_id, email, display_name, username, product_id, product_code, product_name, product_version_id, version, capacity, capacity_unit, reward_per_unit_per_day, status, started_at, scheduled_end_at, last_calculated_at, total_reward_earned, total_reward_paid, pending_reward, reward_asset_code, reward_asset_name, created_at"
+    )
+    .order("created_at", { ascending: false })
+    .limit(safeLimit(limit, 100, 200));
+}
+
+export async function getMiningMemberCandidates(client: DatabaseClient) {
+  return client
+    .rpc("get_mining_member_candidates")
+    .order("display_name", { ascending: true });
+}
+
+export async function getAdminMiningCalculationRuns(
+  client: DatabaseClient,
+  limit = 50
+) {
+  return client
+    .from("admin_mining_calculation_runs")
+    .select(
+      "id, started_at, finished_at, status, processed_contracts, rewarded_contracts, error_count, created_at"
+    )
+    .order("started_at", { ascending: false })
+    .limit(safeLimit(limit, 50, 100));
 }
 
 export async function createMiningProduct(
@@ -141,4 +213,27 @@ export async function updateMiningSettings(
     p_reward_precision: input.rewardPrecision,
     p_max_accounts_per_run: input.maxAccountsPerRun
   });
+}
+
+export async function createMiningContract(
+  client: DatabaseClient,
+  input: {
+    userId: string;
+    productVersionId: string;
+    capacity: string;
+    startedAt?: string;
+    idempotencyKey: string;
+  }
+) {
+  return client.rpc("create_mining_contract", {
+    p_user_id: input.userId,
+    p_product_version_id: input.productVersionId,
+    p_capacity: input.capacity as unknown as number,
+    p_started_at: input.startedAt,
+    p_idempotency_key: input.idempotencyKey
+  });
+}
+
+export async function runMiningCalculationNow(client: DatabaseClient) {
+  return client.rpc("run_mining_calculation_now");
 }

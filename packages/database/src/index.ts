@@ -31,13 +31,21 @@ export {
 } from "./finance-requests";
 
 export {
+  createMiningContract,
   createMiningProduct,
   createMiningProductVersion,
+  getAdminMiningCalculationRuns,
+  getAdminMiningContracts,
   getAdminMiningProductVersions,
   getAdminMiningProducts,
+  getMiningMemberCandidates,
   getMiningSettings,
+  getUserMiningContracts,
   getUserMiningProducts,
+  getUserMiningRewardHistory,
+  getUserMiningRewardPayments,
   publishMiningProductVersion,
+  runMiningCalculationNow,
   updateMiningProduct,
   updateMiningSettings,
 } from "./mining";
