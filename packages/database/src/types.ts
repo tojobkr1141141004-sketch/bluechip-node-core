@@ -66,6 +66,221 @@ export type Database = {
         };
         Relationships: [];
       };
+      assets: {
+        Row: {
+          id: string;
+          code: string;
+          name: string;
+          asset_type: string;
+          decimals: number;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          code: string;
+          name: string;
+          asset_type: string;
+          decimals?: number;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          code?: string;
+          name?: string;
+          asset_type?: string;
+          decimals?: number;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      ledger_accounts: {
+        Row: {
+          id: string;
+          asset_id: string;
+          account_type: string;
+          owner_user_id: string | null;
+          code: string | null;
+          name: string;
+          allow_negative: boolean;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          asset_id: string;
+          account_type: string;
+          owner_user_id?: string | null;
+          code?: string | null;
+          name: string;
+          allow_negative?: boolean;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          asset_id?: string;
+          account_type?: string;
+          owner_user_id?: string | null;
+          code?: string | null;
+          name?: string;
+          allow_negative?: boolean;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "ledger_accounts_asset_id_fkey";
+            columns: ["asset_id"];
+            isOneToOne: false;
+            referencedRelation: "assets";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      ledger_account_balances: {
+        Row: {
+          account_id: string;
+          balance: number;
+          updated_at: string;
+        };
+        Insert: {
+          account_id: string;
+          balance?: number;
+          updated_at?: string;
+        };
+        Update: {
+          account_id?: string;
+          balance?: number;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "ledger_account_balances_account_id_fkey";
+            columns: ["account_id"];
+            isOneToOne: true;
+            referencedRelation: "ledger_accounts";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      ledger_transactions: {
+        Row: {
+          id: string;
+          asset_id: string;
+          transaction_type: string;
+          idempotency_key: string;
+          request_hash: string;
+          reference_type: string | null;
+          reference_id: string | null;
+          reversal_of_transaction_id: string | null;
+          description: string;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          asset_id: string;
+          transaction_type: string;
+          idempotency_key: string;
+          request_hash: string;
+          reference_type?: string | null;
+          reference_id?: string | null;
+          reversal_of_transaction_id?: string | null;
+          description?: string;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          asset_id?: string;
+          transaction_type?: string;
+          idempotency_key?: string;
+          request_hash?: string;
+          reference_type?: string | null;
+          reference_id?: string | null;
+          reversal_of_transaction_id?: string | null;
+          description?: string;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "ledger_transactions_asset_id_fkey";
+            columns: ["asset_id"];
+            isOneToOne: false;
+            referencedRelation: "assets";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "ledger_transactions_reversal_of_transaction_id_fkey";
+            columns: ["reversal_of_transaction_id"];
+            isOneToOne: false;
+            referencedRelation: "ledger_transactions";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      ledger_entries: {
+        Row: {
+          id: string;
+          transaction_id: string;
+          account_id: string;
+          asset_id: string;
+          direction: string;
+          amount: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          transaction_id: string;
+          account_id: string;
+          asset_id: string;
+          direction: string;
+          amount: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          transaction_id?: string;
+          account_id?: string;
+          asset_id?: string;
+          direction?: string;
+          amount?: number;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "ledger_entries_transaction_id_fkey";
+            columns: ["transaction_id"];
+            isOneToOne: false;
+            referencedRelation: "ledger_transactions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "ledger_entries_account_id_fkey";
+            columns: ["account_id"];
+            isOneToOne: false;
+            referencedRelation: "ledger_accounts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "ledger_entries_asset_id_fkey";
+            columns: ["asset_id"];
+            isOneToOne: false;
+            referencedRelation: "assets";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
       member_directory: {
         Row: {
           user_id: string;
@@ -275,6 +490,54 @@ export type Database = {
       };
     };
     Views: {
+      user_asset_balances: {
+        Row: {
+          account_id: string;
+          user_id: string;
+          asset_id: string;
+          asset_code: string;
+          asset_name: string;
+          asset_type: string;
+          decimals: number;
+          balance: number;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "user_asset_balances_account_id_fkey";
+            columns: ["account_id"];
+            isOneToOne: true;
+            referencedRelation: "ledger_accounts";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      user_ledger_history: {
+        Row: {
+          transaction_id: string;
+          asset_id: string;
+          asset_code: string;
+          asset_name: string;
+          transaction_type: string;
+          transaction_status: string;
+          description: string;
+          reference_type: string | null;
+          reference_id: string | null;
+          reversal_of_transaction_id: string | null;
+          created_by: string | null;
+          created_at: string;
+          entry_id: string;
+          account_id: string;
+          account_type: string;
+          owner_user_id: string | null;
+          direction: string;
+          amount: number;
+          entry_created_at: string;
+        };
+        Relationships: [];
+      };
       admin_member_directory: {
         Row: {
           id: string;
@@ -290,7 +553,32 @@ export type Database = {
         Relationships: [];
       };
     };
-    Functions: Record<string, never>;
+    Functions: {
+      ensure_user_asset_account: {
+        Args: { p_asset_id: string };
+        Returns: string;
+      };
+      post_ledger_transaction: {
+        Args: {
+          p_asset_id: string;
+          p_transaction_type: string;
+          p_idempotency_key: string;
+          p_entries: Json;
+          p_description?: string;
+          p_reference_type?: string | null;
+          p_reference_id?: string | null;
+        };
+        Returns: string;
+      };
+      reverse_ledger_transaction: {
+        Args: {
+          p_transaction_id: string;
+          p_idempotency_key: string;
+          p_description?: string | null;
+        };
+        Returns: string;
+      };
+    };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
   };
