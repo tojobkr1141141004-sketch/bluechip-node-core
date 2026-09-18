@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LogOut, Pickaxe, Wallet, History, UserRound, LayoutDashboard, ArrowDownToLine, ArrowUpFromLine } from "lucide-react";
+import { LogOut, Pickaxe, Wallet, History, UserRound, LayoutDashboard, ArrowDownToLine, ArrowUpFromLine, ShieldCheck } from "lucide-react";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "대시보드", icon: LayoutDashboard },
@@ -8,7 +8,8 @@ const NAV_ITEMS = [
   { href: "/dashboard/deposit", label: "입금", icon: ArrowDownToLine },
   { href: "/dashboard/withdrawal", label: "출금", icon: ArrowUpFromLine },
   { href: "/dashboard/history", label: "활동 기록", icon: History },
-  { href: "/dashboard/profile", label: "내 정보", icon: UserRound }
+  { href: "/dashboard/profile", label: "내 정보", icon: UserRound },
+  { href: "/dashboard/security", label: "보안 설정", icon: ShieldCheck }
 ] as const;
 
 export function UserShell({
