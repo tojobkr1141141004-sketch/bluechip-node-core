@@ -1,4 +1,8 @@
-import { getAdminDepositRequests, getAdminWithdrawalRequests } from "@apex-matrix/database";
+import {
+  getAdminDepositRequests,
+  getAdminFinanceRequestEvents,
+  getAdminWithdrawalRequests
+} from "@apex-matrix/database";
 import { requireAdminUser } from "@/lib/auth";
 import {
   approveDeposit,
@@ -25,6 +29,16 @@ const depositStatusLabel: Record<string, string> = {
   completed: "입금 완료",
   rejected: "반려",
   cancelled: "취소됨"
+};
+
+const eventStatusLabel: Record<string, string> = {
+  pending: "접수 대기",
+  reviewing: "확인 중",
+  processing: "송금 처리 중",
+  completed: "완료",
+  rejected: "반려",
+  cancelled: "취소됨",
+  failed: "실패"
 };
 
 const withdrawalStatusLabel: Record<string, string> = {
@@ -89,12 +103,17 @@ export default async function FinancePage({
   const success = first(params.success) === "1";
   const error = first(params.error);
 
-  const [depositsResult, withdrawalsResult] = await Promise.all([
+  const [depositsResult, withdrawalsResult, eventsResult] = await Promise.all([
     getAdminDepositRequests(supabase),
-    getAdminWithdrawalRequests(supabase)
+    getAdminWithdrawalRequests(supabase),
+    getAdminFinanceRequestEvents(supabase, 200)
   ]);
 
-  if (depositsResult.error || withdrawalsResult.error) {
+  if (
+    depositsResult.error ||
+    withdrawalsResult.error ||
+    eventsResult.error
+  ) {
     return (
       <section className="rounded-3xl border border-rose-300/10 bg-rose-300/[0.04] p-6 sm:p-8">
         <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-300/80">
@@ -123,6 +142,50 @@ export default async function FinancePage({
         </div>
       </div>
 
+      <section className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-sm font-semibold">금융 요청 상태 이력</h2>
+            <p className="mt-1 text-[11px] text-zinc-600">입금·출금 요청의 상태 변화는 원본 요청과 별도로 누적 기록됩니다.</p>
+          </div>
+          <span className="rounded-full border border-white/10 px-2.5 py-1 text-[10px] text-zinc-500">
+            최근 {(eventsResult.data ?? []).length.toLocaleString("ko-KR")}건
+          </span>
+        </div>
+        <div className="mt-4 overflow-x-auto rounded-xl border border-white/[0.05]">
+          <table className="min-w-full text-left text-[10px]">
+            <thead className="border-b border-white/[0.06] text-zinc-600">
+              <tr>
+                <th className="px-3 py-3">종류</th>
+                <th className="px-3 py-3">상태 변화</th>
+                <th className="px-3 py-3">처리 주체</th>
+                <th className="px-3 py-3">사유 / 참조</th>
+                <th className="px-3 py-3">시각</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(eventsResult.data ?? []).map((event) => (
+                <tr key={event.event_id} className="border-b border-white/[0.05] last:border-b-0">
+                  <td className="px-3 py-3 text-zinc-300">{event.request_type === "deposit" ? "입금" : "출금"}</td>
+                  <td className="px-3 py-3 text-zinc-300">
+                    {event.old_status ? (eventStatusLabel[event.old_status] ?? event.old_status) + " → " : "생성 → "}
+                    {eventStatusLabel[event.new_status ?? ""] ?? event.new_status}
+                  </td>
+                  <td className="max-w-[180px] truncate px-3 py-3 font-mono text-zinc-600" title={event.actor_user_id ?? "시스템"}>
+                    {event.actor_user_id ?? "시스템"}
+                  </td>
+                  <td className="max-w-[280px] px-3 py-3 text-zinc-500">
+                    {event.reason ? "사유: " + event.reason : ""}
+                    {event.external_reference ? " 참조: " + event.external_reference : ""}
+                  </td>
+                  <td className="whitespace-nowrap px-3 py-3 text-zinc-600">{formatDate(event.created_at)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {!eventsResult.data?.length ? <div className="py-8 text-center text-xs text-zinc-600">아직 누적된 상태 이력이 없습니다.</div> : null}
+        </div>
+      </section>
       <div className="grid gap-4 xl:grid-cols-2">
         <section className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
           <div className="flex items-center justify-between gap-3">
