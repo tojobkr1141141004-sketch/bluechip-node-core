@@ -54,36 +54,44 @@ export default async function HistoryPage() {
           <div>처리일시</div>
         </div>
 
-        {(data ?? []).map((item) => (
-          <div
-            key={item.entry_id}
-            className="grid gap-3 border-b border-white/[0.06] px-5 py-4 last:border-b-0 sm:grid-cols-[1fr_120px_120px_140px] sm:items-center"
-          >
-            <div className="min-w-0">
-              <div className="truncate text-sm font-medium">
-                {TYPE_LABELS[item.transaction_type ?? ""] ?? item.transaction_type ?? "금융 거래"}
+        {(data ?? []).map((item) => {
+          const transactionType = item.transaction_type ?? "";
+          const transactionStatus = item.transaction_status ?? "";
+          const entryCreatedAt = item.entry_created_at;
+
+          return (
+            <div
+              key={item.entry_id}
+              className="grid gap-3 border-b border-white/[0.06] px-5 py-4 last:border-b-0 sm:grid-cols-[1fr_120px_120px_140px] sm:items-center"
+            >
+              <div className="min-w-0">
+                <div className="truncate text-sm font-medium">
+                  {TYPE_LABELS[transactionType] ?? transactionType ?? "금융 거래"}
+                </div>
+                <div className="mt-1 truncate text-[11px] text-slate-500">
+                  {item.description || "금융 원장 거래"}
+                  {STATUS_LABELS[transactionStatus]
+                    ? ` · ${STATUS_LABELS[transactionStatus]}`
+                    : ""}
+                </div>
               </div>
-              <div className="mt-1 truncate text-[11px] text-slate-500">
-                {item.description || "금융 원장 거래"}
-                {STATUS_LABELS[item.transaction_status]
-                  ? ` · ${STATUS_LABELS[item.transaction_status]}`
-                  : ""}
+              <div className="text-sm font-semibold">{item.asset_code ?? "—"}</div>
+              <div className="text-sm font-semibold">
+                <span className={item.direction === "credit" ? "text-emerald-200" : "text-amber-200"}>
+                  {item.direction === "credit" ? "+" : "-"}
+                  {String(item.amount)}
+                </span>
+              </div>
+              <div className="text-[11px] text-slate-500">
+                {entryCreatedAt
+                  ? new Date(entryCreatedAt).toLocaleString("ko-KR", {
+                      timeZone: "Asia/Seoul"
+                    })
+                  : "처리일시 확인 중"}
               </div>
             </div>
-            <div className="text-sm font-semibold">{item.asset_code}</div>
-            <div className="text-sm font-semibold">
-              <span className={item.direction === "credit" ? "text-emerald-200" : "text-amber-200"}>
-                {item.direction === "credit" ? "+" : "-"}
-                {String(item.amount)}
-              </span>
-            </div>
-            <div className="text-[11px] text-slate-500">
-              {new Date(item.entry_created_at).toLocaleString("ko-KR", {
-                timeZone: "Asia/Seoul"
-              })}
-            </div>
-          </div>
-        ))}
+          );
+        })}
 
         {(data ?? []).length === 0 && (
           <div className="px-5 py-8 text-sm text-slate-500">
