@@ -61,7 +61,7 @@ export default async function HistoryPage() {
           >
             <div className="min-w-0">
               <div className="truncate text-sm font-medium">
-                {TYPE_LABELS[item.transaction_type] ?? item.transaction_type}
+                {TYPE_LABELS[item.transaction_type ?? ""] ?? item.transaction_type ?? "금융 거래"}
               </div>
               <div className="mt-1 truncate text-[11px] text-slate-500">
                 {item.description || "금융 원장 거래"}
