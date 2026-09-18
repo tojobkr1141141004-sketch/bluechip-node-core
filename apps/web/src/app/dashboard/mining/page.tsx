@@ -27,19 +27,26 @@ const statusLabel: Record<string, string> = {
 export default async function MiningPage() {
   const { supabase } = await requireWebUser();
 
-  const [productsResult, contractsResult, historyResult, paymentsResult] =
-    await Promise.all([
-      getUserMiningProducts(supabase),
-      getUserMiningContracts(supabase),
-      getUserMiningRewardHistory(supabase),
-      getUserMiningRewardPayments(supabase)
-    ]);
+  const [
+    productsResult,
+    contractsResult,
+    historyResult,
+    paymentsResult,
+    cancellationsResult
+  ] = await Promise.all([
+    getUserMiningProducts(supabase),
+    getUserMiningContracts(supabase),
+    getUserMiningRewardHistory(supabase),
+    getUserMiningRewardPayments(supabase),
+    getUserMiningContractCancellations(supabase)
+  ]);
 
   if (
     productsResult.error ||
     contractsResult.error ||
     historyResult.error ||
-    paymentsResult.error
+    paymentsResult.error ||
+    cancellationsResult.error
   ) {
     return (
       <section className="rounded-3xl border border-rose-300/10 bg-rose-300/[0.04] p-6 sm:p-8">
@@ -60,6 +67,7 @@ export default async function MiningPage() {
   const contracts = contractsResult.data ?? [];
   const rewardHistory = historyResult.data ?? [];
   const payments = paymentsResult.data ?? [];
+  const cancellations = cancellationsResult.data ?? [];
 
   return (
     <section className="space-y-4">
@@ -155,11 +163,56 @@ export default async function MiningPage() {
                   <div>기간 {formatDate(contract.started_at)} ~ {formatDate(contract.scheduled_end_at)}</div>
                   <div>최근 계산 {formatDate(contract.last_calculated_at)}</div>
                   <div>계약 생성 {formatDate(contract.created_at)}</div>
+                  {contract.completed_at ? (
+                    <div>완료 시각 {formatDate(contract.completed_at)}</div>
+                  ) : null}
+                  {contract.cancelled_at ? (
+                    <div>취소 시각 {formatDate(contract.cancelled_at)}</div>
+                  ) : null}
                 </div>
               </article>
             ))}
           </div>
         )}
+      </section>
+
+      <section className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
+        <h2 className="text-sm font-semibold">계약 종료 기록</h2>
+        <p className="mt-1 text-[11px] text-slate-600">
+          운영자가 계약을 취소한 경우 취소 시각까지 계산된 지급량과 미지급 잔여량, 취소 사유가 기록됩니다.
+        </p>
+        <div className="mt-4 space-y-3">
+          {cancellations.map((item) => (
+            <article key={item.cancellation_id} className="rounded-xl border border-white/[0.06] bg-black/10 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="text-xs font-semibold">채굴 계약 취소</div>
+                <div className="text-[10px] text-slate-600">{formatDate(item.created_at)}</div>
+              </div>
+              <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                <div>
+                  <div className="text-[10px] text-slate-600">취소 시각까지 지급</div>
+                  <div className="mt-1 text-sm font-semibold">{formatAmount(item.reward_paid_on_cancel)}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] text-slate-600">남은 미지급</div>
+                  <div className="mt-1 text-sm font-semibold text-amber-100">{formatAmount(item.pending_reward_after_cancel)}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] text-slate-600">계산 종료 시각</div>
+                  <div className="mt-1 text-sm font-semibold">{formatDate(item.calculated_until)}</div>
+                </div>
+              </div>
+              <div className="mt-3 rounded-lg border border-white/[0.05] p-3">
+                <div className="text-[10px] text-slate-600">취소 사유</div>
+                <div className="mt-1 text-xs leading-5 text-slate-300">{item.reason}</div>
+              </div>
+            </article>
+          ))}
+          {!cancellations.length ? (
+            <div className="rounded-xl border border-white/[0.06] bg-black/10 p-8 text-center text-xs text-slate-600">
+              계약 취소 이력이 없습니다.
+            </div>
+          )}
       </section>
 
       <section className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
