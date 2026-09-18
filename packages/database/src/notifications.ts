@@ -17,10 +17,12 @@ export async function getAdminNotifications(
   status?: "open" | "acknowledged" | "resolved" | null,
   limit = 100
 ) {
-  return client.rpc("get_admin_notifications", {
-    p_status: status ?? null,
-    p_limit: limit
-  });
+  return client.rpc(
+    "get_admin_notifications",
+    status === undefined || status === null
+      ? { p_limit: limit }
+      : { p_status: status, p_limit: limit }
+  );
 }
 
 export async function getAdminNotificationSummary(client: DatabaseClient) {
