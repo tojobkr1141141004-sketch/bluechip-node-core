@@ -1,5 +1,15 @@
 import Link from "next/link";
-import { LogOut, Pickaxe, Wallet, History, UserRound, LayoutDashboard, ArrowDownToLine, ArrowUpFromLine, ShieldCheck } from "lucide-react";
+import {
+  LogOut,
+  Pickaxe,
+  Wallet,
+  History,
+  UserRound,
+  LayoutDashboard,
+  ArrowDownToLine,
+  ArrowUpFromLine,
+  ShieldCheck
+} from "lucide-react";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "대시보드", icon: LayoutDashboard },
@@ -28,7 +38,9 @@ export function UserShell({
             <div className="text-[10px] text-slate-500">사용자 운영센터</div>
           </Link>
           <div className="flex items-center gap-3">
-            <span className="hidden max-w-52 truncate text-[11px] text-slate-500 sm:block">{email ?? "사용자"}</span>
+            <span className="hidden max-w-52 truncate text-[11px] text-slate-500 sm:block">
+              {email ?? "사용자"}
+            </span>
             <form action="/auth/signout" method="post">
               <button
                 type="submit"
@@ -56,7 +68,7 @@ export function UserShell({
             ))}
           </nav>
           <div className="mt-3 rounded-xl border border-emerald-300/10 bg-emerald-300/[0.04] p-3 text-[10px] leading-5 text-slate-500">
-            실제 자산·채굴·입출금 데이터는 각 PHASE에서 DB 원장과 연결됩니다.
+            모든 자산·금융·채굴 화면은 인증된 계정 범위에서 서버와 원장 데이터를 조회합니다.
           </div>
         </aside>
 
