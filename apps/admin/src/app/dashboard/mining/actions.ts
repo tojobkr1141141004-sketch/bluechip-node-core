@@ -1,13 +1,15 @@
 "use server";
 
-import { randomUUID } from "crypto";
-import { redirect } from "next/navigation";
 import {
+  applyMiningRewardCorrection,
   cancelMiningContract,
   createMiningContract,
   createMiningProduct,
   createMiningProductVersion,
   publishMiningProductVersion,
+  recalculateMiningContract,
+  recoverStaleMiningCalculationRuns,
+  retryMiningCalculationError,
   runMiningCalculationNow,
   updateMiningProduct,
   updateMiningSettings
@@ -189,6 +191,93 @@ export async function runMiningNow() {
 
   if (result.error) redirectFailed();
   redirect("/dashboard/mining?success=calculation_run" as never);
+}
+
+export async function recalculateContract(formData: FormData) {
+  const { supabase } = await requireAdminUser();
+  const contractId = value(formData, "contract_id");
+  const idempotencyKey = value(formData, "idempotency_key");
+
+  if (
+    !uuid(contractId) ||
+    !/^mining-recalc:[0-9a-f-]{36}$/i.test(idempotencyKey)
+  ) {
+    redirect("/dashboard/mining?error=invalid" as never);
+  }
+
+  const result = await recalculateMiningContract(supabase, {
+    contractId,
+    idempotencyKey
+  });
+
+  if (result.error) redirectFailed();
+  redirect("/dashboard/mining?success=contract_recalculated" as never);
+}
+
+export async function retryCalculationError(formData: FormData) {
+  const { supabase } = await requireAdminUser();
+  const errorId = value(formData, "error_id");
+  const idempotencyKey = value(formData, "idempotency_key");
+
+  if (
+    !uuid(errorId) ||
+    !/^mining-retry:[0-9a-f-]{36}$/i.test(idempotencyKey)
+  ) {
+    redirect("/dashboard/mining?error=invalid" as never);
+  }
+
+  const result = await retryMiningCalculationError(supabase, {
+    errorId,
+    idempotencyKey
+  });
+
+  if (result.error) redirectFailed();
+  redirect("/dashboard/mining?success=calculation_retried" as never);
+}
+
+export async function recoverStaleRuns() {
+  const { supabase } = await requireAdminUser();
+  const result = await recoverStaleMiningCalculationRuns(supabase);
+
+  if (result.error) redirectFailed();
+  redirect("/dashboard/mining?success=stale_recovered" as never);
+}
+
+export async function submitRewardCorrection(formData: FormData) {
+  const { supabase } = await requireAdminUser();
+  const contractId = value(formData, "contract_id");
+  const originalAccrualId = value(formData, "original_accrual_id");
+  const correctionType = value(formData, "correction_type");
+  const amount = value(formData, "amount");
+  const reason = value(formData, "reason");
+  const idempotencyKey = value(formData, "idempotency_key");
+
+  if (
+    !uuid(contractId) ||
+    (originalAccrualId && !uuid(originalAccrualId)) ||
+    !["additional_paid", "additional_pending", "reduce_pending"].includes(correctionType) ||
+    !decimal(amount) ||
+    reason.length < 3 ||
+    reason.length > 1000 ||
+    !/^mining-correction:[0-9a-f-]{36}$/i.test(idempotencyKey)
+  ) {
+    redirect("/dashboard/mining?error=invalid" as never);
+  }
+
+  const result = await applyMiningRewardCorrection(supabase, {
+    contractId,
+    originalAccrualId: originalAccrualId || null,
+    correctionType: correctionType as
+      | "additional_paid"
+      | "additional_pending"
+      | "reduce_pending",
+    amount,
+    reason,
+    idempotencyKey
+  });
+
+  if (result.error) redirectFailed();
+  redirect("/dashboard/mining?success=reward_correction_applied" as never);
 }
 
 export async function saveMiningSettings(formData: FormData) {
