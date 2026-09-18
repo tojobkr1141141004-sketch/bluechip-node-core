@@ -10,22 +10,22 @@ const appUrl =
 export const metadata: Metadata = {
   metadataBase: new URL(appUrl),
   title: {
-    default: "BLUECHIP · Edge Asset Hub",
-    template: "%s · BLUECHIP"
+    default: "APEX-MATRIX",
+    template: "%s · APEX-MATRIX"
   },
   description:
-    "전 세계 엣지 노드 상태와 보호 흐름을 확인하는 고성능 대시보드 데모.",
-  applicationName: "BLUECHIP Edge Asset Hub",
+    "APEX-MATRIX 사용자 운영센터. 인증된 사용자의 자산, 입출금, 채굴 및 영구 거래 기록을 확인하는 플랫폼입니다.",
+  applicationName: "APEX-MATRIX",
   generator: "Next.js 16.3.5",
-  authors: [{ name: "BLUECHIP" }],
-  category: "technology",
+  authors: [{ name: "APEX-MATRIX" }],
+  category: "finance",
   robots: { index: true, follow: true },
   openGraph: {
-    title: "BLUECHIP · Edge Asset Hub",
+    title: "APEX-MATRIX",
     description:
-      "실시간 노드 텔레메트리와 보호 흐름을 시각화하는 데모 대시보드.",
+      "사용자 자산, 금융 요청, 채굴 및 원장 기반 활동 기록을 확인하는 사용자 운영센터.",
     type: "website",
-    siteName: "BLUECHIP"
+    siteName: "APEX-MATRIX"
   }
 };
 
