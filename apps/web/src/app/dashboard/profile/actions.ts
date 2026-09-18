@@ -16,7 +16,6 @@ export async function saveProfile(formData: FormData) {
   const displayName = getText(formData, "display_name");
   const username = getText(formData, "username").toLowerCase();
   const locale = getText(formData, "locale") || "ko-KR";
-
   const validUsername =
     username === "" || /^[a-z0-9_]{3,32}$/.test(username);
 
@@ -38,10 +37,11 @@ export async function saveProfile(formData: FormData) {
     .eq("id", user.id);
 
   if (profileError) {
-    redirect(
-      "/dashboard/profile?error=" +
-        (profileError.code === "23505" ? "username_taken" : "save_failed")
-    );
+    if (profileError.code === "23505") {
+      redirect("/dashboard/profile?error=username_taken" as never);
+    }
+
+    redirect("/dashboard/profile?error=save_failed" as never);
   }
 
   const { error: settingsError } = await supabase
