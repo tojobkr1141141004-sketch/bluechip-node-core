@@ -5,6 +5,10 @@
   "description": "APEX-MATRIX monorepo foundation.",
   "license": "UNLICENSED",
   "packageManager": "pnpm@10.33.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "engines": {
     "node": ">=22.0.0"
   },
