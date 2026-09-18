@@ -1,0 +1,37 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "./types";
+
+type DatabaseClient = SupabaseClient<Database>;
+
+export async function getAdminNotifications(
+  client: DatabaseClient,
+  status?: "open" | "acknowledged" | "resolved" | null,
+  limit = 100
+) {
+  return client.rpc("get_admin_notifications", {
+    p_status: status ?? null,
+    p_limit: limit
+  });
+}
+
+export async function getAdminNotificationSummary(client: DatabaseClient) {
+  return client.rpc("get_admin_notification_summary");
+}
+
+export async function acknowledgeAdminNotification(
+  client: DatabaseClient,
+  notificationId: string
+) {
+  return client.rpc("acknowledge_admin_notification", {
+    p_notification_id: notificationId
+  });
+}
+
+export async function resolveAdminNotification(
+  client: DatabaseClient,
+  notificationId: string
+) {
+  return client.rpc("resolve_admin_notification", {
+    p_notification_id: notificationId
+  });
+}
