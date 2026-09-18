@@ -227,6 +227,86 @@ export type Database = {
         }
         Relationships: []
       }
+      deposit_requests: {
+        Row: {
+          amount: number
+          asset_id: string
+          completed_at: string | null
+          created_at: string
+          external_reference: string | null
+          id: string
+          ledger_transaction_id: string | null
+          rejection_reason: string | null
+          request_hash: string
+          request_key: string
+          status: string
+          updated_at: string
+          user_id: string
+          user_note: string
+        }
+        Insert: {
+          amount: number
+          asset_id: string
+          completed_at?: string | null
+          created_at?: string
+          external_reference?: string | null
+          id?: string
+          ledger_transaction_id?: string | null
+          rejection_reason?: string | null
+          request_hash: string
+          request_key: string
+          status?: string
+          updated_at?: string
+          user_id: string
+          user_note?: string
+        }
+        Update: {
+          amount?: number
+          asset_id?: string
+          completed_at?: string | null
+          created_at?: string
+          external_reference?: string | null
+          id?: string
+          ledger_transaction_id?: string | null
+          rejection_reason?: string | null
+          request_hash?: string
+          request_key?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+          user_note?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deposit_requests_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deposit_requests_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "user_asset_balances"
+            referencedColumns: ["asset_id"]
+          },
+          {
+            foreignKeyName: "deposit_requests_ledger_transaction_id_fkey"
+            columns: ["ledger_transaction_id"]
+            isOneToOne: true
+            referencedRelation: "ledger_transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deposit_requests_ledger_transaction_id_fkey"
+            columns: ["ledger_transaction_id"]
+            isOneToOne: true
+            referencedRelation: "user_ledger_history"
+            referencedColumns: ["transaction_id"]
+          },
+        ]
+      }
       ledger_account_balances: {
         Row: {
           account_id: string
@@ -539,8 +619,173 @@ export type Database = {
         }
         Relationships: []
       }
+      withdrawal_requests: {
+        Row: {
+          amount: number
+          asset_id: string
+          completed_at: string | null
+          completion_transaction_id: string | null
+          created_at: string
+          destination_name: string | null
+          destination_network: string | null
+          destination_type: string
+          destination_value: string
+          external_reference: string | null
+          failed_at: string | null
+          failure_reason: string | null
+          id: string
+          rejection_reason: string | null
+          request_hash: string
+          request_key: string
+          reserve_transaction_id: string | null
+          status: string
+          updated_at: string
+          user_id: string
+          user_note: string
+        }
+        Insert: {
+          amount: number
+          asset_id: string
+          completed_at?: string | null
+          completion_transaction_id?: string | null
+          created_at?: string
+          destination_name?: string | null
+          destination_network?: string | null
+          destination_type: string
+          destination_value: string
+          external_reference?: string | null
+          failed_at?: string | null
+          failure_reason?: string | null
+          id?: string
+          rejection_reason?: string | null
+          request_hash: string
+          request_key: string
+          reserve_transaction_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          user_note?: string
+        }
+        Update: {
+          amount?: number
+          asset_id?: string
+          completed_at?: string | null
+          completion_transaction_id?: string | null
+          created_at?: string
+          destination_name?: string | null
+          destination_network?: string | null
+          destination_type?: string
+          destination_value?: string
+          external_reference?: string | null
+          failed_at?: string | null
+          failure_reason?: string | null
+          id?: string
+          rejection_reason?: string | null
+          request_hash?: string
+          request_key?: string
+          reserve_transaction_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          user_note?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "withdrawal_requests_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "withdrawal_requests_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "user_asset_balances"
+            referencedColumns: ["asset_id"]
+          },
+          {
+            foreignKeyName: "withdrawal_requests_completion_transaction_id_fkey"
+            columns: ["completion_transaction_id"]
+            isOneToOne: true
+            referencedRelation: "ledger_transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "withdrawal_requests_completion_transaction_id_fkey"
+            columns: ["completion_transaction_id"]
+            isOneToOne: true
+            referencedRelation: "user_ledger_history"
+            referencedColumns: ["transaction_id"]
+          },
+          {
+            foreignKeyName: "withdrawal_requests_reserve_transaction_id_fkey"
+            columns: ["reserve_transaction_id"]
+            isOneToOne: true
+            referencedRelation: "ledger_transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "withdrawal_requests_reserve_transaction_id_fkey"
+            columns: ["reserve_transaction_id"]
+            isOneToOne: true
+            referencedRelation: "user_ledger_history"
+            referencedColumns: ["transaction_id"]
+          },
+        ]
+      }
     }
     Views: {
+      admin_deposit_requests: {
+        Row: {
+          amount: number | null
+          asset_code: string | null
+          asset_id: string | null
+          asset_name: string | null
+          completed_at: string | null
+          created_at: string | null
+          decimals: number | null
+          external_reference: string | null
+          id: string | null
+          ledger_transaction_id: string | null
+          rejection_reason: string | null
+          request_key: string | null
+          status: string | null
+          updated_at: string | null
+          user_id: string | null
+          user_note: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deposit_requests_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deposit_requests_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "user_asset_balances"
+            referencedColumns: ["asset_id"]
+          },
+          {
+            foreignKeyName: "deposit_requests_ledger_transaction_id_fkey"
+            columns: ["ledger_transaction_id"]
+            isOneToOne: true
+            referencedRelation: "ledger_transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deposit_requests_ledger_transaction_id_fkey"
+            columns: ["ledger_transaction_id"]
+            isOneToOne: true
+            referencedRelation: "user_ledger_history"
+            referencedColumns: ["transaction_id"]
+          },
+        ]
+      }
       admin_member_directory: {
         Row: {
           confirmed_at: string | null
@@ -554,6 +799,77 @@ export type Database = {
           username: string | null
         }
         Relationships: []
+      }
+      admin_withdrawal_requests: {
+        Row: {
+          amount: number | null
+          asset_code: string | null
+          asset_id: string | null
+          asset_name: string | null
+          completed_at: string | null
+          completion_transaction_id: string | null
+          created_at: string | null
+          decimals: number | null
+          destination_name: string | null
+          destination_network: string | null
+          destination_type: string | null
+          destination_value: string | null
+          external_reference: string | null
+          failed_at: string | null
+          failure_reason: string | null
+          id: string | null
+          rejection_reason: string | null
+          request_key: string | null
+          reserve_transaction_id: string | null
+          status: string | null
+          updated_at: string | null
+          user_id: string | null
+          user_note: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "withdrawal_requests_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "withdrawal_requests_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "user_asset_balances"
+            referencedColumns: ["asset_id"]
+          },
+          {
+            foreignKeyName: "withdrawal_requests_completion_transaction_id_fkey"
+            columns: ["completion_transaction_id"]
+            isOneToOne: true
+            referencedRelation: "ledger_transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "withdrawal_requests_completion_transaction_id_fkey"
+            columns: ["completion_transaction_id"]
+            isOneToOne: true
+            referencedRelation: "user_ledger_history"
+            referencedColumns: ["transaction_id"]
+          },
+          {
+            foreignKeyName: "withdrawal_requests_reserve_transaction_id_fkey"
+            columns: ["reserve_transaction_id"]
+            isOneToOne: true
+            referencedRelation: "ledger_transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "withdrawal_requests_reserve_transaction_id_fkey"
+            columns: ["reserve_transaction_id"]
+            isOneToOne: true
+            referencedRelation: "user_ledger_history"
+            referencedColumns: ["transaction_id"]
+          },
+        ]
       }
       user_asset_balances: {
         Row: {
@@ -570,6 +886,56 @@ export type Database = {
           user_id: string | null
         }
         Relationships: []
+      }
+      user_deposit_requests: {
+        Row: {
+          amount: number | null
+          asset_code: string | null
+          asset_id: string | null
+          asset_name: string | null
+          completed_at: string | null
+          created_at: string | null
+          decimals: number | null
+          external_reference: string | null
+          id: string | null
+          ledger_transaction_id: string | null
+          rejection_reason: string | null
+          request_key: string | null
+          status: string | null
+          updated_at: string | null
+          user_id: string | null
+          user_note: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deposit_requests_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deposit_requests_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "user_asset_balances"
+            referencedColumns: ["asset_id"]
+          },
+          {
+            foreignKeyName: "deposit_requests_ledger_transaction_id_fkey"
+            columns: ["ledger_transaction_id"]
+            isOneToOne: true
+            referencedRelation: "ledger_transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deposit_requests_ledger_transaction_id_fkey"
+            columns: ["ledger_transaction_id"]
+            isOneToOne: true
+            referencedRelation: "user_ledger_history"
+            referencedColumns: ["transaction_id"]
+          },
+        ]
       }
       user_ledger_history: {
         Row: {
@@ -638,10 +1004,127 @@ export type Database = {
           },
         ]
       }
+      user_withdrawal_requests: {
+        Row: {
+          amount: number | null
+          asset_code: string | null
+          asset_id: string | null
+          asset_name: string | null
+          completed_at: string | null
+          completion_transaction_id: string | null
+          created_at: string | null
+          decimals: number | null
+          destination_name: string | null
+          destination_network: string | null
+          destination_type: string | null
+          destination_value: string | null
+          external_reference: string | null
+          failed_at: string | null
+          failure_reason: string | null
+          id: string | null
+          rejection_reason: string | null
+          request_key: string | null
+          reserve_transaction_id: string | null
+          status: string | null
+          updated_at: string | null
+          user_id: string | null
+          user_note: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "withdrawal_requests_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "withdrawal_requests_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "user_asset_balances"
+            referencedColumns: ["asset_id"]
+          },
+          {
+            foreignKeyName: "withdrawal_requests_completion_transaction_id_fkey"
+            columns: ["completion_transaction_id"]
+            isOneToOne: true
+            referencedRelation: "ledger_transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "withdrawal_requests_completion_transaction_id_fkey"
+            columns: ["completion_transaction_id"]
+            isOneToOne: true
+            referencedRelation: "user_ledger_history"
+            referencedColumns: ["transaction_id"]
+          },
+          {
+            foreignKeyName: "withdrawal_requests_reserve_transaction_id_fkey"
+            columns: ["reserve_transaction_id"]
+            isOneToOne: true
+            referencedRelation: "ledger_transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "withdrawal_requests_reserve_transaction_id_fkey"
+            columns: ["reserve_transaction_id"]
+            isOneToOne: true
+            referencedRelation: "user_ledger_history"
+            referencedColumns: ["transaction_id"]
+          },
+        ]
+      }
     }
     Functions: {
+      approve_deposit_request: {
+        Args: { p_external_reference: string; p_request_id: string }
+        Returns: string
+      }
+      approve_withdrawal_request: {
+        Args: { p_request_id: string }
+        Returns: string
+      }
+      cancel_deposit_request: {
+        Args: { p_request_id: string }
+        Returns: undefined
+      }
+      cancel_withdrawal_request: {
+        Args: { p_request_id: string }
+        Returns: undefined
+      }
+      complete_withdrawal_request: {
+        Args: { p_external_reference: string; p_request_id: string }
+        Returns: string
+      }
+      create_deposit_request: {
+        Args: {
+          p_amount: number
+          p_asset_id: string
+          p_request_key: string
+          p_user_note?: string
+        }
+        Returns: string
+      }
+      create_withdrawal_request: {
+        Args: {
+          p_amount: number
+          p_asset_id: string
+          p_destination_name: string
+          p_destination_network: string
+          p_destination_type: string
+          p_destination_value: string
+          p_request_key: string
+          p_user_note?: string
+        }
+        Returns: string
+      }
       ensure_user_asset_account: {
         Args: { p_asset_id: string }
+        Returns: string
+      }
+      fail_withdrawal_request: {
+        Args: { p_reason: string; p_request_id: string }
         Returns: string
       }
       post_ledger_transaction: {
@@ -656,6 +1139,14 @@ export type Database = {
         }
         Returns: string
       }
+      reject_deposit_request: {
+        Args: { p_reason: string; p_request_id: string }
+        Returns: undefined
+      }
+      reject_withdrawal_request: {
+        Args: { p_reason: string; p_request_id: string }
+        Returns: undefined
+      }
       reverse_ledger_transaction: {
         Args: {
           p_description?: string
@@ -663,6 +1154,14 @@ export type Database = {
           p_transaction_id: string
         }
         Returns: string
+      }
+      start_deposit_review: {
+        Args: { p_request_id: string }
+        Returns: undefined
+      }
+      start_withdrawal_review: {
+        Args: { p_request_id: string }
+        Returns: undefined
       }
     }
     Enums: {
