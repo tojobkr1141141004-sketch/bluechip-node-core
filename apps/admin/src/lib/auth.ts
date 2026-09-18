@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getAdminSessionSecurityStatus } from "@apex-matrix/database";
 import { createAdminServerSupabaseClient } from "./supabase/server";
 
 export async function requireAdminUser() {
@@ -29,9 +30,11 @@ export async function requireAdminUser() {
     redirect("/login?error=forbidden");
   }
 
-  const { data: securityStatus } = await supabase.rpc("get_admin_session_security_status");
+  const { data: securityStatus, error: securityError } =
+    await getAdminSessionSecurityStatus(supabase);
 
   if (
+    securityError ||
     !securityStatus ||
     securityStatus.recent_auth !== true ||
     securityStatus.active_admin !== true
