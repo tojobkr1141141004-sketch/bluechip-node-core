@@ -30,5 +30,5 @@ export async function changeMemberStatus(formData: FormData) {
     );
   }
 
-  redirect("/dashboard/members?updated=1");
+  redirect("/dashboard/members?updated=1" as never);
 }
