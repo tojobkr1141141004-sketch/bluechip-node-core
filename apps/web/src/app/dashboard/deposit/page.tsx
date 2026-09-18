@@ -144,16 +144,18 @@ export default async function DepositPage({
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <div className="text-sm font-semibold">
-                    {request.asset_code} · {String(request.amount)}
+                    {request.asset_code ?? "자산"} · {String(request.amount)}
                   </div>
                   <div className="mt-1 text-[11px] text-slate-500">
-                    {new Date(request.created_at).toLocaleString("ko-KR", {
-                      timeZone: "Asia/Seoul"
-                    })}
+                    {request.created_at
+                      ? new Date(request.created_at).toLocaleString("ko-KR", {
+                          timeZone: "Asia/Seoul"
+                        })
+                      : "접수일시 확인 중"}
                   </div>
                 </div>
                 <span className="rounded-full border border-white/10 px-2.5 py-1 text-[10px] text-slate-300">
-                  {statusLabel[request.status] ?? request.status}
+                  {statusLabel[request.status ?? ""] ?? request.status ?? "알 수 없음"}
                 </span>
               </div>
 
@@ -171,7 +173,7 @@ export default async function DepositPage({
 
               {request.status === "pending" ? (
                 <form action={cancelDeposit} className="mt-3">
-                  <input type="hidden" name="request_id" value={request.id} />
+                  <input type="hidden" name="request_id" value={request.id ?? ""} />
                   <button
                     type="submit"
                     className="rounded-lg border border-white/10 px-3 py-2 text-[10px] text-slate-300 hover:bg-white/[0.04]"
