@@ -11,7 +11,7 @@ export async function saveProfile(formData: FormData) {
   const supabase = await createWebServerSupabaseClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) redirect("/login?next=/dashboard/profile");
+  if (!user) redirect("/login?next=/dashboard/profile" as never);
 
   const displayName = getText(formData, "display_name");
   const username = getText(formData, "username").toLowerCase();
@@ -26,7 +26,7 @@ export async function saveProfile(formData: FormData) {
     !validUsername ||
     !["ko-KR", "en-US"].includes(locale)
   ) {
-    redirect("/dashboard/profile?error=invalid");
+    redirect("/dashboard/profile?error=invalid" as never);
   }
 
   const { error: profileError } = await supabase
@@ -52,7 +52,7 @@ export async function saveProfile(formData: FormData) {
       timezone: "Asia/Seoul"
     });
 
-  if (settingsError) redirect("/dashboard/profile?error=save_failed");
+  if (settingsError) redirect("/dashboard/profile?error=save_failed" as never);
 
-  redirect("/dashboard/profile?updated=1");
+  redirect("/dashboard/profile?updated=1" as never);
 }
