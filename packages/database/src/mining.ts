@@ -105,6 +105,12 @@ export async function getAdminMiningContracts(
     .limit(safeLimit(limit, 100, 200));
 }
 
+export async function getMiningMemberCandidates(client: DatabaseClient) {
+  return client
+    .rpc("get_mining_member_candidates")
+    .order("display_name", { ascending: true });
+}
+
 export async function getAdminMiningCalculationRuns(
   client: DatabaseClient,
   limit = 50
