@@ -572,7 +572,13 @@ export type Database = {
           created_at: string
           error_message: string
           id: string
+          last_retry_at: string | null
+          resolution_run_id: string | null
+          resolved_at: string | null
+          retry_count: number
+          retry_of_error_id: string | null
           sqlstate: string
+          status: string
         }
         Insert: {
           calculation_run_id: string
@@ -580,7 +586,13 @@ export type Database = {
           created_at?: string
           error_message: string
           id?: string
+          last_retry_at?: string | null
+          resolution_run_id?: string | null
+          resolved_at?: string | null
+          retry_count?: number
+          retry_of_error_id?: string | null
           sqlstate: string
+          status?: string
         }
         Update: {
           calculation_run_id?: string
@@ -588,7 +600,13 @@ export type Database = {
           created_at?: string
           error_message?: string
           id?: string
+          last_retry_at?: string | null
+          resolution_run_id?: string | null
+          resolved_at?: string | null
+          retry_count?: number
+          retry_of_error_id?: string | null
           sqlstate?: string
+          status?: string
         }
         Relationships: [
           {
@@ -626,40 +644,124 @@ export type Database = {
             referencedRelation: "user_mining_contracts"
             referencedColumns: ["contract_id"]
           },
+          {
+            foreignKeyName: "mining_calculation_errors_resolution_run_fkey"
+            columns: ["resolution_run_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_calculation_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_calculation_errors_resolution_run_fkey"
+            columns: ["resolution_run_id"]
+            isOneToOne: false
+            referencedRelation: "mining_calculation_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_calculation_errors_retry_of_fkey"
+            columns: ["retry_of_error_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_calculation_errors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_calculation_errors_retry_of_fkey"
+            columns: ["retry_of_error_id"]
+            isOneToOne: false
+            referencedRelation: "mining_calculation_errors"
+            referencedColumns: ["id"]
+          },
         ]
       }
       mining_calculation_runs: {
         Row: {
           created_at: string
           error_count: number
+          failure_message: string | null
           finished_at: string | null
           id: string
+          parent_run_id: string | null
           processed_contracts: number
+          recovered_at: string | null
+          recovered_by_run_id: string | null
+          request_hash: string
           rewarded_contracts: number
+          run_key: string
+          run_type: string
+          source_error_id: string | null
+          stale_at: string | null
           started_at: string
           status: string
         }
         Insert: {
           created_at?: string
           error_count?: number
+          failure_message?: string | null
           finished_at?: string | null
           id?: string
+          parent_run_id?: string | null
           processed_contracts?: number
+          recovered_at?: string | null
+          recovered_by_run_id?: string | null
+          request_hash?: string
           rewarded_contracts?: number
+          run_key?: string
+          run_type?: string
+          source_error_id?: string | null
+          stale_at?: string | null
           started_at?: string
           status?: string
         }
         Update: {
           created_at?: string
           error_count?: number
+          failure_message?: string | null
           finished_at?: string | null
           id?: string
+          parent_run_id?: string | null
           processed_contracts?: number
+          recovered_at?: string | null
+          recovered_by_run_id?: string | null
+          request_hash?: string
           rewarded_contracts?: number
+          run_key?: string
+          run_type?: string
+          source_error_id?: string | null
+          stale_at?: string | null
           started_at?: string
           status?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "mining_calculation_runs_parent_fkey"
+            columns: ["parent_run_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_calculation_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_calculation_runs_parent_fkey"
+            columns: ["parent_run_id"]
+            isOneToOne: false
+            referencedRelation: "mining_calculation_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_calculation_runs_source_error_fkey"
+            columns: ["source_error_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_calculation_errors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_calculation_runs_source_error_fkey"
+            columns: ["source_error_id"]
+            isOneToOne: false
+            referencedRelation: "mining_calculation_errors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       mining_contract_cancellations: {
         Row: {
@@ -1098,6 +1200,145 @@ export type Database = {
           },
         ]
       }
+      mining_reward_corrections: {
+        Row: {
+          actor_user_id: string
+          amount: number
+          applied_at: string
+          asset_id: string
+          calculation_run_id: string
+          contract_id: string
+          correction_type: string
+          created_at: string
+          id: string
+          idempotency_key: string
+          ledger_transaction_id: string | null
+          original_accrual_id: string | null
+          reason: string
+          request_hash: string
+          user_id: string
+        }
+        Insert: {
+          actor_user_id: string
+          amount: number
+          applied_at?: string
+          asset_id: string
+          calculation_run_id: string
+          contract_id: string
+          correction_type: string
+          created_at?: string
+          id?: string
+          idempotency_key: string
+          ledger_transaction_id?: string | null
+          original_accrual_id?: string | null
+          reason: string
+          request_hash: string
+          user_id: string
+        }
+        Update: {
+          actor_user_id?: string
+          amount?: number
+          applied_at?: string
+          asset_id?: string
+          calculation_run_id?: string
+          contract_id?: string
+          correction_type?: string
+          created_at?: string
+          id?: string
+          idempotency_key?: string
+          ledger_transaction_id?: string | null
+          original_accrual_id?: string | null
+          reason?: string
+          request_hash?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mining_reward_corrections_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_reward_corrections_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "user_asset_balances"
+            referencedColumns: ["asset_id"]
+          },
+          {
+            foreignKeyName: "mining_reward_corrections_calculation_run_id_fkey"
+            columns: ["calculation_run_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_calculation_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_reward_corrections_calculation_run_id_fkey"
+            columns: ["calculation_run_id"]
+            isOneToOne: false
+            referencedRelation: "mining_calculation_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_reward_corrections_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_contracts"
+            referencedColumns: ["contract_id"]
+          },
+          {
+            foreignKeyName: "mining_reward_corrections_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "mining_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_reward_corrections_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "user_mining_contracts"
+            referencedColumns: ["contract_id"]
+          },
+          {
+            foreignKeyName: "mining_reward_corrections_ledger_transaction_id_fkey"
+            columns: ["ledger_transaction_id"]
+            isOneToOne: false
+            referencedRelation: "ledger_transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_reward_corrections_ledger_transaction_id_fkey"
+            columns: ["ledger_transaction_id"]
+            isOneToOne: false
+            referencedRelation: "user_ledger_history"
+            referencedColumns: ["transaction_id"]
+          },
+          {
+            foreignKeyName: "mining_reward_corrections_original_accrual_id_fkey"
+            columns: ["original_accrual_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_reward_events"
+            referencedColumns: ["accrual_id"]
+          },
+          {
+            foreignKeyName: "mining_reward_corrections_original_accrual_id_fkey"
+            columns: ["original_accrual_id"]
+            isOneToOne: false
+            referencedRelation: "mining_reward_accruals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_reward_corrections_original_accrual_id_fkey"
+            columns: ["original_accrual_id"]
+            isOneToOne: false
+            referencedRelation: "user_mining_reward_history"
+            referencedColumns: ["accrual_id"]
+          },
+        ]
+      }
       mining_reward_payments: {
         Row: {
           accrual_id: string
@@ -1499,9 +1740,15 @@ export type Database = {
           email: string | null
           error_message: string | null
           id: string | null
+          last_retry_at: string | null
           product_code: string | null
           product_name: string | null
+          resolution_run_id: string | null
+          resolved_at: string | null
+          retry_count: number | null
+          retry_of_error_id: string | null
           sqlstate: string | null
+          status: string | null
           user_id: string | null
           username: string | null
         }
@@ -1541,40 +1788,124 @@ export type Database = {
             referencedRelation: "user_mining_contracts"
             referencedColumns: ["contract_id"]
           },
+          {
+            foreignKeyName: "mining_calculation_errors_resolution_run_fkey"
+            columns: ["resolution_run_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_calculation_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_calculation_errors_resolution_run_fkey"
+            columns: ["resolution_run_id"]
+            isOneToOne: false
+            referencedRelation: "mining_calculation_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_calculation_errors_retry_of_fkey"
+            columns: ["retry_of_error_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_calculation_errors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_calculation_errors_retry_of_fkey"
+            columns: ["retry_of_error_id"]
+            isOneToOne: false
+            referencedRelation: "mining_calculation_errors"
+            referencedColumns: ["id"]
+          },
         ]
       }
       admin_mining_calculation_runs: {
         Row: {
           created_at: string | null
           error_count: number | null
+          failure_message: string | null
           finished_at: string | null
           id: string | null
+          parent_run_id: string | null
           processed_contracts: number | null
+          recovered_at: string | null
+          recovered_by_run_id: string | null
+          request_hash: string | null
           rewarded_contracts: number | null
+          run_key: string | null
+          run_type: string | null
+          source_error_id: string | null
+          stale_at: string | null
           started_at: string | null
           status: string | null
         }
         Insert: {
           created_at?: string | null
           error_count?: number | null
+          failure_message?: string | null
           finished_at?: string | null
           id?: string | null
+          parent_run_id?: string | null
           processed_contracts?: number | null
+          recovered_at?: string | null
+          recovered_by_run_id?: string | null
+          request_hash?: string | null
           rewarded_contracts?: number | null
+          run_key?: string | null
+          run_type?: string | null
+          source_error_id?: string | null
+          stale_at?: string | null
           started_at?: string | null
           status?: string | null
         }
         Update: {
           created_at?: string | null
           error_count?: number | null
+          failure_message?: string | null
           finished_at?: string | null
           id?: string | null
+          parent_run_id?: string | null
           processed_contracts?: number | null
+          recovered_at?: string | null
+          recovered_by_run_id?: string | null
+          request_hash?: string | null
           rewarded_contracts?: number | null
+          run_key?: string | null
+          run_type?: string | null
+          source_error_id?: string | null
+          stale_at?: string | null
           started_at?: string | null
           status?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "mining_calculation_runs_parent_fkey"
+            columns: ["parent_run_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_calculation_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_calculation_runs_parent_fkey"
+            columns: ["parent_run_id"]
+            isOneToOne: false
+            referencedRelation: "mining_calculation_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_calculation_runs_source_error_fkey"
+            columns: ["source_error_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_calculation_errors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_calculation_runs_source_error_fkey"
+            columns: ["source_error_id"]
+            isOneToOne: false
+            referencedRelation: "mining_calculation_errors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       admin_mining_contract_cancellations: {
         Row: {
@@ -1851,14 +2182,111 @@ export type Database = {
           completed_contracts: number | null
           error_count: number | null
           invalid_contracts: number | null
+          last_successful_run_at: string | null
+          open_error_count: number | null
           overdue_contracts: number | null
           paid_amount: number | null
           payment_count: number | null
           reconciliation_status: string | null
+          stale_run_count: number | null
           unbalanced_ledger_count: number | null
           unpaid_amount: number | null
         }
         Relationships: []
+      }
+      admin_mining_reward_corrections: {
+        Row: {
+          actor_user_id: string | null
+          amount: number | null
+          applied_at: string | null
+          asset_code: string | null
+          asset_name: string | null
+          calculation_run_id: string | null
+          contract_id: string | null
+          correction_id: string | null
+          correction_type: string | null
+          created_at: string | null
+          display_name: string | null
+          email: string | null
+          idempotency_key: string | null
+          ledger_transaction_id: string | null
+          original_accrual_id: string | null
+          reason: string | null
+          user_id: string | null
+          username: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mining_reward_corrections_calculation_run_id_fkey"
+            columns: ["calculation_run_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_calculation_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_reward_corrections_calculation_run_id_fkey"
+            columns: ["calculation_run_id"]
+            isOneToOne: false
+            referencedRelation: "mining_calculation_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_reward_corrections_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_contracts"
+            referencedColumns: ["contract_id"]
+          },
+          {
+            foreignKeyName: "mining_reward_corrections_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "mining_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_reward_corrections_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "user_mining_contracts"
+            referencedColumns: ["contract_id"]
+          },
+          {
+            foreignKeyName: "mining_reward_corrections_ledger_transaction_id_fkey"
+            columns: ["ledger_transaction_id"]
+            isOneToOne: false
+            referencedRelation: "ledger_transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_reward_corrections_ledger_transaction_id_fkey"
+            columns: ["ledger_transaction_id"]
+            isOneToOne: false
+            referencedRelation: "user_ledger_history"
+            referencedColumns: ["transaction_id"]
+          },
+          {
+            foreignKeyName: "mining_reward_corrections_original_accrual_id_fkey"
+            columns: ["original_accrual_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_reward_events"
+            referencedColumns: ["accrual_id"]
+          },
+          {
+            foreignKeyName: "mining_reward_corrections_original_accrual_id_fkey"
+            columns: ["original_accrual_id"]
+            isOneToOne: false
+            referencedRelation: "mining_reward_accruals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_reward_corrections_original_accrual_id_fkey"
+            columns: ["original_accrual_id"]
+            isOneToOne: false
+            referencedRelation: "user_mining_reward_history"
+            referencedColumns: ["accrual_id"]
+          },
+        ]
       }
       admin_mining_reward_events: {
         Row: {
@@ -2378,6 +2806,116 @@ export type Database = {
           },
         ]
       }
+      user_mining_reward_corrections: {
+        Row: {
+          amount: number | null
+          applied_at: string | null
+          calculation_run_id: string | null
+          contract_id: string | null
+          correction_id: string | null
+          correction_type: string | null
+          created_at: string | null
+          ledger_transaction_id: string | null
+          original_accrual_id: string | null
+          reason: string | null
+        }
+        Insert: {
+          amount?: number | null
+          applied_at?: string | null
+          calculation_run_id?: string | null
+          contract_id?: string | null
+          correction_id?: string | null
+          correction_type?: string | null
+          created_at?: string | null
+          ledger_transaction_id?: string | null
+          original_accrual_id?: string | null
+          reason?: string | null
+        }
+        Update: {
+          amount?: number | null
+          applied_at?: string | null
+          calculation_run_id?: string | null
+          contract_id?: string | null
+          correction_id?: string | null
+          correction_type?: string | null
+          created_at?: string | null
+          ledger_transaction_id?: string | null
+          original_accrual_id?: string | null
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mining_reward_corrections_calculation_run_id_fkey"
+            columns: ["calculation_run_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_calculation_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_reward_corrections_calculation_run_id_fkey"
+            columns: ["calculation_run_id"]
+            isOneToOne: false
+            referencedRelation: "mining_calculation_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_reward_corrections_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_contracts"
+            referencedColumns: ["contract_id"]
+          },
+          {
+            foreignKeyName: "mining_reward_corrections_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "mining_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_reward_corrections_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "user_mining_contracts"
+            referencedColumns: ["contract_id"]
+          },
+          {
+            foreignKeyName: "mining_reward_corrections_ledger_transaction_id_fkey"
+            columns: ["ledger_transaction_id"]
+            isOneToOne: false
+            referencedRelation: "ledger_transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_reward_corrections_ledger_transaction_id_fkey"
+            columns: ["ledger_transaction_id"]
+            isOneToOne: false
+            referencedRelation: "user_ledger_history"
+            referencedColumns: ["transaction_id"]
+          },
+          {
+            foreignKeyName: "mining_reward_corrections_original_accrual_id_fkey"
+            columns: ["original_accrual_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_reward_events"
+            referencedColumns: ["accrual_id"]
+          },
+          {
+            foreignKeyName: "mining_reward_corrections_original_accrual_id_fkey"
+            columns: ["original_accrual_id"]
+            isOneToOne: false
+            referencedRelation: "mining_reward_accruals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_reward_corrections_original_accrual_id_fkey"
+            columns: ["original_accrual_id"]
+            isOneToOne: false
+            referencedRelation: "user_mining_reward_history"
+            referencedColumns: ["accrual_id"]
+          },
+        ]
+      }
       user_mining_reward_history: {
         Row: {
           accrual_id: string | null
@@ -2618,6 +3156,17 @@ export type Database = {
       }
     }
     Functions: {
+      apply_mining_reward_correction: {
+        Args: {
+          p_amount: number
+          p_contract_id: string
+          p_correction_type: string
+          p_idempotency_key: string
+          p_original_accrual_id: string
+          p_reason: string
+        }
+        Returns: string
+      }
       approve_deposit_request: {
         Args: { p_external_reference: string; p_request_id: string }
         Returns: string
@@ -2733,6 +3282,11 @@ export type Database = {
         Args: { p_version_id: string }
         Returns: undefined
       }
+      recalculate_mining_contract: {
+        Args: { p_contract_id: string; p_idempotency_key: string }
+        Returns: Json
+      }
+      recover_stale_mining_calculation_runs: { Args: never; Returns: number }
       reject_deposit_request: {
         Args: { p_reason: string; p_request_id: string }
         Returns: undefined
@@ -2740,6 +3294,10 @@ export type Database = {
       reject_withdrawal_request: {
         Args: { p_reason: string; p_request_id: string }
         Returns: undefined
+      }
+      retry_mining_calculation_error: {
+        Args: { p_error_id: string; p_idempotency_key: string }
+        Returns: Json
       }
       reverse_ledger_transaction: {
         Args: {

@@ -115,7 +115,7 @@ export async function getAdminMiningReconciliationSummary(client: DatabaseClient
   return client
     .from("admin_mining_reconciliation_summary")
     .select(
-      "active_contracts, completed_contracts, cancelled_contracts, overdue_contracts, invalid_contracts, accrual_count, accrued_amount, payment_count, paid_amount, unpaid_amount, error_count, unbalanced_ledger_count, reconciliation_status"
+      "active_contracts, completed_contracts, cancelled_contracts, overdue_contracts, invalid_contracts, accrual_count, accrued_amount, payment_count, paid_amount, unpaid_amount, error_count, unbalanced_ledger_count, reconciliation_status, open_error_count, stale_run_count, last_successful_run_at"
     )
     .maybeSingle();
 }
@@ -127,7 +127,7 @@ export async function getAdminMiningCalculationErrors(
   return client
     .from("admin_mining_calculation_errors")
     .select(
-      "id, calculation_run_id, contract_id, user_id, email, display_name, username, product_code, product_name, sqlstate, error_message, created_at"
+      "id, calculation_run_id, contract_id, user_id, email, display_name, username, product_code, product_name, sqlstate, error_message, status, retry_count, last_retry_at, resolved_at, resolution_run_id, retry_of_error_id, created_at"
     )
     .order("created_at", { ascending: false })
     .limit(safeLimit(limit, 100, 200));
@@ -167,7 +167,7 @@ export async function getAdminMiningCalculationRuns(
   return client
     .from("admin_mining_calculation_runs")
     .select(
-      "id, started_at, finished_at, status, processed_contracts, rewarded_contracts, error_count, created_at"
+      "id, started_at, finished_at, status, processed_contracts, rewarded_contracts, error_count, created_at, run_key, run_type, request_hash, parent_run_id, source_error_id, failure_message, stale_at, recovered_at, recovered_by_run_id"
     )
     .order("started_at", { ascending: false })
     .limit(safeLimit(limit, 50, 100));
@@ -298,6 +298,26 @@ export async function cancelMiningContract(
   });
 }
 
+export async function getUserMiningRewardCorrections(client: DatabaseClient) {
+  return client
+    .from("user_mining_reward_corrections")
+    .select(
+      "correction_id, contract_id, calculation_run_id, original_accrual_id, correction_type, amount, reason, ledger_transaction_id, created_at, applied_at"
+    )
+    .order("created_at", { ascending: false })
+    .limit(100);
+}
+
+export async function getAdminMiningRewardCorrections(client: DatabaseClient) {
+  return client
+    .from("admin_mining_reward_corrections")
+    .select(
+      "correction_id, contract_id, user_id, email, display_name, username, calculation_run_id, original_accrual_id, correction_type, amount, asset_code, asset_name, reason, actor_user_id, ledger_transaction_id, idempotency_key, created_at, applied_at"
+    )
+    .order("created_at", { ascending: false })
+    .limit(100);
+}
+
 export async function getUserMiningContractCancellations(client: DatabaseClient) {
   return client
     .from("user_mining_contract_cancellations")
@@ -316,6 +336,51 @@ export async function getAdminMiningContractCancellations(client: DatabaseClient
     )
     .order("created_at", { ascending: false })
     .limit(100);
+}
+
+export async function recalculateMiningContract(
+  client: DatabaseClient,
+  input: { contractId: string; idempotencyKey: string }
+) {
+  return client.rpc("recalculate_mining_contract", {
+    p_contract_id: input.contractId,
+    p_idempotency_key: input.idempotencyKey
+  });
+}
+
+export async function retryMiningCalculationError(
+  client: DatabaseClient,
+  input: { errorId: string; idempotencyKey: string }
+) {
+  return client.rpc("retry_mining_calculation_error", {
+    p_error_id: input.errorId,
+    p_idempotency_key: input.idempotencyKey
+  });
+}
+
+export async function applyMiningRewardCorrection(
+  client: DatabaseClient,
+  input: {
+    contractId: string;
+    originalAccrualId?: string | null;
+    correctionType: "additional_paid" | "additional_pending" | "reduce_pending";
+    amount: string;
+    reason: string;
+    idempotencyKey: string;
+  }
+) {
+  return client.rpc("apply_mining_reward_correction", {
+    p_contract_id: input.contractId,
+    p_original_accrual_id: (input.originalAccrualId ?? null) as unknown as string,
+    p_correction_type: input.correctionType,
+    p_amount: input.amount as unknown as number,
+    p_reason: input.reason,
+    p_idempotency_key: input.idempotencyKey
+  });
+}
+
+export async function recoverStaleMiningCalculationRuns(client: DatabaseClient) {
+  return client.rpc("recover_stale_mining_calculation_runs");
 }
 
 export async function runMiningCalculationNow(client: DatabaseClient) {
