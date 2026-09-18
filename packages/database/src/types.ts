@@ -19,7 +19,7 @@ export type Database = {
       user_settings: {
         Row: { user_id:string; locale:string; timezone:string; created_at:string; updated_at:string };
         Insert: { user_id:string; locale?:string; timezone?:string; created_at?:string; updated_at?:string };
-        Update: { user_id?:string; locale?:string; timezone?:string };
+        Update: { user_id?:string; locale?:string; timezone?:string; created_at?:string; updated_at?:string };
         Relationships: [];
       };
       member_directory: {
