@@ -3736,6 +3736,20 @@ export type Database = {
           total_remaining: number
         }[]
       }
+      get_admin_notification_events: {
+        Args: { p_limit?: number }
+        Returns: {
+          actor_user_id: string
+          code: string
+          created_at: string
+          event_id: string
+          event_type: string
+          metadata: Json
+          notification_id: string
+          notification_key: string
+          title: string
+        }[]
+      }
       get_admin_notification_summary: { Args: never; Returns: Json }
       get_admin_notifications: {
         Args: { p_limit?: number; p_status?: string }
