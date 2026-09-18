@@ -31,11 +31,13 @@ export {
 } from "./finance-requests";
 
 export {
+  cancelMiningContract,
   createMiningContract,
   createMiningProduct,
   createMiningProductVersion,
   getAdminMiningCalculationErrors,
   getAdminMiningCalculationRuns,
+  getAdminMiningContractCancellations,
   getAdminMiningContracts,
   getAdminMiningDailySummary,
   getAdminMiningReconciliationSummary,
@@ -44,6 +46,7 @@ export {
   getAdminMiningProducts,
   getMiningMemberCandidates,
   getMiningSettings,
+  getUserMiningContractCancellations,
   getUserMiningContracts,
   getUserMiningProducts,
   getUserMiningRewardHistory,
