@@ -4,7 +4,6 @@ import {
   Activity,
   ArrowRight,
   CircleCheck,
-  Coins,
   Gauge,
   ShieldAlert,
   UsersRound,
