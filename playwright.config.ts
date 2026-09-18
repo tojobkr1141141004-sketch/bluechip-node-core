@@ -1,7 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const reuseExistingServer = !process.env.CI;
-
 export default defineConfig({
   testDir: "./tests",
   fullyParallel: true,
@@ -17,15 +15,15 @@ export default defineConfig({
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: [
     {
-      command: "pnpm dev:web",
+      command: "pnpm --filter @apex-matrix/web start",
       url: "http://127.0.0.1:3000",
-      reuseExistingServer,
+      reuseExistingServer: false,
       timeout: 120_000
     },
     {
-      command: "pnpm dev:admin",
+      command: "pnpm --filter @apex-matrix/admin start",
       url: "http://127.0.0.1:3001",
-      reuseExistingServer,
+      reuseExistingServer: false,
       timeout: 120_000
     }
   ]
