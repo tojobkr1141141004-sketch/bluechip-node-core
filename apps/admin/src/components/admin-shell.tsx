@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ClipboardList, Coins, FileSearch, LayoutDashboard, LogOut, Settings2, ShieldCheck, UsersRound } from "lucide-react";
+import { Bell, ClipboardList, Coins, FileSearch, LayoutDashboard, LogOut, Settings2, ShieldCheck, UsersRound } from "lucide-react";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "운영 대시보드", icon: LayoutDashboard },
@@ -7,15 +7,18 @@ const NAV_ITEMS = [
   { href: "/dashboard/kyc", label: "KYC", icon: FileSearch },
   { href: "/dashboard/finance", label: "금융 운영", icon: Coins },
   { href: "/dashboard/mining", label: "채굴·정산", icon: ClipboardList },
+  { href: "/dashboard/notifications", label: "운영 알림", icon: Bell },
   { href: "/dashboard/system", label: "시스템", icon: Settings2 }
 ] as const;
 
 export function AdminShell({
   children,
-  email
+  email,
+  notificationCount = 0
 }: {
   children: React.ReactNode;
   email: string | null | undefined;
+  notificationCount?: number;
 }) {
   return (
     <div className="min-h-screen bg-[#09090b] text-zinc-50">
@@ -54,6 +57,11 @@ export function AdminShell({
               >
                 <Icon className="h-4 w-4" />
                 {label}
+                {href === "/dashboard/notifications" && notificationCount > 0 ? (
+                  <span className="ml-auto rounded-full border border-amber-300/15 bg-amber-300/[0.05] px-1.5 py-0.5 text-[9px] font-semibold text-amber-100">
+                    {notificationCount}
+                  </span>
+                ) : null}
               </Link>
             ))}
           </nav>
