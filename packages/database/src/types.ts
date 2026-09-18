@@ -14,6 +14,107 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_notification_events: {
+        Row: {
+          actor_user_id: string | null
+          created_at: string
+          event_type: string
+          id: string
+          metadata: Json
+          notification_id: string
+        }
+        Insert: {
+          actor_user_id?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          metadata?: Json
+          notification_id: string
+        }
+        Update: {
+          actor_user_id?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          metadata?: Json
+          notification_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_notification_events_notification_id_fkey"
+            columns: ["notification_id"]
+            isOneToOne: false
+            referencedRelation: "admin_notifications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      admin_notifications: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          code: string
+          created_at: string
+          first_seen_at: string
+          href: string
+          id: string
+          last_seen_at: string
+          message: string
+          metadata: Json
+          notification_key: string
+          occurrence_count: number
+          owner_area: string
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          code: string
+          created_at?: string
+          first_seen_at?: string
+          href: string
+          id?: string
+          last_seen_at?: string
+          message: string
+          metadata?: Json
+          notification_key: string
+          occurrence_count?: number
+          owner_area: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          code?: string
+          created_at?: string
+          first_seen_at?: string
+          href?: string
+          id?: string
+          last_seen_at?: string
+          message?: string
+          metadata?: Json
+          notification_key?: string
+          occurrence_count?: number
+          owner_area?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       admin_permissions: {
         Row: {
           code: string
@@ -3462,6 +3563,36 @@ export type Database = {
       }
     }
     Functions: {
+      acknowledge_admin_notification: {
+        Args: { p_notification_id: string }
+        Returns: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          code: string
+          created_at: string
+          first_seen_at: string
+          href: string
+          id: string
+          last_seen_at: string
+          message: string
+          metadata: Json
+          notification_key: string
+          occurrence_count: number
+          owner_area: string
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "admin_notifications"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       apply_mining_reward_correction: {
         Args: {
           p_amount: number
@@ -3605,6 +3736,37 @@ export type Database = {
           total_remaining: number
         }[]
       }
+      get_admin_notification_summary: { Args: never; Returns: Json }
+      get_admin_notifications: {
+        Args: { p_limit?: number; p_status?: string }
+        Returns: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          code: string
+          created_at: string
+          first_seen_at: string
+          href: string
+          id: string
+          last_seen_at: string
+          message: string
+          metadata: Json
+          notification_key: string
+          occurrence_count: number
+          owner_area: string
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+          status: string
+          title: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "admin_notifications"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       get_admin_operations_center: { Args: never; Returns: Json }
       get_mining_member_candidates: {
         Args: never
@@ -3659,6 +3821,36 @@ export type Database = {
       reject_withdrawal_request: {
         Args: { p_reason: string; p_request_id: string }
         Returns: undefined
+      }
+      resolve_admin_notification: {
+        Args: { p_notification_id: string }
+        Returns: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          code: string
+          created_at: string
+          first_seen_at: string
+          href: string
+          id: string
+          last_seen_at: string
+          message: string
+          metadata: Json
+          notification_key: string
+          occurrence_count: number
+          owner_area: string
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "admin_notifications"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       retry_mining_calculation_error: {
         Args: { p_error_id: string; p_idempotency_key: string }
