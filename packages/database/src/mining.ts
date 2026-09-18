@@ -264,6 +264,35 @@ export async function updateMiningSettings(
   });
 }
 
+export async function getAdminMiningIssuanceControls(client: DatabaseClient) {
+  return client.rpc("get_admin_mining_issuance_controls");
+}
+
+export async function updateMiningIssuancePolicy(
+  client: DatabaseClient,
+  input: {
+    assetId: string;
+    issuanceEnabled: boolean;
+    dailyLimit: string | null;
+    totalLimit: string | null;
+    maxSourceNegativeBalance: string | null;
+    minimumReserveBalance: string | null;
+    idempotencyKey: string;
+  }
+) {
+  return client.rpc("update_mining_issuance_policy", {
+    p_asset_id: input.assetId,
+    p_issuance_enabled: input.issuanceEnabled,
+    p_daily_limit: input.dailyLimit as unknown as number | null,
+    p_total_limit: input.totalLimit as unknown as number | null,
+    p_max_source_negative_balance:
+      input.maxSourceNegativeBalance as unknown as number | null,
+    p_minimum_reserve_balance:
+      input.minimumReserveBalance as unknown as number | null,
+    p_idempotency_key: input.idempotencyKey
+  });
+}
+
 export async function createMiningContract(
   client: DatabaseClient,
   input: {
