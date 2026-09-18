@@ -54,3 +54,44 @@ jobs:
           name: playwright-report
           path: playwright-report/
           if-no-files-found: ignore
+
+  deploy_production:
+    name: Deploy web to Vercel Production
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: quality
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: team_4xGdnNHPkCmA14S50BxZ2R62
+      VERCEL_PROJECT_ID: prj_7PHnwpBvKLgBivDtHWf9l5Nc1OC1
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@59.20.0
+
+      - name: Report deployment configuration
+        if: env.VERCEL_TOKEN == ''
+        run: |
+          echo "::warning::VERCEL_TOKEN GitHub secret is not configured; production deployment is skipped."
+          echo "The quality gate remains authoritative for source validation."
+
+      - name: Pull Vercel production configuration
+        if: env.VERCEL_TOKEN != ''
+        run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+
+      - name: Build Vercel production artifact
+        if: env.VERCEL_TOKEN != ''
+        run: vercel build --prod --token="$VERCEL_TOKEN"
+
+      - name: Deploy Vercel production artifact
+        if: env.VERCEL_TOKEN != ''
+        run: vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
