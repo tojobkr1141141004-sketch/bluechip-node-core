@@ -1,24 +1,34 @@
 import { expect, test } from "@playwright/test";
 
-test("dashboard loads with primary navigation", async ({ page }) => {
+test("root enters the protected APEX-MATRIX user area", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: /전 세계 노드/ })).toBeVisible();
-  await expect(page.getByRole("button", { name: "지구본 노드" })).toHaveAttribute("aria-current", "page");
-  await expect(page.getByText("Next 16.3")).toBeVisible();
+  await expect(page).toHaveURL(/\/login(?:\?|$)/);
+  await expect(page.getByRole("heading", { name: "회원 로그인" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "로그인" })).toBeVisible();
 });
 
-test("dashboard navigation works", async ({ page }) => {
-  await page.goto("/");
-  await expect(page.locator("[data-client-ready='true']")).toBeAttached();
+test("protected dashboard shows the user login boundary", async ({ page }) => {
+  await page.goto("/dashboard");
+  await expect(page).toHaveURL(/\/login(?:\?|$)/);
+  await expect(page.getByRole("heading", { name: "회원 로그인" })).toBeVisible();
+});
 
-  await page.getByRole("button", { name: "자산 건강" }).click();
-  await expect(page.getByRole("heading", { name: "자산 건강" })).toBeVisible();
+test("protected financial and mining routes share the same login boundary", async ({ page }) => {
+  const routes = [
+    "/dashboard/mining",
+    "/dashboard/assets",
+    "/dashboard/deposit",
+    "/dashboard/withdrawal",
+    "/dashboard/history",
+    "/dashboard/profile",
+    "/dashboard/security"
+  ];
 
-  await page.getByRole("button", { name: "안심 금고" }).click();
-  await expect(page.getByRole("heading", { name: /안심 금고/ })).toBeVisible();
-
-  await page.getByRole("button", { name: "다음 단계" }).click();
-  await expect(page.getByText("확인")).toBeVisible();
+  for (const route of routes) {
+    await page.goto(route);
+    await expect(page).toHaveURL(/\/login(?:\?|$)/);
+    await expect(page.getByRole("heading", { name: "회원 로그인" })).toBeVisible();
+  }
 });
 
 test("health endpoint is available", async ({ request }) => {
