@@ -1,6 +1,9 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
+  "git": {
+    "deploymentEnabled": true
+  },
   "installCommand": "pnpm install --no-frozen-lockfile",
   "buildCommand": "pnpm turbo build --filter=@apex-matrix/web...",
   "outputDirectory": "apps/web/.next"
