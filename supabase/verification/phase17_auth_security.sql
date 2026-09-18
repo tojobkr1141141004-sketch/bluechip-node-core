@@ -1,0 +1,3 @@
+-- PHASE 17 — no destructive data changes.
+-- This migration intentionally only changes authorization functions.
+-- Existing finance, mining and ledger records remain untouched.
