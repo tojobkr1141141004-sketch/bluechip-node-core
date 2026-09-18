@@ -1,0 +1,9 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "git": {
+    "deploymentEnabled": true
+  },
+  "buildCommand": "cd ../.. && pnpm turbo build --filter=@apex-matrix/web...",
+  "outputDirectory": ".next"
+}
