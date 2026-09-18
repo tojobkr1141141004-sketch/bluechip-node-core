@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   description:
     "전 세계 엣지 노드 상태와 보호 흐름을 확인하는 고성능 대시보드 데모.",
   applicationName: "BLUECHIP Edge Asset Hub",
-  generator: "Next.js 16.3.3",
+  generator: "Next.js 16.3.5",
   authors: [{ name: "BLUECHIP" }],
   category: "technology",
   robots: { index: true, follow: true },
