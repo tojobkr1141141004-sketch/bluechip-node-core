@@ -1,5 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const reuseExistingServer = !process.env.CI;
+
 export default defineConfig({
   testDir: "./tests",
   fullyParallel: true,
@@ -13,10 +15,18 @@ export default defineConfig({
     screenshot: "only-on-failure"
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
-  webServer: {
-    command: "pnpm dev",
-    url: "http://127.0.0.1:3000",
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000
-  }
+  webServer: [
+    {
+      command: "pnpm dev:web",
+      url: "http://127.0.0.1:3000",
+      reuseExistingServer,
+      timeout: 120_000
+    },
+    {
+      command: "pnpm dev:admin",
+      url: "http://127.0.0.1:3001",
+      reuseExistingServer,
+      timeout: 120_000
+    }
+  ]
 });
