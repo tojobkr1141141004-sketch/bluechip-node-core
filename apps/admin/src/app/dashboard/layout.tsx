@@ -1,3 +1,4 @@
+import { getAdminNotificationSummary } from "@apex-matrix/database";
 import { requireAdminUser } from "@/lib/auth";
 import { AdminShell } from "@/components/admin-shell";
 
@@ -8,5 +9,17 @@ export default async function AdminDashboardLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   const { user } = await requireAdminUser();
 
-  return <AdminShell email={user.email}>{children}</AdminShell>;
+  const notificationResult = await getAdminNotificationSummary(supabase);
+  const notificationSummary = notificationResult.data as unknown as {
+    active_count?: number;
+  } | null;
+
+  return (
+    <AdminShell
+      email={user.email}
+      notificationCount={notificationSummary?.active_count ?? 0}
+    >
+      {children}
+    </AdminShell>
+  );
 }
