@@ -7,6 +7,7 @@ import {
   getAdminMiningDailySummary,
   getAdminMiningReconciliationSummary,
   getAdminMiningRewardEvents,
+  getAdminMiningRewardCorrections,
   getAdminMiningContracts,
   getAdminMiningProductVersions,
   getAdminMiningProducts,
@@ -17,7 +18,11 @@ import { requireAdminUser } from "@/lib/auth";
 import {
   cancelContract,
   publishVersion,
+  recalculateContract,
+  recoverStaleRuns,
+  retryCalculationError,
   runMiningNow,
+  submitRewardCorrection,
   saveMiningSettings,
   submitMiningContract,
   submitMiningProduct,
@@ -49,6 +54,10 @@ const statusLabel: Record<string, string> = {
   paused: "일시 중지",
   archived: "보관",
   published: "발행",
+  running: "실행 중",
+  failed: "실패",
+  stale: "복구 대기",
+  recovered: "복구 완료",
   retired: "종료",
   completed: "완료",
   cancelled: "취소"
@@ -64,7 +73,11 @@ function Notice({ success, error }: { success?: string; error?: string }) {
       contract_created: "회원 채굴 계약을 활성화했습니다.",
       calculation_run: "채굴 계산 엔진을 즉시 실행했습니다.",
       contract_cancelled: "채굴 계약을 취소하고 취소 시각까지 계산·정산했습니다.",
-      settings_saved: "채굴 설정을 저장했습니다."
+      settings_saved: "채굴 설정을 저장했습니다.",
+      contract_recalculated: "선택한 채굴 계약을 즉시 재계산했습니다.",
+      calculation_retried: "계산 오류 재처리를 실행했습니다.",
+      stale_recovered: "중단된 계산 실행을 복구 점검했습니다.",
+      reward_correction_applied: "채굴 보상 정정 기록을 적용했습니다."
     };
 
     return (
@@ -107,7 +120,8 @@ export default async function MiningAdminPage({
     errorsResult,
     dailySummaryResult,
     rewardEventsResult,
-    cancellationsResult
+    cancellationsResult,
+    correctionsResult
   ] = await Promise.all([
     getAdminMiningProducts(supabase),
     getAdminMiningProductVersions(supabase),
@@ -120,7 +134,8 @@ export default async function MiningAdminPage({
     getAdminMiningCalculationErrors(supabase),
     getAdminMiningDailySummary(supabase),
     getAdminMiningRewardEvents(supabase),
-    getAdminMiningContractCancellations(supabase)
+    getAdminMiningContractCancellations(supabase),
+    getAdminMiningRewardCorrections(supabase)
   ]);
 
   if (
@@ -135,7 +150,8 @@ export default async function MiningAdminPage({
     errorsResult.error ||
     dailySummaryResult.error ||
     rewardEventsResult.error ||
-    cancellationsResult.error
+    cancellationsResult.error ||
+    correctionsResult.error
   ) {
     return (
       <section className="rounded-3xl border border-rose-300/10 bg-rose-300/[0.04] p-6 sm:p-8">
@@ -164,6 +180,7 @@ export default async function MiningAdminPage({
   const dailySummary = dailySummaryResult.data ?? [];
   const rewardEvents = rewardEventsResult.data ?? [];
   const cancellations = cancellationsResult.data ?? [];
+  const corrections = correctionsResult.data ?? [];
 
   const publishedVersions = versions.filter(
     (version) => version.status === "published"
@@ -195,14 +212,24 @@ export default async function MiningAdminPage({
               Cron은 1분마다 호출되지만 실제 계산 간격은 아래 설정값으로 제어됩니다.
             </p>
           </div>
-          <form action={runMiningNow}>
-            <button
-              type="submit"
-              className="rounded-xl bg-white px-4 py-3 text-xs font-bold text-zinc-950 hover:bg-zinc-100"
-            >
-              지금 1회 계산 실행
-            </button>
-          </form>
+          <div className="flex flex-wrap gap-2">
+            <form action={recoverStaleRuns}>
+              <button
+                type="submit"
+                className="rounded-xl border border-amber-300/15 bg-amber-300/[0.04] px-4 py-3 text-xs font-semibold text-amber-200"
+              >
+                중단된 실행 복구 점검
+              </button>
+            </form>
+            <form action={runMiningNow}>
+              <button
+                type="submit"
+                className="rounded-xl bg-white px-4 py-3 text-xs font-bold text-zinc-950 hover:bg-zinc-100"
+              >
+                지금 1회 계산 실행
+              </button>
+            </form>
+          </div>
         </div>
 
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
@@ -239,6 +266,7 @@ export default async function MiningAdminPage({
             <thead className="border-b border-white/[0.06] text-[10px] uppercase tracking-[0.16em] text-zinc-600">
               <tr>
                 <th className="px-3 py-2">실행 시각</th>
+                <th className="px-3 py-2">유형</th>
                 <th className="px-3 py-2">상태</th>
                 <th className="px-3 py-2">처리 계약</th>
                 <th className="px-3 py-2">지급 발생</th>
@@ -250,6 +278,7 @@ export default async function MiningAdminPage({
               {runs.map((run) => (
                 <tr key={run.id ?? randomUUID()}>
                   <td className="px-3 py-3 text-zinc-400">{formatDate(run.started_at)}</td>
+                  <td className="px-3 py-3 text-[10px] text-zinc-500">{run.run_type ?? "scheduled"}</td>
                   <td className="px-3 py-3">
                     {statusLabel[run.status ?? ""] ?? run.status ?? "-"}
                   </td>
@@ -332,6 +361,21 @@ export default async function MiningAdminPage({
               {String(reconciliation?.unbalanced_ledger_count ?? 0)}건
             </div>
           </div>
+          <div className="rounded-xl border border-white/[0.06] bg-black/10 p-3">
+            <div className="text-[10px] text-zinc-600">미해결 계산 오류</div>
+            <div className={reconciliation?.open_error_count ? "mt-1 text-sm font-semibold text-rose-300" : "mt-1 text-sm font-semibold text-emerald-300"}>
+              {String(reconciliation?.open_error_count ?? 0)}건
+            </div>
+          </div>
+          <div className="rounded-xl border border-white/[0.06] bg-black/10 p-3">
+            <div className="text-[10px] text-zinc-600">Stale 실행</div>
+            <div className={reconciliation?.stale_run_count ? "mt-1 text-sm font-semibold text-amber-200" : "mt-1 text-sm font-semibold text-emerald-300"}>
+              {String(reconciliation?.stale_run_count ?? 0)}건
+            </div>
+          </div>
+        </div>
+        <div className="mt-3 text-[10px] text-zinc-600">
+          마지막 정상 계산: {formatDate(reconciliation?.last_successful_run_at)}
         </div>
       </section>
 
@@ -348,6 +392,8 @@ export default async function MiningAdminPage({
                 <th className="px-3 py-2">회원</th>
                 <th className="px-3 py-2">상품</th>
                 <th className="px-3 py-2">SQLSTATE</th>
+                <th className="px-3 py-2">상태</th>
+                <th className="px-3 py-2">재처리</th>
                 <th className="px-3 py-2">오류 내용</th>
               </tr>
             </thead>
@@ -360,6 +406,29 @@ export default async function MiningAdminPage({
                   </td>
                   <td className="px-3 py-3">{item.product_code ?? "-"}</td>
                   <td className="px-3 py-3 font-mono text-[10px] text-rose-300">{item.sqlstate}</td>
+                  <td className="px-3 py-3 text-[10px]">
+                    {item.status === "resolved" ? (
+                      <span className="text-emerald-300">해결됨</span>
+                    ) : (
+                      <span className="text-amber-200">미해결 · {String(item.retry_count ?? 0)}회</span>
+                    )}
+                  </td>
+                  <td className="px-3 py-3">
+                    {item.status === "resolved" || !item.contract_id ? (
+                      <span className="text-[10px] text-zinc-600">재처리 불가</span>
+                    ) : (
+                      <form action={retryCalculationError}>
+                        <input type="hidden" name="error_id" value={item.id ?? ""} />
+                        <input type="hidden" name="idempotency_key" value={"mining-retry:" + randomUUID()} />
+                        <button
+                          type="submit"
+                          className="rounded-lg border border-amber-300/15 bg-amber-300/[0.04] px-3 py-2 text-[10px] font-semibold text-amber-200"
+                        >
+                          다시 계산
+                        </button>
+                      </form>
+                    )}
+                  </td>
                   <td className="max-w-[560px] truncate px-3 py-3 text-[10px] text-zinc-500" title={item.error_message ?? ""}>
                     {item.error_message ?? "-"}
                   </td>
@@ -612,24 +681,36 @@ export default async function MiningAdminPage({
                   <td className="px-3 py-4 text-zinc-500">{formatDate(contract.last_calculated_at)}</td>
                   <td className="px-3 py-4">
                     {contract.status === "active" ? (
-                      <form action={cancelContract} className="grid min-w-[240px] gap-2">
-                        <input type="hidden" name="contract_id" value={contract.contract_id ?? ""} />
-                        <input type="hidden" name="idempotency_key" value={`mining-cancel:${randomUUID()}`} />
-                        <input
-                          name="reason"
-                          required
-                          minLength={3}
-                          maxLength={1000}
-                          placeholder="취소 사유 입력"
-                          className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-[10px] outline-none"
-                        />
-                        <button
-                          type="submit"
-                          className="rounded-lg border border-rose-300/15 bg-rose-300/[0.04] px-3 py-2 text-[10px] font-semibold text-rose-200"
-                        >
-                          계약 취소 + 최종 계산
-                        </button>
-                      </form>
+                      <div className="grid min-w-[240px] gap-2">
+                        <form action={recalculateContract}>
+                          <input type="hidden" name="contract_id" value={contract.contract_id ?? ""} />
+                          <input type="hidden" name="idempotency_key" value={"mining-recalc:" + randomUUID()} />
+                          <button
+                            type="submit"
+                            className="w-full rounded-lg border border-sky-300/15 bg-sky-300/[0.04] px-3 py-2 text-[10px] font-semibold text-sky-200"
+                          >
+                            이 계약만 즉시 재계산
+                          </button>
+                        </form>
+                        <form action={cancelContract} className="grid gap-2">
+                          <input type="hidden" name="contract_id" value={contract.contract_id ?? ""} />
+                          <input type="hidden" name="idempotency_key" value={"mining-cancel:" + randomUUID()} />
+                          <input
+                            name="reason"
+                            required
+                            minLength={3}
+                            maxLength={1000}
+                            placeholder="취소 사유 입력"
+                            className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-[10px] outline-none"
+                          />
+                          <button
+                            type="submit"
+                            className="rounded-lg border border-rose-300/15 bg-rose-300/[0.04] px-3 py-2 text-[10px] font-semibold text-rose-200"
+                          >
+                            계약 취소 + 최종 계산
+                          </button>
+                        </form>
+                      </div>
                     ) : (
                       <span className="text-[10px] text-zinc-600">터미널 계약</span>
                     )}
