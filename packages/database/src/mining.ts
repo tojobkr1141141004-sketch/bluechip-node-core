@@ -111,6 +111,55 @@ export async function getMiningMemberCandidates(client: DatabaseClient) {
     .order("display_name", { ascending: true });
 }
 
+export async function getAdminMiningReconciliationSummary(client: DatabaseClient) {
+  return client
+    .from("admin_mining_reconciliation_summary")
+    .select(
+      "active_contracts, completed_contracts, cancelled_contracts, overdue_contracts, invalid_contracts, accrual_count, accrued_amount, payment_count, paid_amount, unpaid_amount, error_count, unbalanced_ledger_count, reconciliation_status"
+    )
+    .maybeSingle();
+}
+
+export async function getAdminMiningCalculationErrors(
+  client: DatabaseClient,
+  limit = 100
+) {
+  return client
+    .from("admin_mining_calculation_errors")
+    .select(
+      "id, calculation_run_id, contract_id, user_id, email, display_name, username, product_code, product_name, sqlstate, error_message, created_at"
+    )
+    .order("created_at", { ascending: false })
+    .limit(safeLimit(limit, 100, 200));
+}
+
+export async function getAdminMiningDailySummary(
+  client: DatabaseClient,
+  limit = 30
+) {
+  return client
+    .from("admin_mining_daily_summary")
+    .select(
+      "summary_date, asset_id, asset_code, asset_name, accrual_count, contract_count, user_count, accrued_amount, paid_amount, unpaid_amount"
+    )
+    .order("summary_date", { ascending: false })
+    .order("asset_code", { ascending: true })
+    .limit(safeLimit(limit, 30, 200));
+}
+
+export async function getAdminMiningRewardEvents(
+  client: DatabaseClient,
+  limit = 100
+) {
+  return client
+    .from("admin_mining_reward_events")
+    .select(
+      "accrual_id, contract_id, calculation_run_id, user_id, product_version_id, product_code, product_name, asset_id, asset_code, asset_name, period_start, period_end, elapsed_seconds, accrued_amount, payment_id, paid_amount, ledger_transaction_id, paid_at, accrued_at"
+    )
+    .order("period_end", { ascending: false })
+    .limit(safeLimit(limit, 100, 200));
+}
+
 export async function getAdminMiningCalculationRuns(
   client: DatabaseClient,
   limit = 50
