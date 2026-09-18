@@ -1,6 +1,6 @@
 -- PHASE 14: finance request append-only status history and secure read APIs.
 
-create table public.finance_request_events (
+create table if not exists public.finance_request_events (
   id uuid primary key default gen_random_uuid(),
   request_type text not null,
   request_id uuid not null,
@@ -21,9 +21,9 @@ create table public.finance_request_events (
   constraint finance_request_events_external_ref_chk check (external_reference is null or char_length(external_reference) <= 160)
 );
 
-create index finance_request_events_request_idx on public.finance_request_events(request_type,request_id,created_at,id);
-create index finance_request_events_user_idx on public.finance_request_events(user_id,created_at desc,id desc);
-create index finance_request_events_actor_idx on public.finance_request_events(actor_user_id,created_at desc,id desc) where actor_user_id is not null;
+create index if not exists finance_request_events_request_idx on public.finance_request_events(request_type,request_id,created_at,id);
+create index if not exists finance_request_events_user_idx on public.finance_request_events(user_id,created_at desc,id desc);
+create index if not exists finance_request_events_actor_idx on public.finance_request_events(actor_user_id,created_at desc,id desc) where actor_user_id is not null;
 
 alter table public.finance_request_events enable row level security;
 revoke all on public.finance_request_events from public,anon,authenticated;
