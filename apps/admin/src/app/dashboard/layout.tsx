@@ -7,7 +7,7 @@ export const instant = false;
 export default async function AdminDashboardLayout({
   children
 }: Readonly<{ children: React.ReactNode }>) {
-  const { user } = await requireAdminUser();
+  const { supabase, user } = await requireAdminUser();
 
   const notificationResult = await getAdminNotificationSummary(supabase);
   const notificationSummary = notificationResult.data as unknown as {
