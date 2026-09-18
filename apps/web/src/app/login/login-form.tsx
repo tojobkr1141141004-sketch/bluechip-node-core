@@ -4,6 +4,16 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createBrowserSupabaseClient } from "@apex-matrix/database";
 
+function validateStrongPassword(password: string) {
+  return (
+    password.length >= 12 &&
+    /[a-z]/.test(password) &&
+    /[A-Z]/.test(password) &&
+    /\d/.test(password) &&
+    /[^A-Za-z0-9]/.test(password)
+  );
+}
+
 export function LoginForm() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -21,6 +31,11 @@ export function LoginForm() {
       const supabase = createBrowserSupabaseClient();
 
       if (mode === "signup") {
+        if (!validateStrongPassword(password)) {
+          setMessage("회원가입 비밀번호는 12자 이상이며 영문 대문자·소문자·숫자·특수문자를 각각 1개 이상 포함해야 합니다.");
+          return;
+        }
+
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
@@ -90,7 +105,7 @@ export function LoginForm() {
           className="mt-2 w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm outline-none focus:border-emerald-300/40"
           type="password"
           autoComplete={mode === "login" ? "current-password" : "new-password"}
-          minLength={8}
+          minLength={mode === "signup" ? 12 : 1}
           required
         />
       </label>
