@@ -38,6 +38,7 @@ export {
   getAdminMiningContracts,
   getAdminMiningProductVersions,
   getAdminMiningProducts,
+  getMiningMemberCandidates,
   getMiningSettings,
   getUserMiningContracts,
   getUserMiningProducts,
