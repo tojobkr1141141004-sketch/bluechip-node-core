@@ -14,7 +14,7 @@ export async function changeMemberStatus(formData: FormData) {
     !/^[0-9a-f-]{36}$/i.test(userId) ||
     !["active", "suspended", "deleted"].includes(status)
   ) {
-    redirect("/dashboard/members?error=invalid");
+    redirect("/dashboard/members?error=invalid" as never);
   }
 
   const supabase = await createAdminServerSupabaseClient();
@@ -24,10 +24,11 @@ export async function changeMemberStatus(formData: FormData) {
     .eq("id", userId);
 
   if (error) {
-    redirect(
-      "/dashboard/members?error=" +
-        (error.code === "42501" ? "forbidden" : "save_failed")
-    );
+    if (error.code === "42501") {
+      redirect("/dashboard/members?error=forbidden" as never);
+    }
+
+    redirect("/dashboard/members?error=save_failed" as never);
   }
 
   redirect("/dashboard/members?updated=1" as never);
