@@ -3,6 +3,15 @@ import type { Database } from "./types";
 
 type DatabaseClient = SupabaseClient<Database>;
 
+export type AdminNotificationSummary = {
+  open_count: number;
+  acknowledged_count: number;
+  active_count: number;
+  critical_count: number;
+  can_manage: boolean;
+  last_event_at: string | null;
+};
+
 export async function getAdminNotifications(
   client: DatabaseClient,
   status?: "open" | "acknowledged" | "resolved" | null,
