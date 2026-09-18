@@ -661,9 +661,93 @@ export type Database = {
         }
         Relationships: []
       }
+      mining_contract_cancellations: {
+        Row: {
+          actor_user_id: string
+          calculated_until: string
+          calculation_run_id: string
+          contract_id: string
+          created_at: string
+          id: string
+          idempotency_key: string
+          pending_reward_after_cancel: number
+          reason: string
+          request_hash: string
+          reward_paid_on_cancel: number
+          user_id: string
+        }
+        Insert: {
+          actor_user_id: string
+          calculated_until: string
+          calculation_run_id: string
+          contract_id: string
+          created_at?: string
+          id?: string
+          idempotency_key: string
+          pending_reward_after_cancel?: number
+          reason: string
+          request_hash: string
+          reward_paid_on_cancel?: number
+          user_id: string
+        }
+        Update: {
+          actor_user_id?: string
+          calculated_until?: string
+          calculation_run_id?: string
+          contract_id?: string
+          created_at?: string
+          id?: string
+          idempotency_key?: string
+          pending_reward_after_cancel?: number
+          reason?: string
+          request_hash?: string
+          reward_paid_on_cancel?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mining_contract_cancellations_calculation_run_id_fkey"
+            columns: ["calculation_run_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_calculation_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_contract_cancellations_calculation_run_id_fkey"
+            columns: ["calculation_run_id"]
+            isOneToOne: false
+            referencedRelation: "mining_calculation_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_contract_cancellations_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: true
+            referencedRelation: "admin_mining_contracts"
+            referencedColumns: ["contract_id"]
+          },
+          {
+            foreignKeyName: "mining_contract_cancellations_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: true
+            referencedRelation: "mining_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_contract_cancellations_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: true
+            referencedRelation: "user_mining_contracts"
+            referencedColumns: ["contract_id"]
+          },
+        ]
+      }
       mining_contracts: {
         Row: {
+          cancelled_at: string | null
+          cancelled_by: string | null
           capacity: number
+          completed_at: string | null
           created_at: string
           id: string
           idempotency_key: string
@@ -681,7 +765,10 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           capacity: number
+          completed_at?: string | null
           created_at?: string
           id?: string
           idempotency_key: string
@@ -699,7 +786,10 @@ export type Database = {
           user_id: string
         }
         Update: {
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           capacity?: number
+          completed_at?: string | null
           created_at?: string
           id?: string
           idempotency_key?: string
@@ -1486,10 +1576,70 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_mining_contract_cancellations: {
+        Row: {
+          actor_user_id: string | null
+          calculated_until: string | null
+          calculation_run_id: string | null
+          cancellation_id: string | null
+          contract_id: string | null
+          created_at: string | null
+          display_name: string | null
+          email: string | null
+          idempotency_key: string | null
+          pending_reward_after_cancel: number | null
+          product_code: string | null
+          product_name: string | null
+          reason: string | null
+          reward_paid_on_cancel: number | null
+          user_id: string | null
+          username: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mining_contract_cancellations_calculation_run_id_fkey"
+            columns: ["calculation_run_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_calculation_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_contract_cancellations_calculation_run_id_fkey"
+            columns: ["calculation_run_id"]
+            isOneToOne: false
+            referencedRelation: "mining_calculation_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_contract_cancellations_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: true
+            referencedRelation: "admin_mining_contracts"
+            referencedColumns: ["contract_id"]
+          },
+          {
+            foreignKeyName: "mining_contract_cancellations_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: true
+            referencedRelation: "mining_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_contract_cancellations_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: true
+            referencedRelation: "user_mining_contracts"
+            referencedColumns: ["contract_id"]
+          },
+        ]
+      }
       admin_mining_contracts: {
         Row: {
+          cancelled_at: string | null
+          cancelled_by: string | null
           capacity: number | null
           capacity_unit: string | null
+          completed_at: string | null
           contract_id: string | null
           created_at: string | null
           display_name: string | null
@@ -2030,10 +2180,81 @@ export type Database = {
           },
         ]
       }
+      user_mining_contract_cancellations: {
+        Row: {
+          calculated_until: string | null
+          calculation_run_id: string | null
+          cancellation_id: string | null
+          contract_id: string | null
+          created_at: string | null
+          pending_reward_after_cancel: number | null
+          reason: string | null
+          reward_paid_on_cancel: number | null
+        }
+        Insert: {
+          calculated_until?: string | null
+          calculation_run_id?: string | null
+          cancellation_id?: string | null
+          contract_id?: string | null
+          created_at?: string | null
+          pending_reward_after_cancel?: number | null
+          reason?: string | null
+          reward_paid_on_cancel?: number | null
+        }
+        Update: {
+          calculated_until?: string | null
+          calculation_run_id?: string | null
+          cancellation_id?: string | null
+          contract_id?: string | null
+          created_at?: string | null
+          pending_reward_after_cancel?: number | null
+          reason?: string | null
+          reward_paid_on_cancel?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mining_contract_cancellations_calculation_run_id_fkey"
+            columns: ["calculation_run_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_calculation_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_contract_cancellations_calculation_run_id_fkey"
+            columns: ["calculation_run_id"]
+            isOneToOne: false
+            referencedRelation: "mining_calculation_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_contract_cancellations_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: true
+            referencedRelation: "admin_mining_contracts"
+            referencedColumns: ["contract_id"]
+          },
+          {
+            foreignKeyName: "mining_contract_cancellations_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: true
+            referencedRelation: "mining_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_contract_cancellations_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: true
+            referencedRelation: "user_mining_contracts"
+            referencedColumns: ["contract_id"]
+          },
+        ]
+      }
       user_mining_contracts: {
         Row: {
+          cancelled_at: string | null
           capacity: number | null
           capacity_unit: string | null
+          completed_at: string | null
           contract_id: string | null
           created_at: string | null
           last_calculated_at: string | null
@@ -2408,6 +2629,14 @@ export type Database = {
       cancel_deposit_request: {
         Args: { p_request_id: string }
         Returns: undefined
+      }
+      cancel_mining_contract: {
+        Args: {
+          p_contract_id: string
+          p_idempotency_key: string
+          p_reason: string
+        }
+        Returns: string
       }
       cancel_withdrawal_request: {
         Args: { p_request_id: string }
