@@ -29,5 +29,15 @@ export async function requireAdminUser() {
     redirect("/login?error=forbidden");
   }
 
+  const { data: securityStatus } = await supabase.rpc("get_admin_session_security_status");
+
+  if (
+    !securityStatus ||
+    securityStatus.recent_auth !== true ||
+    securityStatus.active_admin !== true
+  ) {
+    redirect("/login?error=reauth");
+  }
+
   return { supabase, user, adminUser };
 }
