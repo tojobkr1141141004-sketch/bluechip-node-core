@@ -1,7 +1,13 @@
 import { expect, test } from "@playwright/test";
 
-test("admin app boots as a separate application", async ({ page }) => {
+test("admin app exposes a separate login entry point", async ({ page }) => {
   await page.goto("http://127.0.0.1:3001/");
-  await expect(page.getByRole("heading", { name: "Admin Foundation" })).toBeVisible();
-  await expect(page.getByText("APEX-MATRIX")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Admin Login" })).toBeVisible();
+  await expect(page.getByText("APEX-MATRIX ADMIN")).toBeVisible();
+});
+
+test("admin dashboard redirects to login without an authenticated admin", async ({ page }) => {
+  await page.goto("http://127.0.0.1:3001/dashboard");
+  await expect(page.getByRole("heading", { name: "운영자 로그인" })).toBeVisible();
+  await expect(page.getByText(/활성 운영자 계정/)).toBeVisible();
 });

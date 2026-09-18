@@ -4,7 +4,8 @@ import { getSupabasePublicEnv } from "./env";
 export type SupabaseServerCookies = {
   getAll: () => { name: string; value: string }[];
   setAll: (
-    cookies: { name: string; value: string; options: CookieOptions }[]
+    cookies: { name: string; value: string; options: CookieOptions }[],
+    headers?: Record<string, string>
   ) => void;
 };
 
