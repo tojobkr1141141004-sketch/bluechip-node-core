@@ -13,6 +13,7 @@ import {
   recoverStaleMiningCalculationRuns,
   retryMiningCalculationError,
   runMiningCalculationNow,
+  updateMiningIssuancePolicy,
   updateMiningProduct,
   updateMiningSettings
 } from "@apex-matrix/database";
@@ -311,4 +312,50 @@ export async function saveMiningSettings(formData: FormData) {
 
   if (result.error) redirectFailed();
   redirect("/dashboard/mining?success=settings_saved" as never);
+}
+
+function optionalPositiveDecimal(valueToCheck: string) {
+  return (
+    valueToCheck === "" ||
+    (/^(?:\d+)(?:\.\d{1,18})?$/.test(valueToCheck) && Number(valueToCheck) > 0)
+  );
+}
+
+function optionalNonNegativeDecimal(valueToCheck: string) {
+  return valueToCheck === "" || /^(?:\d+)(?:\.\d{1,18})?$/.test(valueToCheck);
+}
+
+export async function saveMiningIssuancePolicy(formData: FormData) {
+  const { supabase } = await requireAdminUser();
+  const assetId = value(formData, "asset_id");
+  const issuanceEnabled = value(formData, "issuance_enabled") === "true";
+  const dailyLimit = value(formData, "daily_limit");
+  const totalLimit = value(formData, "total_limit");
+  const maxSourceNegativeBalance = value(formData, "max_source_negative_balance");
+  const minimumReserveBalance = value(formData, "minimum_reserve_balance");
+  const idempotencyKey = value(formData, "idempotency_key");
+
+  if (
+    !uuid(assetId) ||
+    !optionalPositiveDecimal(dailyLimit) ||
+    !optionalPositiveDecimal(totalLimit) ||
+    !optionalNonNegativeDecimal(maxSourceNegativeBalance) ||
+    !optionalNonNegativeDecimal(minimumReserveBalance) ||
+    !/^mining-issuance-policy:[0-9a-f-]{36}$/i.test(idempotencyKey)
+  ) {
+    redirect("/dashboard/mining?error=invalid" as never);
+  }
+
+  const result = await updateMiningIssuancePolicy(supabase, {
+    assetId,
+    issuanceEnabled,
+    dailyLimit: dailyLimit || null,
+    totalLimit: totalLimit || null,
+    maxSourceNegativeBalance: maxSourceNegativeBalance || null,
+    minimumReserveBalance: minimumReserveBalance || null,
+    idempotencyKey
+  });
+
+  if (result.error) redirectFailed();
+  redirect("/dashboard/mining?success=issuance_policy_saved" as never);
 }
