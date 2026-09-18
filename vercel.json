@@ -4,6 +4,6 @@
   "git": {
     "deploymentEnabled": true
   },
-  "buildCommand": "cd apps/web && pnpm exec next build",
-  "outputDirectory": "apps/web/.next"
+  "buildCommand": "cd apps/web && pnpm exec next build && rm -rf ../../.next && cp -a .next ../../.next",
+  "outputDirectory": ".next"
 }
