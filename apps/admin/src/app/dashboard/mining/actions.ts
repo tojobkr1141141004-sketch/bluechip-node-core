@@ -3,6 +3,7 @@
 import { randomUUID } from "crypto";
 import { redirect } from "next/navigation";
 import {
+  cancelMiningContract,
   createMiningContract,
   createMiningProduct,
   createMiningProductVersion,
@@ -154,6 +155,32 @@ export async function submitMiningContract(formData: FormData) {
 
   if (result.error) redirectFailed();
   redirect("/dashboard/mining?success=contract_created" as never);
+}
+
+
+export async function cancelContract(formData: FormData) {
+  const { supabase } = await requireAdminUser();
+  const contractId = value(formData, "contract_id");
+  const reason = value(formData, "reason");
+  const idempotencyKey = value(formData, "idempotency_key");
+
+  if (
+    !uuid(contractId) ||
+    reason.length < 3 ||
+    reason.length > 1000 ||
+    !/^mining-cancel:[0-9a-f-]{36}$/i.test(idempotencyKey)
+  ) {
+    redirect("/dashboard/mining?error=invalid" as never);
+  }
+
+  const result = await cancelMiningContract(supabase, {
+    contractId,
+    reason,
+    idempotencyKey
+  });
+
+  if (result.error) redirectFailed();
+  redirect("/dashboard/mining?success=contract_cancelled" as never);
 }
 
 export async function runMiningNow() {
