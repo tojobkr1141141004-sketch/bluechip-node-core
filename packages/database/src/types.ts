@@ -6,10 +6,6 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 
-type RowBase<T extends Record<string, unknown>> = T;
-type InsertBase<T extends Record<string, unknown>> = Partial<T>;
-type UpdateBase<T extends Record<string, unknown>> = Partial<T>;
-
 export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5";
@@ -17,7 +13,7 @@ export type Database = {
   public: {
     Tables: {
       profiles: {
-        Row: RowBase<{
+        Row: {
           id: string;
           display_name: string | null;
           username: string | null;
@@ -25,25 +21,25 @@ export type Database = {
           status: string;
           created_at: string;
           updated_at: string;
-        }>;
-        Insert: InsertBase<{
+        };
+        Insert: {
           id: string;
-          display_name: string | null;
-          username: string | null;
-          avatar_url: string | null;
-          status: string;
-          created_at: string;
-          updated_at: string;
-        }>;
-        Update: UpdateBase<{
-          id: string;
-          display_name: string | null;
-          username: string | null;
-          avatar_url: string | null;
-          status: string;
-          created_at: string;
-          updated_at: string;
-        }>;
+          display_name?: string | null;
+          username?: string | null;
+          avatar_url?: string | null;
+          status?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          display_name?: string | null;
+          username?: string | null;
+          avatar_url?: string | null;
+          status?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
         Relationships: [];
       };
       user_settings: {
@@ -260,7 +256,9 @@ export type Database = {
 
 export type Tables<T extends keyof Database["public"]["Tables"]> =
   Database["public"]["Tables"][T]["Row"];
+
 export type TablesInsert<T extends keyof Database["public"]["Tables"]> =
   Database["public"]["Tables"][T]["Insert"];
+
 export type TablesUpdate<T extends keyof Database["public"]["Tables"]> =
   Database["public"]["Tables"][T]["Update"];
