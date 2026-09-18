@@ -71,6 +71,7 @@ export { getAdminOperationsCenter, type OperationsCenterSnapshot } from "./opera
 
 export {
   acknowledgeAdminNotification,
+  getAdminNotificationEvents,
   getAdminNotificationSummary,
   getAdminNotifications,
   resolveAdminNotification,
