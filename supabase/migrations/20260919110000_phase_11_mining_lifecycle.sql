@@ -140,8 +140,6 @@ select
   mc.started_at,
   mc.scheduled_end_at,
   mc.last_calculated_at,
-  mc.completed_at,
-  mc.cancelled_at,
   mc.total_reward_earned,
   mc.total_reward_paid,
   mc.pending_reward,
@@ -149,7 +147,9 @@ select
   a.code as reward_asset_code,
   a.name as reward_asset_name,
   a.decimals as reward_asset_decimals,
-  mc.created_at
+  mc.created_at,
+  mc.completed_at,
+  mc.cancelled_at
 from public.mining_contracts mc
 join public.mining_products mp on mp.id = mc.product_id
 join public.mining_product_versions mpv on mpv.id = mc.product_version_id
@@ -180,15 +180,15 @@ select
   mc.started_at,
   mc.scheduled_end_at,
   mc.last_calculated_at,
-  mc.completed_at,
-  mc.cancelled_at,
-  mc.cancelled_by,
   mc.total_reward_earned,
   mc.total_reward_paid,
   mc.pending_reward,
   a.code as reward_asset_code,
   a.name as reward_asset_name,
-  mc.created_at
+  mc.created_at,
+  mc.completed_at,
+  mc.cancelled_at,
+  mc.cancelled_by
 from public.mining_contracts mc
 join public.mining_products mp on mp.id = mc.product_id
 join public.mining_product_versions mpv on mpv.id = mc.product_version_id
