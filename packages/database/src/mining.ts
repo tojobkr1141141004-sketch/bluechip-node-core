@@ -99,7 +99,7 @@ export async function getAdminMiningContracts(
   return client
     .from("admin_mining_contracts")
     .select(
-      "contract_id, user_id, email, display_name, username, product_id, product_code, product_name, product_version_id, version, capacity, capacity_unit, reward_per_unit_per_day, status, started_at, scheduled_end_at, last_calculated_at, total_reward_earned, total_reward_paid, pending_reward, reward_asset_code, reward_asset_name, created_at"
+      "contract_id, user_id, email, display_name, username, product_id, product_code, product_name, product_version_id, version, capacity, capacity_unit, reward_per_unit_per_day, status, started_at, scheduled_end_at, last_calculated_at, total_reward_earned, total_reward_paid, pending_reward, reward_asset_code, reward_asset_name, created_at, completed_at, cancelled_at, cancelled_by"
     )
     .order("created_at", { ascending: false })
     .limit(safeLimit(limit, 100, 200));
@@ -281,6 +281,41 @@ export async function createMiningContract(
     p_started_at: input.startedAt,
     p_idempotency_key: input.idempotencyKey
   });
+}
+
+export async function cancelMiningContract(
+  client: DatabaseClient,
+  input: {
+    contractId: string;
+    reason: string;
+    idempotencyKey: string;
+  }
+) {
+  return client.rpc("cancel_mining_contract", {
+    p_contract_id: input.contractId,
+    p_reason: input.reason,
+    p_idempotency_key: input.idempotencyKey
+  });
+}
+
+export async function getUserMiningContractCancellations(client: DatabaseClient) {
+  return client
+    .from("user_mining_contract_cancellations")
+    .select(
+      "cancellation_id, contract_id, calculation_run_id, calculated_until, reward_paid_on_cancel, pending_reward_after_cancel, reason, created_at"
+    )
+    .order("created_at", { ascending: false })
+    .limit(100);
+}
+
+export async function getAdminMiningContractCancellations(client: DatabaseClient) {
+  return client
+    .from("admin_mining_contract_cancellations")
+    .select(
+      "cancellation_id, contract_id, user_id, email, display_name, username, actor_user_id, calculation_run_id, product_code, product_name, calculated_until, reward_paid_on_cancel, pending_reward_after_cancel, reason, idempotency_key, created_at"
+    )
+    .order("created_at", { ascending: false })
+    .limit(100);
 }
 
 export async function runMiningCalculationNow(client: DatabaseClient) {
