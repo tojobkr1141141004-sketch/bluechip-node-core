@@ -57,6 +57,11 @@ export function AdminShell({
               >
                 <Icon className="h-4 w-4" />
                 {label}
+                {href === "/dashboard/notifications" && notificationCount > 0 ? (
+                  <span className="ml-auto rounded-full border border-amber-300/15 bg-amber-300/[0.05] px-1.5 py-0.5 text-[9px] font-semibold text-amber-100">
+                    {notificationCount}
+                  </span>
+                ) : null}
               </Link>
             ))}
           </nav>
