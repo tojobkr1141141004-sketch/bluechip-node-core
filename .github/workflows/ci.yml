@@ -41,6 +41,9 @@ jobs:
       - name: Build
         run: pnpm build
 
+      - name: Verify Vercel-shaped web build
+        run: cd apps/web && pnpm exec next build
+
       - name: Install Playwright
         run: pnpm exec playwright install --with-deps chromium
 
