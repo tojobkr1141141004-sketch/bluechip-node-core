@@ -32,6 +32,7 @@ pnpm dev:admin
 pnpm lint
 pnpm typecheck
 pnpm build
+pnpm build
 pnpm test:e2e
 ```
 
@@ -39,6 +40,8 @@ pnpm test:e2e
 
 - User App: http://localhost:3000
 - Admin App: http://localhost:3001
+
+E2E는 빌드된 Production 서버를 대상으로 합니다. 따라서 로컬에서는 먼저 `pnpm build`를 실행합니다.
 
 Admin 앱은 User App 안쪽의 admin 라우트가 아니라 별도 Next.js 애플리케이션입니다.
 
