@@ -60,7 +60,7 @@ function MetricCard({
 }) {
   return (
     <Link
-      href={href}
+      href={href as never}
       className="group rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5 transition hover:border-emerald-300/20 hover:bg-white/[0.04]"
     >
       <div className="flex items-start justify-between gap-3">
@@ -131,7 +131,7 @@ function Center({ snapshot }: { snapshot: OperationsCenterSnapshot }) {
             {snapshot.alerts.map((alert) => (
               <Link
                 key={alert.code}
-                href={alert.href}
+                href={alert.href as never}
                 className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/[0.05] bg-black/10 px-4 py-3 transition hover:border-white/10"
               >
                 <div className="min-w-0">
