@@ -960,6 +960,145 @@ export type Database = {
           },
         ]
       }
+      mining_issuance_policies: {
+        Row: {
+          asset_id: string
+          daily_limit: number | null
+          issuance_enabled: boolean
+          max_source_negative_balance: number | null
+          minimum_reserve_balance: number | null
+          reserve_account_id: string | null
+          total_limit: number | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          asset_id: string
+          daily_limit?: number | null
+          issuance_enabled?: boolean
+          max_source_negative_balance?: number | null
+          minimum_reserve_balance?: number | null
+          reserve_account_id?: string | null
+          total_limit?: number | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          asset_id?: string
+          daily_limit?: number | null
+          issuance_enabled?: boolean
+          max_source_negative_balance?: number | null
+          minimum_reserve_balance?: number | null
+          reserve_account_id?: string | null
+          total_limit?: number | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mining_issuance_policies_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: true
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_issuance_policies_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: true
+            referencedRelation: "user_asset_balances"
+            referencedColumns: ["asset_id"]
+          },
+          {
+            foreignKeyName: "mining_issuance_policies_reserve_account_id_fkey"
+            columns: ["reserve_account_id"]
+            isOneToOne: false
+            referencedRelation: "ledger_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_issuance_policies_reserve_account_id_fkey"
+            columns: ["reserve_account_id"]
+            isOneToOne: false
+            referencedRelation: "user_asset_balances"
+            referencedColumns: ["account_id"]
+          },
+        ]
+      }
+      mining_issuance_policy_updates: {
+        Row: {
+          actor_user_id: string
+          asset_id: string
+          created_at: string
+          daily_limit: number | null
+          id: string
+          idempotency_key: string
+          issuance_enabled: boolean
+          max_source_negative_balance: number | null
+          minimum_reserve_balance: number | null
+          request_hash: string
+          reserve_account_id: string | null
+          total_limit: number | null
+        }
+        Insert: {
+          actor_user_id: string
+          asset_id: string
+          created_at?: string
+          daily_limit?: number | null
+          id?: string
+          idempotency_key: string
+          issuance_enabled: boolean
+          max_source_negative_balance?: number | null
+          minimum_reserve_balance?: number | null
+          request_hash: string
+          reserve_account_id?: string | null
+          total_limit?: number | null
+        }
+        Update: {
+          actor_user_id?: string
+          asset_id?: string
+          created_at?: string
+          daily_limit?: number | null
+          id?: string
+          idempotency_key?: string
+          issuance_enabled?: boolean
+          max_source_negative_balance?: number | null
+          minimum_reserve_balance?: number | null
+          request_hash?: string
+          reserve_account_id?: string | null
+          total_limit?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mining_issuance_policy_updates_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_issuance_policy_updates_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "user_asset_balances"
+            referencedColumns: ["asset_id"]
+          },
+          {
+            foreignKeyName: "mining_issuance_policy_updates_reserve_account_id_fkey"
+            columns: ["reserve_account_id"]
+            isOneToOne: false
+            referencedRelation: "ledger_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_issuance_policy_updates_reserve_account_id_fkey"
+            columns: ["reserve_account_id"]
+            isOneToOne: false
+            referencedRelation: "user_asset_balances"
+            referencedColumns: ["account_id"]
+          },
+        ]
+      }
       mining_product_versions: {
         Row: {
           capacity_unit: string
@@ -1336,6 +1475,113 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "user_mining_reward_history"
             referencedColumns: ["accrual_id"]
+          },
+        ]
+      }
+      mining_reward_issuance_blocks: {
+        Row: {
+          accrual_id: string
+          amount: number
+          asset_id: string
+          calculation_run_id: string
+          contract_id: string
+          created_at: string
+          id: string
+          reason_code: string
+          user_id: string
+        }
+        Insert: {
+          accrual_id: string
+          amount: number
+          asset_id: string
+          calculation_run_id: string
+          contract_id: string
+          created_at?: string
+          id?: string
+          reason_code: string
+          user_id: string
+        }
+        Update: {
+          accrual_id?: string
+          amount?: number
+          asset_id?: string
+          calculation_run_id?: string
+          contract_id?: string
+          created_at?: string
+          id?: string
+          reason_code?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mining_reward_issuance_blocks_accrual_id_fkey"
+            columns: ["accrual_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_reward_events"
+            referencedColumns: ["accrual_id"]
+          },
+          {
+            foreignKeyName: "mining_reward_issuance_blocks_accrual_id_fkey"
+            columns: ["accrual_id"]
+            isOneToOne: false
+            referencedRelation: "mining_reward_accruals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_reward_issuance_blocks_accrual_id_fkey"
+            columns: ["accrual_id"]
+            isOneToOne: false
+            referencedRelation: "user_mining_reward_history"
+            referencedColumns: ["accrual_id"]
+          },
+          {
+            foreignKeyName: "mining_reward_issuance_blocks_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_reward_issuance_blocks_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "user_asset_balances"
+            referencedColumns: ["asset_id"]
+          },
+          {
+            foreignKeyName: "mining_reward_issuance_blocks_calculation_run_id_fkey"
+            columns: ["calculation_run_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_calculation_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_reward_issuance_blocks_calculation_run_id_fkey"
+            columns: ["calculation_run_id"]
+            isOneToOne: false
+            referencedRelation: "mining_calculation_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_reward_issuance_blocks_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_contracts"
+            referencedColumns: ["contract_id"]
+          },
+          {
+            foreignKeyName: "mining_reward_issuance_blocks_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "mining_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_reward_issuance_blocks_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "user_mining_contracts"
+            referencedColumns: ["contract_id"]
           },
         ]
       }
@@ -3256,6 +3502,32 @@ export type Database = {
         Args: { p_reason: string; p_request_id: string }
         Returns: string
       }
+      get_admin_mining_issuance_controls: {
+        Args: never
+        Returns: {
+          asset_code: string
+          asset_decimals: number
+          asset_id: string
+          asset_name: string
+          block_reason: string
+          blocked_payment_count: number
+          daily_issued: number
+          daily_limit: number
+          daily_remaining: number
+          issuance_enabled: boolean
+          issuance_state: string
+          last_blocked_at: string
+          max_source_negative_balance: number
+          minimum_reserve_balance: number
+          reserve_account_id: string
+          reserve_balance: number
+          source_balance: number
+          source_headroom: number
+          total_issued: number
+          total_limit: number
+          total_remaining: number
+        }[]
+      }
       get_mining_member_candidates: {
         Args: never
         Returns: {
@@ -3315,6 +3587,18 @@ export type Database = {
       start_withdrawal_review: {
         Args: { p_request_id: string }
         Returns: undefined
+      }
+      update_mining_issuance_policy: {
+        Args: {
+          p_asset_id: string
+          p_daily_limit: number
+          p_idempotency_key: string
+          p_issuance_enabled: boolean
+          p_max_source_negative_balance: number
+          p_minimum_reserve_balance: number
+          p_total_limit: number
+        }
+        Returns: string
       }
       update_mining_product: {
         Args: {
