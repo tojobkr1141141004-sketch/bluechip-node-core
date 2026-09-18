@@ -60,7 +60,7 @@ export async function getUserMiningContracts(client: DatabaseClient) {
   return client
     .from("user_mining_contracts")
     .select(
-      "contract_id, product_id, product_code, product_name, product_version_id, version, capacity, capacity_unit, reward_per_unit_per_day, status, started_at, scheduled_end_at, last_calculated_at, total_reward_earned, total_reward_paid, pending_reward, reward_asset_id, reward_asset_code, reward_asset_name, reward_asset_decimals, created_at"
+      "contract_id, product_id, product_code, product_name, product_version_id, version, capacity, capacity_unit, reward_per_unit_per_day, status, started_at, scheduled_end_at, last_calculated_at, total_reward_earned, total_reward_paid, pending_reward, reward_asset_id, reward_asset_code, reward_asset_name, reward_asset_decimals, created_at, completed_at, cancelled_at"
     )
     .order("status", { ascending: true })
     .order("started_at", { ascending: false });
