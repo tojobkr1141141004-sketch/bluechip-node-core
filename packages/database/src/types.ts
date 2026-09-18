@@ -2247,6 +2247,16 @@ export type Database = {
         Args: { p_reason: string; p_request_id: string }
         Returns: string
       }
+      get_mining_member_candidates: {
+        Args: never
+        Returns: {
+          display_name: string
+          email: string
+          status: string
+          user_id: string
+          username: string
+        }[]
+      }
       post_ledger_transaction: {
         Args: {
           p_asset_id: string
