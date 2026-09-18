@@ -100,7 +100,7 @@ with contract_rollup as (
       where status = 'active'
         and last_calculated_at < scheduled_end_at
         and last_calculated_at < clock_timestamp()
-          - make_interval(seconds => (
+          - make_interval(secs => (
               select calculation_interval_seconds
               from public.mining_settings
               where id = 1
