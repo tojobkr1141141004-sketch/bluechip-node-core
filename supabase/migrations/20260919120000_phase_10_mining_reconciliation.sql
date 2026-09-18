@@ -172,7 +172,12 @@ select
      )
     then 'healthy'
     else 'attention'
-  end as reconciliation_status;
+  end as reconciliation_status
+from contract_rollup c
+cross join accrual_rollup a
+cross join payment_rollup p
+cross join error_rollup e
+cross join ledger_rollup l;
 
 grant select on public.admin_mining_reconciliation_summary to authenticated;
 revoke all on public.admin_mining_reconciliation_summary from anon;
