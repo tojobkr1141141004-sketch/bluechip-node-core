@@ -565,6 +565,159 @@ export type Database = {
         }
         Relationships: []
       }
+      mining_product_versions: {
+        Row: {
+          capacity_unit: string
+          created_at: string
+          created_by: string | null
+          id: string
+          max_capacity: number | null
+          min_capacity: number
+          product_id: string
+          published_at: string | null
+          reward_asset_id: string
+          reward_per_unit_per_day: number
+          status: string
+          term_days: number
+          version: number
+        }
+        Insert: {
+          capacity_unit: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          max_capacity?: number | null
+          min_capacity: number
+          product_id: string
+          published_at?: string | null
+          reward_asset_id: string
+          reward_per_unit_per_day: number
+          status?: string
+          term_days?: number
+          version: number
+        }
+        Update: {
+          capacity_unit?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          max_capacity?: number | null
+          min_capacity?: number
+          product_id?: string
+          published_at?: string | null
+          reward_asset_id?: string
+          reward_per_unit_per_day?: number
+          status?: string
+          term_days?: number
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mining_product_versions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_products"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "mining_product_versions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "mining_products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_product_versions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "user_mining_products"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "mining_product_versions_reward_asset_id_fkey"
+            columns: ["reward_asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_product_versions_reward_asset_id_fkey"
+            columns: ["reward_asset_id"]
+            isOneToOne: false
+            referencedRelation: "user_asset_balances"
+            referencedColumns: ["asset_id"]
+          },
+        ]
+      }
+      mining_products: {
+        Row: {
+          code: string
+          created_at: string
+          description: string
+          id: string
+          is_public: boolean
+          name: string
+          sort_order: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string
+          id?: string
+          is_public?: boolean
+          name: string
+          sort_order?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string
+          id?: string
+          is_public?: boolean
+          name?: string
+          sort_order?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      mining_settings: {
+        Row: {
+          calculation_enabled: boolean
+          calculation_interval_seconds: number
+          calculation_timezone: string
+          id: number
+          max_accounts_per_run: number
+          reward_precision: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          calculation_enabled?: boolean
+          calculation_interval_seconds?: number
+          calculation_timezone?: string
+          id?: number
+          max_accounts_per_run?: number
+          reward_precision?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          calculation_enabled?: boolean
+          calculation_interval_seconds?: number
+          calculation_timezone?: string
+          id?: number
+          max_accounts_per_run?: number
+          reward_precision?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -800,6 +953,104 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_mining_product_versions: {
+        Row: {
+          capacity_unit: string | null
+          created_at: string | null
+          created_by: string | null
+          id: string | null
+          max_capacity: number | null
+          min_capacity: number | null
+          product_code: string | null
+          product_id: string | null
+          product_name: string | null
+          published_at: string | null
+          reward_asset_code: string | null
+          reward_asset_id: string | null
+          reward_asset_name: string | null
+          reward_per_unit_per_day: number | null
+          status: string | null
+          term_days: number | null
+          version: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mining_product_versions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_products"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "mining_product_versions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "mining_products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_product_versions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "user_mining_products"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "mining_product_versions_reward_asset_id_fkey"
+            columns: ["reward_asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_product_versions_reward_asset_id_fkey"
+            columns: ["reward_asset_id"]
+            isOneToOne: false
+            referencedRelation: "user_asset_balances"
+            referencedColumns: ["asset_id"]
+          },
+        ]
+      }
+      admin_mining_products: {
+        Row: {
+          capacity_unit: string | null
+          created_at: string | null
+          description: string | null
+          is_public: boolean | null
+          max_capacity: number | null
+          min_capacity: number | null
+          product_code: string | null
+          product_id: string | null
+          product_name: string | null
+          published_at: string | null
+          published_version: number | null
+          published_version_id: string | null
+          reward_asset_code: string | null
+          reward_asset_id: string | null
+          reward_asset_name: string | null
+          reward_per_unit_per_day: number | null
+          sort_order: number | null
+          status: string | null
+          term_days: number | null
+          updated_at: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mining_product_versions_reward_asset_id_fkey"
+            columns: ["reward_asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_product_versions_reward_asset_id_fkey"
+            columns: ["reward_asset_id"]
+            isOneToOne: false
+            referencedRelation: "user_asset_balances"
+            referencedColumns: ["asset_id"]
+          },
+        ]
+      }
       admin_withdrawal_requests: {
         Row: {
           amount: number | null
@@ -1004,6 +1255,43 @@ export type Database = {
           },
         ]
       }
+      user_mining_products: {
+        Row: {
+          capacity_unit: string | null
+          description: string | null
+          max_capacity: number | null
+          min_capacity: number | null
+          product_code: string | null
+          product_id: string | null
+          product_name: string | null
+          published_at: string | null
+          reward_asset_code: string | null
+          reward_asset_decimals: number | null
+          reward_asset_id: string | null
+          reward_asset_name: string | null
+          reward_per_unit_per_day: number | null
+          sort_order: number | null
+          term_days: number | null
+          version: number | null
+          version_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mining_product_versions_reward_asset_id_fkey"
+            columns: ["reward_asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_product_versions_reward_asset_id_fkey"
+            columns: ["reward_asset_id"]
+            isOneToOne: false
+            referencedRelation: "user_asset_balances"
+            referencedColumns: ["asset_id"]
+          },
+        ]
+      }
       user_withdrawal_requests: {
         Row: {
           amount: number | null
@@ -1106,6 +1394,27 @@ export type Database = {
         }
         Returns: string
       }
+      create_mining_product: {
+        Args: {
+          p_code: string
+          p_description?: string
+          p_name: string
+          p_sort_order?: number
+        }
+        Returns: string
+      }
+      create_mining_product_version: {
+        Args: {
+          p_capacity_unit: string
+          p_max_capacity?: number
+          p_min_capacity: number
+          p_product_id: string
+          p_reward_asset_id: string
+          p_reward_per_unit_per_day: number
+          p_term_days?: number
+        }
+        Returns: string
+      }
       create_withdrawal_request: {
         Args: {
           p_amount: number
@@ -1139,6 +1448,10 @@ export type Database = {
         }
         Returns: string
       }
+      publish_mining_product_version: {
+        Args: { p_version_id: string }
+        Returns: undefined
+      }
       reject_deposit_request: {
         Args: { p_reason: string; p_request_id: string }
         Returns: undefined
@@ -1161,6 +1474,27 @@ export type Database = {
       }
       start_withdrawal_review: {
         Args: { p_request_id: string }
+        Returns: undefined
+      }
+      update_mining_product: {
+        Args: {
+          p_description: string
+          p_is_public: boolean
+          p_name: string
+          p_product_id: string
+          p_sort_order: number
+          p_status: string
+        }
+        Returns: undefined
+      }
+      update_mining_settings: {
+        Args: {
+          p_calculation_enabled: boolean
+          p_calculation_interval_seconds: number
+          p_calculation_timezone: string
+          p_max_accounts_per_run: number
+          p_reward_precision: number
+        }
         Returns: undefined
       }
     }
