@@ -12,7 +12,12 @@ function readText(formData: FormData, name: string) {
 }
 
 function validAmount(value: string) {
-  return /^(?:0|[1-9]\d*)(?:\.\d+)?$/.test(value) && Number(value) > 0;
+  if (!/^\d+(?:\.\d+)?$/.test(value)) return false;
+  return /[1-9]/.test(value);
+}
+
+function financeErrorRedirect(path: string) {
+  redirect(`${path}?error=failed`);
 }
 
 export async function submitWithdrawalRequest(formData: FormData) {
@@ -45,11 +50,8 @@ export async function submitWithdrawalRequest(formData: FormData) {
     userNote
   });
 
-  redirect(
-    error
-      ? `/dashboard/withdrawal?error=${encodeURIComponent(error.message)}`
-      : "/dashboard/withdrawal?success=1"
-  );
+  if (error) financeErrorRedirect("/dashboard/withdrawal");
+  redirect("/dashboard/withdrawal?success=1");
 }
 
 export async function cancelWithdrawal(formData: FormData) {
@@ -62,9 +64,6 @@ export async function cancelWithdrawal(formData: FormData) {
 
   const { error } = await cancelWithdrawalRequest(supabase, requestId);
 
-  redirect(
-    error
-      ? `/dashboard/withdrawal?error=${encodeURIComponent(error.message)}`
-      : "/dashboard/withdrawal?cancelled=1"
-  );
+  if (error) financeErrorRedirect("/dashboard/withdrawal");
+  redirect("/dashboard/withdrawal?cancelled=1");
 }
