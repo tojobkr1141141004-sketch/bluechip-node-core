@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: "운영자 로그인"
 };
 
+// Search params are authentication feedback and must be evaluated at request time.
+export const instant = false;
+
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
 function first(value: string | string[] | undefined) {
