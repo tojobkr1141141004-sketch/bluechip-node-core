@@ -4,303 +4,795 @@ export type Json =
   | boolean
   | null
   | { [key: string]: Json | undefined }
-  | Json[];
+  | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5";
-  };
+    PostgrestVersion: "14.5"
+  }
   public: {
     Tables: {
-      profiles: {
-        Row: {
-          id: string;
-          display_name: string | null;
-          username: string | null;
-          avatar_url: string | null;
-          status: string;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id: string;
-          display_name?: string | null;
-          username?: string | null;
-          avatar_url?: string | null;
-          status?: string;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          display_name?: string | null;
-          username?: string | null;
-          avatar_url?: string | null;
-          status?: string;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
-      user_settings: {
-        Row: {
-          user_id: string;
-          locale: string;
-          timezone: string;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          user_id: string;
-          locale?: string;
-          timezone?: string;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          user_id?: string;
-          locale?: string;
-          timezone?: string;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
-      member_directory: {
-        Row: {
-          user_id: string;
-          email: string | null;
-          confirmed_at: string | null;
-          last_sign_in_at: string | null;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          user_id: string;
-          email?: string | null;
-          confirmed_at?: string | null;
-          last_sign_in_at?: string | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          user_id?: string;
-          email?: string | null;
-          confirmed_at?: string | null;
-          last_sign_in_at?: string | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
-      admin_roles: {
-        Row: {
-          id: string;
-          code: string;
-          name: string;
-          description: string;
-          is_system: boolean;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          code: string;
-          name: string;
-          description?: string;
-          is_system?: boolean;
-          created_at?: string;
-        };
-        Update: {
-          id?: string;
-          code?: string;
-          name?: string;
-          description?: string;
-          is_system?: boolean;
-          created_at?: string;
-        };
-        Relationships: [];
-      };
       admin_permissions: {
         Row: {
-          id: string;
-          code: string;
-          name: string;
-          description: string;
-          created_at: string;
-        };
+          code: string
+          created_at: string
+          description: string
+          id: string
+          name: string
+        }
         Insert: {
-          id?: string;
-          code: string;
-          name: string;
-          description?: string;
-          created_at?: string;
-        };
+          code: string
+          created_at?: string
+          description?: string
+          id?: string
+          name: string
+        }
         Update: {
-          id?: string;
-          code?: string;
-          name?: string;
-          description?: string;
-          created_at?: string;
-        };
-        Relationships: [];
-      };
+          code?: string
+          created_at?: string
+          description?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       admin_role_permissions: {
         Row: {
-          role_id: string;
-          permission_id: string;
-          created_at: string;
-        };
+          created_at: string
+          permission_id: string
+          role_id: string
+        }
         Insert: {
-          role_id: string;
-          permission_id: string;
-          created_at?: string;
-        };
+          created_at?: string
+          permission_id: string
+          role_id: string
+        }
         Update: {
-          role_id?: string;
-          permission_id?: string;
-          created_at?: string;
-        };
+          created_at?: string
+          permission_id?: string
+          role_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "admin_role_permissions_role_id_fkey";
-            columns: ["role_id"];
-            isOneToOne: false;
-            referencedRelation: "admin_roles";
-            referencedColumns: ["id"];
+            foreignKeyName: "admin_role_permissions_permission_id_fkey"
+            columns: ["permission_id"]
+            isOneToOne: false
+            referencedRelation: "admin_permissions"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "admin_role_permissions_permission_id_fkey";
-            columns: ["permission_id"];
-            isOneToOne: false;
-            referencedRelation: "admin_permissions";
-            referencedColumns: ["id"];
-          }
-        ];
-      };
-      admin_users: {
+            foreignKeyName: "admin_role_permissions_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "admin_roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      admin_roles: {
         Row: {
-          user_id: string;
-          status: string;
-          created_at: string;
-          updated_at: string;
-        };
+          code: string
+          created_at: string
+          description: string
+          id: string
+          is_system: boolean
+          name: string
+        }
         Insert: {
-          user_id: string;
-          status?: string;
-          created_at?: string;
-          updated_at?: string;
-        };
+          code: string
+          created_at?: string
+          description?: string
+          id?: string
+          is_system?: boolean
+          name: string
+        }
         Update: {
-          user_id?: string;
-          status?: string;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
+          code?: string
+          created_at?: string
+          description?: string
+          id?: string
+          is_system?: boolean
+          name?: string
+        }
+        Relationships: []
+      }
       admin_user_roles: {
         Row: {
-          user_id: string;
-          role_id: string;
-          created_at: string;
-        };
+          created_at: string
+          role_id: string
+          user_id: string
+        }
         Insert: {
-          user_id: string;
-          role_id: string;
-          created_at?: string;
-        };
+          created_at?: string
+          role_id: string
+          user_id: string
+        }
         Update: {
-          user_id?: string;
-          role_id?: string;
-          created_at?: string;
-        };
+          created_at?: string
+          role_id?: string
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "admin_user_roles_user_id_fkey";
-            columns: ["user_id"];
-            isOneToOne: false;
-            referencedRelation: "admin_users";
-            referencedColumns: ["user_id"];
+            foreignKeyName: "admin_user_roles_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "admin_roles"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "admin_user_roles_role_id_fkey";
-            columns: ["role_id"];
-            isOneToOne: false;
-            referencedRelation: "admin_roles";
-            referencedColumns: ["id"];
-          }
-        ];
-      };
+            foreignKeyName: "admin_user_roles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      admin_users: {
+        Row: {
+          created_at: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      assets: {
+        Row: {
+          asset_type: string
+          code: string
+          created_at: string
+          decimals: number
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          asset_type: string
+          code: string
+          created_at?: string
+          decimals?: number
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          asset_type?: string
+          code?: string
+          created_at?: string
+          decimals?: number
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
-          id: string;
-          actor_user_id: string | null;
-          target_user_id: string | null;
-          event_type: string;
-          action: string;
-          resource_type: string | null;
-          resource_id: string | null;
-          ip_address: unknown;
-          user_agent: string | null;
-          metadata: Json;
-          created_at: string;
-        };
+          action: string
+          actor_user_id: string | null
+          created_at: string
+          event_type: string
+          id: string
+          ip_address: unknown
+          metadata: Json
+          resource_id: string | null
+          resource_type: string | null
+          target_user_id: string | null
+          user_agent: string | null
+        }
         Insert: {
-          id?: string;
-          actor_user_id?: string | null;
-          target_user_id?: string | null;
-          event_type: string;
-          action: string;
-          resource_type?: string | null;
-          resource_id?: string | null;
-          ip_address?: unknown;
-          user_agent?: string | null;
-          metadata?: Json;
-          created_at?: string;
-        };
+          action: string
+          actor_user_id?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json
+          resource_id?: string | null
+          resource_type?: string | null
+          target_user_id?: string | null
+          user_agent?: string | null
+        }
         Update: {
-          id?: string;
-          actor_user_id?: string | null;
-          target_user_id?: string | null;
-          event_type?: string;
-          action?: string;
-          resource_type?: string | null;
-          resource_id?: string | null;
-          ip_address?: unknown;
-          user_agent?: string | null;
-          metadata?: Json;
-          created_at?: string;
-        };
-        Relationships: [];
-      };
-    };
+          action?: string
+          actor_user_id?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json
+          resource_id?: string | null
+          resource_type?: string | null
+          target_user_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
+      ledger_account_balances: {
+        Row: {
+          account_id: string
+          balance: number
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          balance?: number
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          balance?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ledger_account_balances_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: true
+            referencedRelation: "ledger_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ledger_account_balances_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: true
+            referencedRelation: "user_asset_balances"
+            referencedColumns: ["account_id"]
+          },
+        ]
+      }
+      ledger_accounts: {
+        Row: {
+          account_type: string
+          allow_negative: boolean
+          asset_id: string
+          code: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          owner_user_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          account_type: string
+          allow_negative?: boolean
+          asset_id: string
+          code?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          owner_user_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          account_type?: string
+          allow_negative?: boolean
+          asset_id?: string
+          code?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          owner_user_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ledger_accounts_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ledger_accounts_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "user_asset_balances"
+            referencedColumns: ["asset_id"]
+          },
+        ]
+      }
+      ledger_entries: {
+        Row: {
+          account_id: string
+          amount: number
+          asset_id: string
+          created_at: string
+          direction: string
+          id: string
+          transaction_id: string
+        }
+        Insert: {
+          account_id: string
+          amount: number
+          asset_id: string
+          created_at?: string
+          direction: string
+          id?: string
+          transaction_id: string
+        }
+        Update: {
+          account_id?: string
+          amount?: number
+          asset_id?: string
+          created_at?: string
+          direction?: string
+          id?: string
+          transaction_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ledger_entries_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "ledger_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ledger_entries_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "user_asset_balances"
+            referencedColumns: ["account_id"]
+          },
+          {
+            foreignKeyName: "ledger_entries_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ledger_entries_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "user_asset_balances"
+            referencedColumns: ["asset_id"]
+          },
+          {
+            foreignKeyName: "ledger_entries_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "ledger_transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ledger_entries_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "user_ledger_history"
+            referencedColumns: ["transaction_id"]
+          },
+        ]
+      }
+      ledger_transactions: {
+        Row: {
+          asset_id: string
+          created_at: string
+          created_by: string | null
+          description: string
+          id: string
+          idempotency_key: string
+          reference_id: string | null
+          reference_type: string | null
+          request_hash: string
+          reversal_of_transaction_id: string | null
+          transaction_type: string
+        }
+        Insert: {
+          asset_id: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          id?: string
+          idempotency_key: string
+          reference_id?: string | null
+          reference_type?: string | null
+          request_hash: string
+          reversal_of_transaction_id?: string | null
+          transaction_type: string
+        }
+        Update: {
+          asset_id?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          id?: string
+          idempotency_key?: string
+          reference_id?: string | null
+          reference_type?: string | null
+          request_hash?: string
+          reversal_of_transaction_id?: string | null
+          transaction_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ledger_transactions_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ledger_transactions_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "user_asset_balances"
+            referencedColumns: ["asset_id"]
+          },
+          {
+            foreignKeyName: "ledger_transactions_reversal_of_transaction_id_fkey"
+            columns: ["reversal_of_transaction_id"]
+            isOneToOne: false
+            referencedRelation: "ledger_transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ledger_transactions_reversal_of_transaction_id_fkey"
+            columns: ["reversal_of_transaction_id"]
+            isOneToOne: false
+            referencedRelation: "user_ledger_history"
+            referencedColumns: ["transaction_id"]
+          },
+        ]
+      }
+      member_directory: {
+        Row: {
+          confirmed_at: string | null
+          created_at: string
+          email: string | null
+          last_sign_in_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          confirmed_at?: string | null
+          created_at?: string
+          email?: string | null
+          last_sign_in_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          confirmed_at?: string | null
+          created_at?: string
+          email?: string | null
+          last_sign_in_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          status: string
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id: string
+          status?: string
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          status?: string
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
+      user_settings: {
+        Row: {
+          created_at: string
+          locale: string
+          timezone: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          locale?: string
+          timezone?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          locale?: string
+          timezone?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+    }
     Views: {
       admin_member_directory: {
         Row: {
-          id: string;
-          email: string | null;
-          display_name: string | null;
-          username: string | null;
-          status: string;
-          created_at: string;
-          updated_at: string;
-          confirmed_at: string | null;
-          last_sign_in_at: string | null;
-        };
-        Relationships: [];
-      };
-    };
-    Functions: Record<string, never>;
-    Enums: Record<string, never>;
-    CompositeTypes: Record<string, never>;
-  };
-};
+          confirmed_at: string | null
+          created_at: string | null
+          display_name: string | null
+          email: string | null
+          id: string | null
+          last_sign_in_at: string | null
+          status: string | null
+          updated_at: string | null
+          username: string | null
+        }
+        Relationships: []
+      }
+      user_asset_balances: {
+        Row: {
+          account_id: string | null
+          asset_code: string | null
+          asset_id: string | null
+          asset_name: string | null
+          asset_type: string | null
+          balance: number | null
+          created_at: string | null
+          decimals: number | null
+          is_active: boolean | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
+      user_ledger_history: {
+        Row: {
+          account_id: string | null
+          account_type: string | null
+          amount: number | null
+          asset_code: string | null
+          asset_id: string | null
+          asset_name: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          direction: string | null
+          entry_created_at: string | null
+          entry_id: string | null
+          owner_user_id: string | null
+          reference_id: string | null
+          reference_type: string | null
+          reversal_of_transaction_id: string | null
+          transaction_id: string | null
+          transaction_status: string | null
+          transaction_type: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ledger_entries_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "ledger_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ledger_entries_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "user_asset_balances"
+            referencedColumns: ["account_id"]
+          },
+          {
+            foreignKeyName: "ledger_transactions_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ledger_transactions_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "user_asset_balances"
+            referencedColumns: ["asset_id"]
+          },
+          {
+            foreignKeyName: "ledger_transactions_reversal_of_transaction_id_fkey"
+            columns: ["reversal_of_transaction_id"]
+            isOneToOne: false
+            referencedRelation: "ledger_transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ledger_transactions_reversal_of_transaction_id_fkey"
+            columns: ["reversal_of_transaction_id"]
+            isOneToOne: false
+            referencedRelation: "user_ledger_history"
+            referencedColumns: ["transaction_id"]
+          },
+        ]
+      }
+    }
+    Functions: {
+      ensure_user_asset_account: {
+        Args: { p_asset_id: string }
+        Returns: string
+      }
+      post_ledger_transaction: {
+        Args: {
+          p_asset_id: string
+          p_description?: string
+          p_entries: Json
+          p_idempotency_key: string
+          p_reference_id?: string
+          p_reference_type?: string
+          p_transaction_type: string
+        }
+        Returns: string
+      }
+      reverse_ledger_transaction: {
+        Args: {
+          p_description?: string
+          p_idempotency_key: string
+          p_transaction_id: string
+        }
+        Returns: string
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+}
 
-export type Tables<T extends keyof Database["public"]["Tables"]> =
-  Database["public"]["Tables"][T]["Row"];
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
 
-export type TablesInsert<T extends keyof Database["public"]["Tables"]> =
-  Database["public"]["Tables"][T]["Insert"];
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
-export type TablesUpdate<T extends keyof Database["public"]["Tables"]> =
-  Database["public"]["Tables"][T]["Update"];
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never) = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never) = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {},
+  },
+} as const
