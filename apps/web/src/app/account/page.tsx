@@ -6,6 +6,10 @@ export const metadata: Metadata = {
   title: "내 계정"
 };
 
+// This is a private, session-dependent route. Block pre-rendering/instant navigation
+// so authentication cookies are evaluated at request time.
+export const instant = false;
+
 export default async function AccountPage() {
   let supabase;
   try {
