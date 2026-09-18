@@ -49,4 +49,4 @@ Admin 앱은 User App 안쪽의 admin 라우트가 아니라 별도 Next.js 애�
 
 각 PHASE는 구현 → 테스트 → 검증 → 오류 수정 → 완료 판정 순으로 종료합니다. 앞 단계에 오류가 있으면 다음 PHASE로 진행하지 않습니다.
 
-현재 단계에서는 금융 API, Supabase 스키마, 자동 채굴/정산 엔진을 연결하지 않습니다.
+PHASE 2에서는 Supabase 프로젝트 연결 기반, publishable key 환경변수 계약, SSR/Browser 클라이언트 기반, 내부 전용 private 스키마와 마이그레이션 추적을 준비했습니다. 실제 사용자/관리자/원장/채굴 업무 테이블과 RLS 정책은 다음 DB 도메인 단계에서 구현합니다.
