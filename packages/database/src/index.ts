@@ -29,3 +29,15 @@ export {
   startDepositReview,
   startWithdrawalReview,
 } from "./finance-requests";
+
+export {
+  createMiningProduct,
+  createMiningProductVersion,
+  getAdminMiningProductVersions,
+  getAdminMiningProducts,
+  getMiningSettings,
+  getUserMiningProducts,
+  publishMiningProductVersion,
+  updateMiningProduct,
+  updateMiningSettings,
+} from "./mining";
