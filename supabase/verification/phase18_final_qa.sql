@@ -123,6 +123,18 @@ stale_runs as (
   from public.mining_calculation_runs
   where status='stale'
 ),
+correction_lock_order as (
+  select coalesce(bool_and(
+    position('for update' in lower(pg_get_functiondef(p.oid))) <
+    position('where idempotency_key=p_idempotency_key' in lower(pg_get_functiondef(p.oid)))
+  ), false) as ok
+  from pg_proc p
+  join pg_namespace n on n.oid=p.pronamespace
+  where n.nspname='private'
+    and p.proname='apply_mining_reward_correction'
+    and pg_get_function_identity_arguments(p.oid)=
+      'p_actor_user_id uuid, p_contract_id uuid, p_original_accrual_id uuid, p_correction_type text, p_amount numeric, p_reason text, p_idempotency_key text'
+),
 open_notifications as (
   select count(*)::int as n
   from public.admin_notifications
@@ -149,6 +161,7 @@ select jsonb_build_object(
   'bad_mining_runs',(select n from bad_runs),
   'open_mining_errors',(select n from open_critical),
   'stale_mining_runs',(select n from stale_runs),
+  'mining_correction_lock_before_idempotency',(select ok from correction_lock_order),
   'open_notifications',(select n from open_notifications),
   'active_required_crons',(select n from active_crons),
   'recent_cron_failures_15m',(select n from recent_cron_failures),
