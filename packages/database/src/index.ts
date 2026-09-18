@@ -68,3 +68,10 @@ export {
 } from "./mining";
 
 export { getAdminOperationsCenter, type OperationsCenterSnapshot } from "./operations-center";
+
+export {
+  acknowledgeAdminNotification,
+  getAdminNotificationSummary,
+  getAdminNotifications,
+  resolveAdminNotification,
+} from "./notifications";
