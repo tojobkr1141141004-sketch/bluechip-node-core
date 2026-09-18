@@ -283,12 +283,12 @@ export async function updateMiningIssuancePolicy(
   return client.rpc("update_mining_issuance_policy", {
     p_asset_id: input.assetId,
     p_issuance_enabled: input.issuanceEnabled,
-    p_daily_limit: input.dailyLimit as unknown as number | null,
-    p_total_limit: input.totalLimit as unknown as number | null,
+    p_daily_limit: (input.dailyLimit ?? null) as unknown as number,
+    p_total_limit: (input.totalLimit ?? null) as unknown as number,
     p_max_source_negative_balance:
-      input.maxSourceNegativeBalance as unknown as number | null,
+      (input.maxSourceNegativeBalance ?? null) as unknown as number,
     p_minimum_reserve_balance:
-      input.minimumReserveBalance as unknown as number | null,
+      (input.minimumReserveBalance ?? null) as unknown as number,
     p_idempotency_key: input.idempotencyKey
   });
 }
