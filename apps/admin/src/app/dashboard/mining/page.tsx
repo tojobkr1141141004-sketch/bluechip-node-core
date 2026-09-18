@@ -221,7 +221,7 @@ export default async function MiningAdminPage({
             </thead>
             <tbody className="divide-y divide-white/[0.05]">
               {runs.map((run) => (
-                <tr key={run.id ?? crypto.randomUUID()}>
+                <tr key={run.id ?? randomUUID()}>
                   <td className="px-3 py-3 text-zinc-400">{formatDate(run.started_at)}</td>
                   <td className="px-3 py-3">
                     {statusLabel[run.status ?? ""] ?? run.status ?? "-"}
@@ -353,7 +353,7 @@ export default async function MiningAdminPage({
             </thead>
             <tbody className="divide-y divide-white/[0.05]">
               {contracts.map((contract) => (
-                <tr key={contract.contract_id ?? crypto.randomUUID()} className="text-zinc-300">
+                <tr key={contract.contract_id ?? randomUUID()} className="text-zinc-300">
                   <td className="px-3 py-4">
                     <div className="font-medium">
                       {contract.display_name || contract.username || contract.email || "회원"}
