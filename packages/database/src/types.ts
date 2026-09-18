@@ -565,6 +565,209 @@ export type Database = {
         }
         Relationships: []
       }
+      mining_calculation_errors: {
+        Row: {
+          calculation_run_id: string
+          contract_id: string | null
+          created_at: string
+          error_message: string
+          id: string
+          sqlstate: string
+        }
+        Insert: {
+          calculation_run_id: string
+          contract_id?: string | null
+          created_at?: string
+          error_message: string
+          id?: string
+          sqlstate: string
+        }
+        Update: {
+          calculation_run_id?: string
+          contract_id?: string | null
+          created_at?: string
+          error_message?: string
+          id?: string
+          sqlstate?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mining_calculation_errors_calculation_run_id_fkey"
+            columns: ["calculation_run_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_calculation_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_calculation_errors_calculation_run_id_fkey"
+            columns: ["calculation_run_id"]
+            isOneToOne: false
+            referencedRelation: "mining_calculation_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_calculation_errors_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_contracts"
+            referencedColumns: ["contract_id"]
+          },
+          {
+            foreignKeyName: "mining_calculation_errors_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "mining_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_calculation_errors_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "user_mining_contracts"
+            referencedColumns: ["contract_id"]
+          },
+        ]
+      }
+      mining_calculation_runs: {
+        Row: {
+          created_at: string
+          error_count: number
+          finished_at: string | null
+          id: string
+          processed_contracts: number
+          rewarded_contracts: number
+          started_at: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          error_count?: number
+          finished_at?: string | null
+          id?: string
+          processed_contracts?: number
+          rewarded_contracts?: number
+          started_at?: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          error_count?: number
+          finished_at?: string | null
+          id?: string
+          processed_contracts?: number
+          rewarded_contracts?: number
+          started_at?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      mining_contracts: {
+        Row: {
+          capacity: number
+          created_at: string
+          id: string
+          idempotency_key: string
+          last_calculated_at: string
+          pending_reward: number
+          product_id: string
+          product_version_id: string
+          request_hash: string
+          scheduled_end_at: string
+          started_at: string
+          status: string
+          total_reward_earned: number
+          total_reward_paid: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          capacity: number
+          created_at?: string
+          id?: string
+          idempotency_key: string
+          last_calculated_at: string
+          pending_reward?: number
+          product_id: string
+          product_version_id: string
+          request_hash: string
+          scheduled_end_at: string
+          started_at: string
+          status?: string
+          total_reward_earned?: number
+          total_reward_paid?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          capacity?: number
+          created_at?: string
+          id?: string
+          idempotency_key?: string
+          last_calculated_at?: string
+          pending_reward?: number
+          product_id?: string
+          product_version_id?: string
+          request_hash?: string
+          scheduled_end_at?: string
+          started_at?: string
+          status?: string
+          total_reward_earned?: number
+          total_reward_paid?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mining_contracts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_products"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "mining_contracts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "mining_products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_contracts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "user_mining_products"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "mining_contracts_product_version_id_fkey"
+            columns: ["product_version_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_product_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_contracts_product_version_id_fkey"
+            columns: ["product_version_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_products"
+            referencedColumns: ["published_version_id"]
+          },
+          {
+            foreignKeyName: "mining_contracts_product_version_id_fkey"
+            columns: ["product_version_id"]
+            isOneToOne: false
+            referencedRelation: "mining_product_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_contracts_product_version_id_fkey"
+            columns: ["product_version_id"]
+            isOneToOne: false
+            referencedRelation: "user_mining_products"
+            referencedColumns: ["version_id"]
+          },
+        ]
+      }
       mining_product_versions: {
         Row: {
           capacity_unit: string
@@ -684,6 +887,243 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      mining_reward_accruals: {
+        Row: {
+          asset_id: string
+          calculation_run_id: string
+          contract_id: string
+          created_at: string
+          elapsed_seconds: number
+          id: string
+          period_end: string
+          period_start: string
+          product_version_id: string
+          reward_amount: number
+          user_id: string
+        }
+        Insert: {
+          asset_id: string
+          calculation_run_id: string
+          contract_id: string
+          created_at?: string
+          elapsed_seconds: number
+          id?: string
+          period_end: string
+          period_start: string
+          product_version_id: string
+          reward_amount: number
+          user_id: string
+        }
+        Update: {
+          asset_id?: string
+          calculation_run_id?: string
+          contract_id?: string
+          created_at?: string
+          elapsed_seconds?: number
+          id?: string
+          period_end?: string
+          period_start?: string
+          product_version_id?: string
+          reward_amount?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mining_reward_accruals_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_reward_accruals_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "user_asset_balances"
+            referencedColumns: ["asset_id"]
+          },
+          {
+            foreignKeyName: "mining_reward_accruals_calculation_run_id_fkey"
+            columns: ["calculation_run_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_calculation_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_reward_accruals_calculation_run_id_fkey"
+            columns: ["calculation_run_id"]
+            isOneToOne: false
+            referencedRelation: "mining_calculation_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_reward_accruals_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_contracts"
+            referencedColumns: ["contract_id"]
+          },
+          {
+            foreignKeyName: "mining_reward_accruals_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "mining_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_reward_accruals_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "user_mining_contracts"
+            referencedColumns: ["contract_id"]
+          },
+          {
+            foreignKeyName: "mining_reward_accruals_product_version_id_fkey"
+            columns: ["product_version_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_product_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_reward_accruals_product_version_id_fkey"
+            columns: ["product_version_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_products"
+            referencedColumns: ["published_version_id"]
+          },
+          {
+            foreignKeyName: "mining_reward_accruals_product_version_id_fkey"
+            columns: ["product_version_id"]
+            isOneToOne: false
+            referencedRelation: "mining_product_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_reward_accruals_product_version_id_fkey"
+            columns: ["product_version_id"]
+            isOneToOne: false
+            referencedRelation: "user_mining_products"
+            referencedColumns: ["version_id"]
+          },
+        ]
+      }
+      mining_reward_payments: {
+        Row: {
+          accrual_id: string
+          amount: number
+          asset_id: string
+          calculation_run_id: string
+          contract_id: string
+          created_at: string
+          id: string
+          idempotency_key: string
+          ledger_transaction_id: string
+          user_id: string
+        }
+        Insert: {
+          accrual_id: string
+          amount: number
+          asset_id: string
+          calculation_run_id: string
+          contract_id: string
+          created_at?: string
+          id?: string
+          idempotency_key: string
+          ledger_transaction_id: string
+          user_id: string
+        }
+        Update: {
+          accrual_id?: string
+          amount?: number
+          asset_id?: string
+          calculation_run_id?: string
+          contract_id?: string
+          created_at?: string
+          id?: string
+          idempotency_key?: string
+          ledger_transaction_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mining_reward_payments_accrual_id_fkey"
+            columns: ["accrual_id"]
+            isOneToOne: true
+            referencedRelation: "mining_reward_accruals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_reward_payments_accrual_id_fkey"
+            columns: ["accrual_id"]
+            isOneToOne: true
+            referencedRelation: "user_mining_reward_history"
+            referencedColumns: ["accrual_id"]
+          },
+          {
+            foreignKeyName: "mining_reward_payments_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_reward_payments_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "user_asset_balances"
+            referencedColumns: ["asset_id"]
+          },
+          {
+            foreignKeyName: "mining_reward_payments_calculation_run_id_fkey"
+            columns: ["calculation_run_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_calculation_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_reward_payments_calculation_run_id_fkey"
+            columns: ["calculation_run_id"]
+            isOneToOne: false
+            referencedRelation: "mining_calculation_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_reward_payments_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_contracts"
+            referencedColumns: ["contract_id"]
+          },
+          {
+            foreignKeyName: "mining_reward_payments_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "mining_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_reward_payments_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "user_mining_contracts"
+            referencedColumns: ["contract_id"]
+          },
+          {
+            foreignKeyName: "mining_reward_payments_ledger_transaction_id_fkey"
+            columns: ["ledger_transaction_id"]
+            isOneToOne: true
+            referencedRelation: "ledger_transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_reward_payments_ledger_transaction_id_fkey"
+            columns: ["ledger_transaction_id"]
+            isOneToOne: true
+            referencedRelation: "user_ledger_history"
+            referencedColumns: ["transaction_id"]
+          },
+        ]
       }
       mining_settings: {
         Row: {
@@ -952,6 +1392,117 @@ export type Database = {
           username: string | null
         }
         Relationships: []
+      }
+      admin_mining_calculation_runs: {
+        Row: {
+          created_at: string | null
+          error_count: number | null
+          finished_at: string | null
+          id: string | null
+          processed_contracts: number | null
+          rewarded_contracts: number | null
+          started_at: string | null
+          status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          error_count?: number | null
+          finished_at?: string | null
+          id?: string | null
+          processed_contracts?: number | null
+          rewarded_contracts?: number | null
+          started_at?: string | null
+          status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          error_count?: number | null
+          finished_at?: string | null
+          id?: string | null
+          processed_contracts?: number | null
+          rewarded_contracts?: number | null
+          started_at?: string | null
+          status?: string | null
+        }
+        Relationships: []
+      }
+      admin_mining_contracts: {
+        Row: {
+          capacity: number | null
+          capacity_unit: string | null
+          contract_id: string | null
+          created_at: string | null
+          display_name: string | null
+          email: string | null
+          last_calculated_at: string | null
+          pending_reward: number | null
+          product_code: string | null
+          product_id: string | null
+          product_name: string | null
+          product_version_id: string | null
+          reward_asset_code: string | null
+          reward_asset_name: string | null
+          reward_per_unit_per_day: number | null
+          scheduled_end_at: string | null
+          started_at: string | null
+          status: string | null
+          total_reward_earned: number | null
+          total_reward_paid: number | null
+          user_id: string | null
+          username: string | null
+          version: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mining_contracts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_products"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "mining_contracts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "mining_products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_contracts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "user_mining_products"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "mining_contracts_product_version_id_fkey"
+            columns: ["product_version_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_product_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_contracts_product_version_id_fkey"
+            columns: ["product_version_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_products"
+            referencedColumns: ["published_version_id"]
+          },
+          {
+            foreignKeyName: "mining_contracts_product_version_id_fkey"
+            columns: ["product_version_id"]
+            isOneToOne: false
+            referencedRelation: "mining_product_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_contracts_product_version_id_fkey"
+            columns: ["product_version_id"]
+            isOneToOne: false
+            referencedRelation: "user_mining_products"
+            referencedColumns: ["version_id"]
+          },
+        ]
       }
       admin_mining_product_versions: {
         Row: {
@@ -1255,6 +1806,96 @@ export type Database = {
           },
         ]
       }
+      user_mining_contracts: {
+        Row: {
+          capacity: number | null
+          capacity_unit: string | null
+          contract_id: string | null
+          created_at: string | null
+          last_calculated_at: string | null
+          pending_reward: number | null
+          product_code: string | null
+          product_id: string | null
+          product_name: string | null
+          product_version_id: string | null
+          reward_asset_code: string | null
+          reward_asset_decimals: number | null
+          reward_asset_id: string | null
+          reward_asset_name: string | null
+          reward_per_unit_per_day: number | null
+          scheduled_end_at: string | null
+          started_at: string | null
+          status: string | null
+          total_reward_earned: number | null
+          total_reward_paid: number | null
+          version: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mining_contracts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_products"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "mining_contracts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "mining_products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_contracts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "user_mining_products"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "mining_contracts_product_version_id_fkey"
+            columns: ["product_version_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_product_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_contracts_product_version_id_fkey"
+            columns: ["product_version_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_products"
+            referencedColumns: ["published_version_id"]
+          },
+          {
+            foreignKeyName: "mining_contracts_product_version_id_fkey"
+            columns: ["product_version_id"]
+            isOneToOne: false
+            referencedRelation: "mining_product_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_contracts_product_version_id_fkey"
+            columns: ["product_version_id"]
+            isOneToOne: false
+            referencedRelation: "user_mining_products"
+            referencedColumns: ["version_id"]
+          },
+          {
+            foreignKeyName: "mining_product_versions_reward_asset_id_fkey"
+            columns: ["reward_asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_product_versions_reward_asset_id_fkey"
+            columns: ["reward_asset_id"]
+            isOneToOne: false
+            referencedRelation: "user_asset_balances"
+            referencedColumns: ["asset_id"]
+          },
+        ]
+      }
       user_mining_products: {
         Row: {
           capacity_unit: string | null
@@ -1289,6 +1930,166 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "user_asset_balances"
             referencedColumns: ["asset_id"]
+          },
+        ]
+      }
+      user_mining_reward_history: {
+        Row: {
+          accrual_id: string | null
+          asset_id: string | null
+          contract_id: string | null
+          created_at: string | null
+          elapsed_seconds: number | null
+          period_end: string | null
+          period_start: string | null
+          product_code: string | null
+          product_name: string | null
+          product_version_id: string | null
+          reward_amount: number | null
+          reward_asset_code: string | null
+          reward_asset_name: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mining_reward_accruals_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_reward_accruals_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "user_asset_balances"
+            referencedColumns: ["asset_id"]
+          },
+          {
+            foreignKeyName: "mining_reward_accruals_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_contracts"
+            referencedColumns: ["contract_id"]
+          },
+          {
+            foreignKeyName: "mining_reward_accruals_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "mining_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_reward_accruals_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "user_mining_contracts"
+            referencedColumns: ["contract_id"]
+          },
+          {
+            foreignKeyName: "mining_reward_accruals_product_version_id_fkey"
+            columns: ["product_version_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_product_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_reward_accruals_product_version_id_fkey"
+            columns: ["product_version_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_products"
+            referencedColumns: ["published_version_id"]
+          },
+          {
+            foreignKeyName: "mining_reward_accruals_product_version_id_fkey"
+            columns: ["product_version_id"]
+            isOneToOne: false
+            referencedRelation: "mining_product_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_reward_accruals_product_version_id_fkey"
+            columns: ["product_version_id"]
+            isOneToOne: false
+            referencedRelation: "user_mining_products"
+            referencedColumns: ["version_id"]
+          },
+        ]
+      }
+      user_mining_reward_payments: {
+        Row: {
+          accrual_id: string | null
+          amount: number | null
+          asset_id: string | null
+          contract_id: string | null
+          created_at: string | null
+          ledger_transaction_id: string | null
+          payment_id: string | null
+          reward_asset_code: string | null
+          reward_asset_name: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mining_reward_payments_accrual_id_fkey"
+            columns: ["accrual_id"]
+            isOneToOne: true
+            referencedRelation: "mining_reward_accruals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_reward_payments_accrual_id_fkey"
+            columns: ["accrual_id"]
+            isOneToOne: true
+            referencedRelation: "user_mining_reward_history"
+            referencedColumns: ["accrual_id"]
+          },
+          {
+            foreignKeyName: "mining_reward_payments_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_reward_payments_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "user_asset_balances"
+            referencedColumns: ["asset_id"]
+          },
+          {
+            foreignKeyName: "mining_reward_payments_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_contracts"
+            referencedColumns: ["contract_id"]
+          },
+          {
+            foreignKeyName: "mining_reward_payments_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "mining_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_reward_payments_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "user_mining_contracts"
+            referencedColumns: ["contract_id"]
+          },
+          {
+            foreignKeyName: "mining_reward_payments_ledger_transaction_id_fkey"
+            columns: ["ledger_transaction_id"]
+            isOneToOne: true
+            referencedRelation: "ledger_transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_reward_payments_ledger_transaction_id_fkey"
+            columns: ["ledger_transaction_id"]
+            isOneToOne: true
+            referencedRelation: "user_ledger_history"
+            referencedColumns: ["transaction_id"]
           },
         ]
       }
@@ -1394,6 +2195,16 @@ export type Database = {
         }
         Returns: string
       }
+      create_mining_contract: {
+        Args: {
+          p_capacity: number
+          p_idempotency_key?: string
+          p_product_version_id: string
+          p_started_at?: string
+          p_user_id: string
+        }
+        Returns: string
+      }
       create_mining_product: {
         Args: {
           p_code: string
@@ -1468,6 +2279,7 @@ export type Database = {
         }
         Returns: string
       }
+      run_mining_calculation_now: { Args: never; Returns: Json }
       start_deposit_review: {
         Args: { p_request_id: string }
         Returns: undefined
