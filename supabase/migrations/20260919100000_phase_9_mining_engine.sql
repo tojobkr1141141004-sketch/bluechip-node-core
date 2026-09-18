@@ -835,9 +835,6 @@ $function$;
 revoke all on function private.post_ledger_transaction(
   uuid, text, text, jsonb, text, text, text, uuid
 ) from public, anon, authenticated;
-grant execute on function private.post_ledger_transaction(
-  uuid, text, text, jsonb, text, text, text, uuid
-) to authenticated;
 
 create or replace function private.calculate_mining_contract(
   p_contract_id uuid,
