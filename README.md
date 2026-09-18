@@ -2,25 +2,21 @@
 
 APEX-MATRIX는 사용자 앱과 운영자 앱을 분리하고, Supabase를 데이터 중심으로 사용하는 단계형 플랫폼입니다.
 
-## PHASE 1 상태
+## 현재 진행 상태
 
-현재 단계는 **모노레포 기반과 앱 경계 확정**입니다.
+- PHASE 1 ✅ 모노레포 및 앱 경계
+- PHASE 2 ✅ Supabase 기반
+- PHASE 3 ✅ Auth / Admin RBAC / RLS
+- PHASE 4 ✅ USER / ADMIN 애플리케이션 셸
+- PHASE 5 🔄 회원 데이터 도메인 및 회원관리
 
-```
-APEX-MATRIX/
-├── apps/
-│   ├── web/        # 사용자 앱
-│   └── admin/      # 운영자 앱
-├── packages/
-│   ├── ui/
-│   ├── database/
-│   ├── types/
-│   ├── validation/
-│   ├── calculations/
-│   └── config/
-├── tests/
-└── supabase/       # 다음 Phase부터 사용
-```
+## PHASE 5 범위
+
+USER에서는 본인 프로필과 사용자 설정을 수정할 수 있습니다.
+
+ADMIN에서는 권한이 있는 운영자만 회원 검색과 상태 관리를 수행합니다. 인증 식별 정보는 `auth.users`를 직접 노출하지 않고 `member_directory`로 동기화하며, `admin_member_directory`는 RLS를 존중하는 security-invoker view입니다.
+
+회원 상태 변경은 `profiles`의 상태값을 바꾸는 작업이며, 변경 내역은 `audit_logs`에 자동 기록됩니다. 금융 잔액이나 채굴 보상 변경은 이 Phase에 포함하지 않습니다.
 
 ## 로컬 명령
 
@@ -32,7 +28,6 @@ pnpm dev:admin
 pnpm lint
 pnpm typecheck
 pnpm build
-pnpm build
 pnpm test:e2e
 ```
 
@@ -41,12 +36,10 @@ pnpm test:e2e
 - User App: http://localhost:3000
 - Admin App: http://localhost:3001
 
-E2E는 빌드된 Production 서버를 대상으로 합니다. 따라서 로컬에서는 먼저 `pnpm build`를 실행합니다.
-
-Admin 앱은 User App 안쪽의 admin 라우트가 아니라 별도 Next.js 애플리케이션입니다.
+E2E는 빌드된 Production 서버를 대상으로 합니다.
 
 ## 개발 원칙
 
 각 PHASE는 구현 → 테스트 → 검증 → 오류 수정 → 완료 판정 순으로 종료합니다. 앞 단계에 오류가 있으면 다음 PHASE로 진행하지 않습니다.
 
-PHASE 2에서는 Supabase 프로젝트 연결 기반, publishable key 환경변수 계약, SSR/Browser 클라이언트 기반, 내부 전용 private 스키마와 마이그레이션 추적을 준비했습니다. 실제 사용자/관리자/원장/채굴 업무 테이블과 RLS 정책은 다음 DB 도메인 단계에서 구현합니다.
+금융 자산이나 채굴 보상에 대한 직접적인 잔액 수정은 금지하며, 이후 금융·원장 Phase에서 원장 기반으로만 연결합니다.
