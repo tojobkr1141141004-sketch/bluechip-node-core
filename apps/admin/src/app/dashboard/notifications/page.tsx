@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { AlertTriangle, Bell, Check, CheckCircle2, Clock3, RotateCcw } from "lucide-react";
 import {
+  getAdminNotificationEvents,
   getAdminNotificationSummary,
   getAdminNotifications
 } from "@apex-matrix/database";
@@ -21,10 +22,11 @@ function severityLabel(value: string) {
 
 export default async function NotificationsPage() {
   const { supabase } = await requireAdminUser();
-  const [summaryResult, activeResult, resolvedResult] = await Promise.all([
+  const [summaryResult, activeResult, resolvedResult, eventsResult] = await Promise.all([
     getAdminNotificationSummary(supabase),
     getAdminNotifications(supabase),
-    getAdminNotifications(supabase, "resolved", 50)
+    getAdminNotifications(supabase, "resolved", 50),
+    getAdminNotificationEvents(supabase, 50)
   ]);
 
   const summary = (summaryResult.data ?? {}) as {
@@ -37,6 +39,7 @@ export default async function NotificationsPage() {
   };
   const active = activeResult.data ?? [];
   const resolved = resolvedResult.data ?? [];
+  const events = eventsResult.data ?? [];
   const canManage = summary.can_manage === true;
 
   return (
@@ -172,6 +175,34 @@ export default async function NotificationsPage() {
           </div>
         ) : (
           <div className="py-8 text-center text-xs text-zinc-600">해결된 알림 기록이 없습니다.</div>
+        )}
+      </section>
+
+      <section className="rounded-2xl border border-white/[0.06] bg-black/10 p-5">
+        <div className="flex items-center gap-2">
+          <Bell className="h-4 w-4 text-zinc-500" />
+          <h2 className="text-sm font-semibold">최근 운영 이벤트</h2>
+        </div>
+        {events.length ? (
+          <div className="mt-4 space-y-2">
+            {events.map((event) => (
+              <div key={event.event_id} className="rounded-xl border border-white/[0.05] px-4 py-3">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <div className="text-xs font-semibold text-zinc-300">{event.title}</div>
+                    <div className="mt-1 text-[10px] text-zinc-600">
+                      {event.event_type} · {event.code} · {formatDate(event.created_at)}
+                    </div>
+                  </div>
+                  <span className="max-w-[220px] truncate text-[10px] text-zinc-600" title={event.actor_user_id ?? "system"}>
+                    {event.actor_user_id ? event.actor_user_id : "system"}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="py-8 text-center text-xs text-zinc-600">아직 운영 이벤트가 없습니다.</div>
         )}
       </section>
 
