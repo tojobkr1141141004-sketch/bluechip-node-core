@@ -1,7 +1,8 @@
 import {
   getActiveAssets,
   getUserAssetBalances,
-  getUserWithdrawalRequests
+  getUserWithdrawalRequests,
+  getUserFinanceRequestEvents
 } from "@apex-matrix/database";
 import { requireWebUser } from "@/lib/auth";
 import { cancelWithdrawal, submitWithdrawalRequest } from "./actions";
@@ -35,13 +36,19 @@ export default async function WithdrawalPage({
   const cancelled = first(params.cancelled) === "1";
   const error = first(params.error);
 
-  const [assetsResult, balancesResult, requestsResult] = await Promise.all([
+  const [assetsResult, balancesResult, requestsResult, eventsResult] = await Promise.all([
     getActiveAssets(supabase),
     getUserAssetBalances(supabase, user.id),
-    getUserWithdrawalRequests(supabase, user.id)
+    getUserWithdrawalRequests(supabase, user.id),
+    getUserFinanceRequestEvents(supabase, 200)
   ]);
 
-  if (assetsResult.error || balancesResult.error || requestsResult.error) {
+  if (
+    assetsResult.error ||
+    balancesResult.error ||
+    requestsResult.error ||
+    eventsResult.error
+  ) {
     return (
       <section className="rounded-3xl border border-rose-300/10 bg-rose-300/[0.04] p-6 sm:p-8">
         <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-300/80">
@@ -196,7 +203,22 @@ export default async function WithdrawalPage({
 
       <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
         <div className="text-xs font-semibold">내 출금 요청</div>
-        <div className="mt-4 space-y-3">
+        <div className="mt-4 space-y-3">      <div className="mb-4 rounded-xl border border-white/[0.06] bg-black/10 p-4">
+        <div className="text-[10px] font-semibold text-slate-400">최근 출금 상태 이력</div>
+        <div className="mt-2 space-y-2">
+          {(eventsResult.data ?? []).filter((event) => event.request_type === "withdrawal").slice(0, 20).map((event) => (
+            <div key={event.event_id} className="flex flex-wrap items-center justify-between gap-2 text-[10px] text-slate-500">
+              <span>
+                {event.old_status ? (statusLabel[event.old_status] ?? event.old_status) + " → " : "요청 생성 → "}
+                {statusLabel[event.new_status ?? ""] ?? event.new_status}
+                {event.reason ? " · " + event.reason : ""}
+              </span>
+              <span>{event.created_at ? new Date(event.created_at).toLocaleString("ko-KR", { timeZone: "Asia/Seoul" }) : "-"}</span>
+            </div>
+          ))}
+          {!(eventsResult.data ?? []).some((event) => event.request_type === "withdrawal") ? <div className="text-[10px] text-slate-600">아직 상태 이력이 없습니다.</div> : null}
+        </div>
+      </div>
           {requestsResult.data?.map((request) => (
             <div
               key={request.id ?? request.request_key ?? crypto.randomUUID()}

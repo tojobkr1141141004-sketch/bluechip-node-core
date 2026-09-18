@@ -307,6 +307,66 @@ export type Database = {
           },
         ]
       }
+      finance_request_events: {
+        Row: {
+          actor_user_id: string | null
+          created_at: string
+          event_type: string
+          external_reference: string | null
+          id: string
+          new_status: string
+          old_status: string | null
+          reason: string | null
+          request_id: string
+          request_type: string
+          transaction_id: string | null
+          user_id: string
+        }
+        Insert: {
+          actor_user_id?: string | null
+          created_at?: string
+          event_type: string
+          external_reference?: string | null
+          id?: string
+          new_status: string
+          old_status?: string | null
+          reason?: string | null
+          request_id: string
+          request_type: string
+          transaction_id?: string | null
+          user_id: string
+        }
+        Update: {
+          actor_user_id?: string | null
+          created_at?: string
+          event_type?: string
+          external_reference?: string | null
+          id?: string
+          new_status?: string
+          old_status?: string | null
+          reason?: string | null
+          request_id?: string
+          request_type?: string
+          transaction_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "finance_request_events_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "ledger_transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "finance_request_events_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "user_ledger_history"
+            referencedColumns: ["transaction_id"]
+          },
+        ]
+      }
       ledger_account_balances: {
         Row: {
           account_id: string
@@ -3502,6 +3562,23 @@ export type Database = {
         Args: { p_reason: string; p_request_id: string }
         Returns: string
       }
+      get_admin_finance_request_events: {
+        Args: { p_limit?: number }
+        Returns: {
+          actor_user_id: string
+          created_at: string
+          event_id: string
+          event_type: string
+          external_reference: string
+          new_status: string
+          old_status: string
+          reason: string
+          request_id: string
+          request_type: string
+          transaction_id: string
+          user_id: string
+        }[]
+      }
       get_admin_mining_issuance_controls: {
         Args: never
         Returns: {
@@ -3536,6 +3613,21 @@ export type Database = {
           status: string
           user_id: string
           username: string
+        }[]
+      }
+      get_user_finance_request_events: {
+        Args: { p_limit?: number }
+        Returns: {
+          created_at: string
+          event_id: string
+          event_type: string
+          external_reference: string
+          new_status: string
+          old_status: string
+          reason: string
+          request_id: string
+          request_type: string
+          transaction_id: string
         }[]
       }
       post_ledger_transaction: {

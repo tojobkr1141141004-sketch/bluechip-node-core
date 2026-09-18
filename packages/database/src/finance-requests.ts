@@ -61,6 +61,14 @@ export async function getAdminWithdrawalRequests(client: DatabaseClient) {
     .limit(100);
 }
 
+export async function getUserFinanceRequestEvents(client: DatabaseClient, limit = 100) {
+  return client.rpc("get_user_finance_request_events", { p_limit: limit });
+}
+
+export async function getAdminFinanceRequestEvents(client: DatabaseClient, limit = 200) {
+  return client.rpc("get_admin_finance_request_events", { p_limit: limit });
+}
+
 export async function createDepositRequest(
   client: DatabaseClient,
   input: {
