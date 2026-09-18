@@ -9,6 +9,7 @@ test("dashboard loads with primary navigation", async ({ page }) => {
 
 test("dashboard navigation works", async ({ page }) => {
   await page.goto("/");
+  await expect(page.locator("[data-client-ready='true']")).toBeAttached();
 
   await page.getByRole("button", { name: "자산 건강" }).click();
   await expect(page.getByRole("heading", { name: "자산 건강" })).toBeVisible();

@@ -1,51 +1,52 @@
-# BLUECHIP Edge Asset Hub
+# APEX-MATRIX
 
-Production-oriented dashboard demo migrated from the original static HTML prototype.
+APEX-MATRIX는 사용자 앱과 운영자 앱을 분리하고, Supabase를 데이터 중심으로 사용하는 단계형 플랫폼입니다.
 
-## Stack
+## PHASE 1 상태
 
-- Next.js 16.3.3 (Active LTS)
-- React 19.3
-- TypeScript 6.0.2
-- Tailwind CSS 4.3.3
-- Motion 13.4.0
-- Geist 1.7.2
-- Lucide React 1.47.0
-- Node.js 24 in CI
+현재 단계는 **모노레포 기반과 앱 경계 확정**입니다.
 
-## Architecture
+```
+APEX-MATRIX/
+├── apps/
+│   ├── web/        # 사용자 앱
+│   └── admin/      # 운영자 앱
+├── packages/
+│   ├── ui/
+│   ├── database/
+│   ├── types/
+│   ├── validation/
+│   ├── calculations/
+│   └── config/
+├── tests/
+└── supabase/       # 다음 Phase부터 사용
+```
 
-The app uses the Next.js App Router with Server Components by default and a small client boundary for dashboard interactivity.
-
-Key paths:
-
-- `src/app/page.tsx`: route entry
-- `src/components/dashboard/dashboard-shell.tsx`: interactive dashboard feature
-- `src/lib/nodes.ts`: typed sample edge-node model
-- `src/app/api/health/route.ts`: liveness endpoint
-- `tests/dashboard.spec.ts`: end-to-end smoke coverage
-- `next.config.ts`: React Compiler, typed routes, Cache Components, and security headers
-
-## Performance
-
-- Motion 13.4 for SVG path morphing and micro-interactions.
-- CSS `transform`/opacity effects use compositor-friendly patterns.
-- React state updates are throttled to low-frequency UI changes; animation work remains outside the React render loop where possible.
-- `prefers-reduced-motion` is respected.
-- No third-party runtime CDN dependencies are required.
-
-SVG path morphing itself should not be described as guaranteed GPU-rendered. Compositor-friendly transforms and opacity are used where appropriate.
-
-## Safety boundary
-
-The dashboard is a visual/telemetry demo. Values are synthetic and are not claims about real assets, investment returns, dividends, gold holdings, deposits, escrow, or withdrawals.
-
-## Quality gates
+## 로컬 명령
 
 ```bash
 pnpm install
+pnpm dev
+pnpm dev:web
+pnpm dev:admin
 pnpm lint
 pnpm typecheck
 pnpm build
+pnpm build
 pnpm test:e2e
 ```
+
+## 앱 포트
+
+- User App: http://localhost:3000
+- Admin App: http://localhost:3001
+
+E2E는 빌드된 Production 서버를 대상으로 합니다. 따라서 로컬에서는 먼저 `pnpm build`를 실행합니다.
+
+Admin 앱은 User App 안쪽의 admin 라우트가 아니라 별도 Next.js 애플리케이션입니다.
+
+## 개발 원칙
+
+각 PHASE는 구현 → 테스트 → 검증 → 오류 수정 → 완료 판정 순으로 종료합니다. 앞 단계에 오류가 있으면 다음 PHASE로 진행하지 않습니다.
+
+현재 단계에서는 금융 API, Supabase 스키마, 자동 채굴/정산 엔진을 연결하지 않습니다.

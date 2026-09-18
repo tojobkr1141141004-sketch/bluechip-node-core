@@ -913,14 +913,19 @@ function GuideView() {
 export function DashboardShell() {
   const [activeView, setActiveView] = useState<ViewKey>("overview");
   const [selectedId, setSelectedId] = useState("seoul");
+  const rootRef = useRef<HTMLDivElement>(null);
   const selectedNode = EDGE_NODES.find((node) => node.id === selectedId) ?? EDGE_NODES[0];
+
+  useEffect(() => {
+    rootRef.current?.setAttribute("data-client-ready", "true");
+  }, []);
 
   const changeView = (view: ViewKey) => {
     startTransition(() => setActiveView(view));
   };
 
   return (
-    <div className="min-h-screen">
+    <div ref={rootRef} className="min-h-screen" data-client-ready="false">
       <Header activeView={activeView} onChange={changeView} />
 
       <main className="mx-auto max-w-[1380px] px-4 pb-8 pt-4 sm:px-5 lg:px-6 lg:pt-5">
