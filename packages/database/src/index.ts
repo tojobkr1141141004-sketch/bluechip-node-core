@@ -31,6 +31,7 @@ export {
 } from "./finance-requests";
 
 export {
+  applyMiningRewardCorrection,
   cancelMiningContract,
   createMiningContract,
   createMiningProduct,
