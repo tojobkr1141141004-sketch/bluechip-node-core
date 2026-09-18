@@ -17,7 +17,7 @@ function validAmount(value: string) {
 }
 
 function financeErrorRedirect(path: string) {
-  redirect(`${path}?error=failed`);
+  redirect(`${path}?error=failed` as never);
 }
 
 export async function submitDepositRequest(formData: FormData) {
