@@ -18,7 +18,8 @@ export default defineConfig({
       command: "pnpm --filter @apex-matrix/web start",
       url: "http://127.0.0.1:3000",
       reuseExistingServer: false,
-      timeout: 120_000
+      timeout: 120_000,
+      env: { NODE_ENV: "production" }
     },
     {
       command: "pnpm --filter @apex-matrix/admin start",
