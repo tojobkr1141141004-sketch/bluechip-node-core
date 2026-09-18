@@ -33,10 +33,10 @@ function errorCode(message: string) {
 
 function adminRedirect(target: string, result: { error: { message: string } | null }) {
   if (!result.error) {
-    redirect(`${target}?success=1`);
+    redirect(`${target}?success=1` as never);
   }
 
-  redirect(`${target}?error=${errorCode(result.error.message)}`);
+  redirect(`${target}?error=${errorCode(result.error.message)}` as never);
 }
 
 export async function beginDepositReview(formData: FormData) {
