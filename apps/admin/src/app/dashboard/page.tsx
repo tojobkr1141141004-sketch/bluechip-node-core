@@ -255,5 +255,6 @@ export default async function AdminDashboardPage() {
     );
   }
 
-  return <Center snapshot={result.data} />;
+  const snapshot = result.data as unknown as OperationsCenterSnapshot;
+  return <Center snapshot={snapshot} />;
 }
