@@ -461,7 +461,7 @@ begin
     v_asset_code || ' 채굴 보상 발행 계정',
     true
   )
-  on conflict (code) do nothing;
+  on conflict do nothing;
 
   select id, asset_id
   into v_account_id, p_asset_id
@@ -1448,7 +1448,7 @@ select
   true
 from public.assets a
 where a.is_active
-on conflict (code) do nothing;
+on conflict do nothing;
 
 insert into public.ledger_account_balances(account_id, balance)
 select la.id, 0
