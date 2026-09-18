@@ -1,7 +1,11 @@
 import { randomUUID } from "crypto";
 import {
   getActiveAssets,
+  getAdminMiningCalculationErrors,
   getAdminMiningCalculationRuns,
+  getAdminMiningDailySummary,
+  getAdminMiningReconciliationSummary,
+  getAdminMiningRewardEvents,
   getAdminMiningContracts,
   getAdminMiningProductVersions,
   getAdminMiningProducts,
@@ -95,7 +99,11 @@ export default async function MiningAdminPage({
     settingsResult,
     membersResult,
     contractsResult,
-    runsResult
+    runsResult,
+    reconciliationResult,
+    errorsResult,
+    dailySummaryResult,
+    rewardEventsResult
   ] = await Promise.all([
     getAdminMiningProducts(supabase),
     getAdminMiningProductVersions(supabase),
@@ -103,7 +111,11 @@ export default async function MiningAdminPage({
     getMiningSettings(supabase),
     getMiningMemberCandidates(supabase),
     getAdminMiningContracts(supabase),
-    getAdminMiningCalculationRuns(supabase)
+    getAdminMiningCalculationRuns(supabase),
+    getAdminMiningReconciliationSummary(supabase),
+    getAdminMiningCalculationErrors(supabase),
+    getAdminMiningDailySummary(supabase),
+    getAdminMiningRewardEvents(supabase)
   ]);
 
   if (
@@ -113,7 +125,11 @@ export default async function MiningAdminPage({
     settingsResult.error ||
     membersResult.error ||
     contractsResult.error ||
-    runsResult.error
+    runsResult.error ||
+    reconciliationResult.error ||
+    errorsResult.error ||
+    dailySummaryResult.error ||
+    rewardEventsResult.error
   ) {
     return (
       <section className="rounded-3xl border border-rose-300/10 bg-rose-300/[0.04] p-6 sm:p-8">
@@ -137,6 +153,10 @@ export default async function MiningAdminPage({
   const members = membersResult.data ?? [];
   const contracts = contractsResult.data ?? [];
   const runs = runsResult.data ?? [];
+  const reconciliation = reconciliationResult.data;
+  const errors = errorsResult.data ?? [];
+  const dailySummary = dailySummaryResult.data ?? [];
+  const rewardEvents = rewardEventsResult.data ?? [];
 
   const publishedVersions = versions.filter(
     (version) => version.status === "published"
@@ -244,6 +264,192 @@ export default async function MiningAdminPage({
             <div className="py-8 text-center text-xs text-zinc-600">
               아직 계산 실행 기록이 없습니다.
             </div>
+          ) : null}
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-sm font-semibold">정산 대사 상태</h2>
+            <p className="mt-1 text-[11px] text-zinc-600">
+              계산량, 실제 지급량, 미지급 잔여량과 Ledger 균형 상태를 한 화면에서 확인합니다.
+            </p>
+          </div>
+          <span className={reconciliation?.reconciliation_status === "healthy"
+            ? "rounded-full border border-emerald-300/15 bg-emerald-300/[0.04] px-3 py-1.5 text-[10px] font-semibold text-emerald-200"
+            : "rounded-full border border-amber-300/15 bg-amber-300/[0.04] px-3 py-1.5 text-[10px] font-semibold text-amber-200"}>
+            {reconciliation?.reconciliation_status === "healthy" ? "정상 대사" : "점검 필요"}
+          </span>
+        </div>
+
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            ["활성 계약", String(reconciliation?.active_contracts ?? 0)],
+            ["완료 계약", String(reconciliation?.completed_contracts ?? 0)],
+            ["계산 오류", String(reconciliation?.error_count ?? 0)],
+            ["지연 계약", String(reconciliation?.overdue_contracts ?? 0)]
+          ].map(([label, value]) => (
+            <div key={label} className="rounded-xl border border-white/[0.06] bg-black/10 p-3">
+              <div className="text-[10px] text-zinc-600">{label}</div>
+              <div className="mt-1 text-lg font-semibold text-zinc-100">{value}</div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-3 grid gap-3 sm:grid-cols-3">
+          <div className="rounded-xl border border-white/[0.06] bg-black/10 p-3">
+            <div className="text-[10px] text-zinc-600">누적 계산 보상</div>
+            <div className="mt-1 text-sm font-semibold">{formatAmount(reconciliation?.accrued_amount)}</div>
+          </div>
+          <div className="rounded-xl border border-white/[0.06] bg-black/10 p-3">
+            <div className="text-[10px] text-zinc-600">누적 지급 보상</div>
+            <div className="mt-1 text-sm font-semibold">{formatAmount(reconciliation?.paid_amount)}</div>
+          </div>
+          <div className="rounded-xl border border-amber-300/10 bg-amber-300/[0.03] p-3">
+            <div className="text-[10px] text-amber-200/60">미지급 잔여량</div>
+            <div className="mt-1 text-sm font-semibold text-amber-100">{formatAmount(reconciliation?.unpaid_amount)}</div>
+          </div>
+        </div>
+
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <div className="rounded-xl border border-white/[0.06] bg-black/10 p-3">
+            <div className="text-[10px] text-zinc-600">계약 데이터 이상</div>
+            <div className={reconciliation?.invalid_contracts ? "mt-1 text-sm font-semibold text-rose-300" : "mt-1 text-sm font-semibold text-emerald-300"}>
+              {String(reconciliation?.invalid_contracts ?? 0)}건
+            </div>
+          </div>
+          <div className="rounded-xl border border-white/[0.06] bg-black/10 p-3">
+            <div className="text-[10px] text-zinc-600">Ledger 불균형</div>
+            <div className={reconciliation?.unbalanced_ledger_count ? "mt-1 text-sm font-semibold text-rose-300" : "mt-1 text-sm font-semibold text-emerald-300"}>
+              {String(reconciliation?.unbalanced_ledger_count ?? 0)}건
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
+        <h2 className="text-sm font-semibold">최근 계산 오류</h2>
+        <p className="mt-1 text-[11px] text-zinc-600">
+          계산 중 개별 계약에서 발생한 오류는 해당 계약과 함께 기록됩니다. 다음 실행에서 아직 미계산 구간을 다시 처리할 수 있습니다.
+        </p>
+        <div className="mt-4 overflow-x-auto">
+          <table className="min-w-[980px] w-full text-left text-xs">
+            <thead className="border-b border-white/[0.06] text-[10px] uppercase tracking-[0.16em] text-zinc-600">
+              <tr>
+                <th className="px-3 py-2">시각</th>
+                <th className="px-3 py-2">회원</th>
+                <th className="px-3 py-2">상품</th>
+                <th className="px-3 py-2">SQLSTATE</th>
+                <th className="px-3 py-2">오류 내용</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/[0.05]">
+              {errors.map((item) => (
+                <tr key={item.id}>
+                  <td className="px-3 py-3 text-[10px] text-zinc-500">{formatDate(item.created_at)}</td>
+                  <td className="px-3 py-3">
+                    {item.display_name || item.username || item.email || item.user_id || "-"}
+                  </td>
+                  <td className="px-3 py-3">{item.product_code ?? "-"}</td>
+                  <td className="px-3 py-3 font-mono text-[10px] text-rose-300">{item.sqlstate}</td>
+                  <td className="max-w-[560px] truncate px-3 py-3 text-[10px] text-zinc-500" title={item.error_message ?? ""}>
+                    {item.error_message ?? "-"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {!errors.length ? (
+            <div className="py-8 text-center text-xs text-zinc-600">최근 계산 오류가 없습니다.</div>
+          ) : null}
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
+        <h2 className="text-sm font-semibold">일자별 정산 요약</h2>
+        <p className="mt-1 text-[11px] text-zinc-600">
+          한국시간 기준 계산 완료 구간을 자산별로 합산합니다.
+        </p>
+        <div className="mt-4 overflow-x-auto">
+          <table className="min-w-[920px] w-full text-left text-xs">
+            <thead className="border-b border-white/[0.06] text-[10px] uppercase tracking-[0.16em] text-zinc-600">
+              <tr>
+                <th className="px-3 py-2">날짜</th>
+                <th className="px-3 py-2">자산</th>
+                <th className="px-3 py-2">계산 건수</th>
+                <th className="px-3 py-2">계약</th>
+                <th className="px-3 py-2">회원</th>
+                <th className="px-3 py-2">계산량</th>
+                <th className="px-3 py-2">지급량</th>
+                <th className="px-3 py-2">미지급</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/[0.05]">
+              {dailySummary.map((item) => (
+                <tr key={`${item.summary_date}-${item.asset_code}`}>
+                  <td className="px-3 py-3">{item.summary_date ?? "-"}</td>
+                  <td className="px-3 py-3">{item.asset_code ?? "-"}</td>
+                  <td className="px-3 py-3">{String(item.accrual_count ?? 0)}</td>
+                  <td className="px-3 py-3">{String(item.contract_count ?? 0)}</td>
+                  <td className="px-3 py-3">{String(item.user_count ?? 0)}</td>
+                  <td className="px-3 py-3 font-semibold">{formatAmount(item.accrued_amount)}</td>
+                  <td className="px-3 py-3 font-semibold">{formatAmount(item.paid_amount)}</td>
+                  <td className="px-3 py-3 text-amber-200">{formatAmount(item.unpaid_amount)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {!dailySummary.length ? (
+            <div className="py-8 text-center text-xs text-zinc-600">아직 정산 데이터가 없습니다.</div>
+          ) : null}
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
+        <h2 className="text-sm font-semibold">최근 보상 이벤트</h2>
+        <p className="mt-1 text-[11px] text-zinc-600">
+          계산된 보상과 실제 지급 Ledger 거래의 연결 상태를 확인합니다.
+        </p>
+        <div className="mt-4 overflow-x-auto">
+          <table className="min-w-[1120px] w-full text-left text-xs">
+            <thead className="border-b border-white/[0.06] text-[10px] uppercase tracking-[0.16em] text-zinc-600">
+              <tr>
+                <th className="px-3 py-2">계산 종료</th>
+                <th className="px-3 py-2">회원 ID</th>
+                <th className="px-3 py-2">상품</th>
+                <th className="px-3 py-2">계산 보상</th>
+                <th className="px-3 py-2">실제 지급</th>
+                <th className="px-3 py-2">Ledger</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/[0.05]">
+              {rewardEvents.map((item) => (
+                <tr key={item.accrual_id}>
+                  <td className="px-3 py-3 text-[10px] text-zinc-500">{formatDate(item.period_end)}</td>
+                  <td className="px-3 py-3 font-mono text-[10px] text-zinc-600">{item.user_id ?? "-"}</td>
+                  <td className="px-3 py-3">{item.product_code ?? "-"}</td>
+                  <td className="px-3 py-3 font-semibold">{formatAmount(item.accrued_amount)} {item.asset_code ?? ""}</td>
+                  <td className="px-3 py-3 font-semibold">
+                    {item.paid_amount == null ? (
+                      <span className="text-amber-200">미지급</span>
+                    ) : (
+                      `${formatAmount(item.paid_amount)} ${item.asset_code ?? ""}`
+                    )}
+                  </td>
+                  <td className="px-3 py-3">
+                    {item.ledger_transaction_id ? (
+                      <span className="text-emerald-300">연결됨</span>
+                    ) : (
+                      <span className="text-zinc-600">없음</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {!rewardEvents.length ? (
+            <div className="py-8 text-center text-xs text-zinc-600">아직 보상 이벤트가 없습니다.</div>
           ) : null}
         </div>
       </section>
