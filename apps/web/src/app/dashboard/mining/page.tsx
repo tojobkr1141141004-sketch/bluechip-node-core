@@ -3,6 +3,7 @@ import {
   getUserMiningProducts,
   getUserMiningRewardHistory,
   getUserMiningRewardPayments,
+  getUserMiningRewardCorrections,
   getUserMiningContracts
 } from "@apex-matrix/database";
 import { requireWebUser } from "@/lib/auth";
@@ -33,13 +34,15 @@ export default async function MiningPage() {
     contractsResult,
     historyResult,
     paymentsResult,
-    cancellationsResult
+    cancellationsResult,
+    correctionsResult
   ] = await Promise.all([
     getUserMiningProducts(supabase),
     getUserMiningContracts(supabase),
     getUserMiningRewardHistory(supabase),
     getUserMiningRewardPayments(supabase),
-    getUserMiningContractCancellations(supabase)
+    getUserMiningContractCancellations(supabase),
+    getUserMiningRewardCorrections(supabase)
   ]);
 
   if (
@@ -47,7 +50,8 @@ export default async function MiningPage() {
     contractsResult.error ||
     historyResult.error ||
     paymentsResult.error ||
-    cancellationsResult.error
+    cancellationsResult.error ||
+    correctionsResult.error
   ) {
     return (
       <section className="rounded-3xl border border-rose-300/10 bg-rose-300/[0.04] p-6 sm:p-8">
@@ -69,6 +73,7 @@ export default async function MiningPage() {
   const rewardHistory = historyResult.data ?? [];
   const payments = paymentsResult.data ?? [];
   const cancellations = cancellationsResult.data ?? [];
+  const corrections = correctionsResult.data ?? [];
 
   return (
     <section className="space-y-4">
@@ -262,6 +267,50 @@ export default async function MiningPage() {
           {!rewardHistory.length ? (
             <div className="py-8 text-center text-xs text-slate-600">
               아직 채굴 계산 기록이 없습니다.
+            </div>
+          ) : null}
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
+        <h2 className="text-sm font-semibold">보상 정정 내역</h2>
+        <p className="mt-1 text-[11px] text-slate-600">
+          계산 기록 자체를 지우거나 바꾸지 않고 별도 정정 기록으로 반영된 내역입니다.
+        </p>
+        <div className="mt-4 space-y-3">
+          {corrections.map((item) => (
+            <article key={item.correction_id} className="rounded-xl border border-white/[0.06] bg-black/10 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="text-xs font-semibold">{item.correction_type ?? "보상 정정"}</div>
+                <div className="text-[10px] text-slate-600">{formatDate(item.applied_at)}</div>
+              </div>
+              <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                <div>
+                  <div className="text-[10px] text-slate-600">정정 수량</div>
+                  <div className="mt-1 text-sm font-semibold">{formatAmount(item.amount)}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] text-slate-600">Ledger</div>
+                  <div className="mt-1 text-sm font-semibold">
+                    {item.ledger_transaction_id ? "지급 반영" : "잔여량 조정"}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-[10px] text-slate-600">원 계산 기록</div>
+                  <div className="mt-1 font-mono text-[10px] text-slate-500">
+                    {item.original_accrual_id ?? "별도 계산 정정"}
+                  </div>
+                </div>
+              </div>
+              <div className="mt-3 rounded-lg border border-white/[0.05] p-3">
+                <div className="text-[10px] text-slate-600">정정 사유</div>
+                <div className="mt-1 text-xs leading-5 text-slate-300">{item.reason ?? "-"}</div>
+              </div>
+            </article>
+          ))}
+          {!corrections.length ? (
+            <div className="rounded-xl border border-white/[0.06] bg-black/10 p-8 text-center text-xs text-slate-600">
+              보상 정정 내역이 없습니다.
             </div>
           ) : null}
         </div>
