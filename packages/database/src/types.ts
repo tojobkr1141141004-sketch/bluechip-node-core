@@ -3605,6 +3605,7 @@ export type Database = {
           total_remaining: number
         }[]
       }
+      get_admin_operations_center: { Args: never; Returns: Json }
       get_mining_member_candidates: {
         Args: never
         Returns: {
