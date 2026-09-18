@@ -3,6 +3,7 @@ import {
   getActiveAssets,
   getAdminMiningCalculationErrors,
   getAdminMiningCalculationRuns,
+  getAdminMiningContractCancellations,
   getAdminMiningDailySummary,
   getAdminMiningReconciliationSummary,
   getAdminMiningRewardEvents,
@@ -14,6 +15,7 @@ import {
 } from "@apex-matrix/database";
 import { requireAdminUser } from "@/lib/auth";
 import {
+  cancelContract,
   publishVersion,
   runMiningNow,
   saveMiningSettings,
@@ -61,6 +63,7 @@ function Notice({ success, error }: { success?: string; error?: string }) {
       version_published: "상품 버전을 발행했습니다.",
       contract_created: "회원 채굴 계약을 활성화했습니다.",
       calculation_run: "채굴 계산 엔진을 즉시 실행했습니다.",
+      contract_cancelled: "채굴 계약을 취소하고 취소 시각까지 계산·정산했습니다.",
       settings_saved: "채굴 설정을 저장했습니다."
     };
 
@@ -103,7 +106,8 @@ export default async function MiningAdminPage({
     reconciliationResult,
     errorsResult,
     dailySummaryResult,
-    rewardEventsResult
+    rewardEventsResult,
+    cancellationsResult
   ] = await Promise.all([
     getAdminMiningProducts(supabase),
     getAdminMiningProductVersions(supabase),
@@ -115,7 +119,8 @@ export default async function MiningAdminPage({
     getAdminMiningReconciliationSummary(supabase),
     getAdminMiningCalculationErrors(supabase),
     getAdminMiningDailySummary(supabase),
-    getAdminMiningRewardEvents(supabase)
+    getAdminMiningRewardEvents(supabase),
+    getAdminMiningContractCancellations(supabase)
   ]);
 
   if (
@@ -129,7 +134,8 @@ export default async function MiningAdminPage({
     reconciliationResult.error ||
     errorsResult.error ||
     dailySummaryResult.error ||
-    rewardEventsResult.error
+    rewardEventsResult.error ||
+    cancellationsResult.error
   ) {
     return (
       <section className="rounded-3xl border border-rose-300/10 bg-rose-300/[0.04] p-6 sm:p-8">
@@ -157,6 +163,7 @@ export default async function MiningAdminPage({
   const errors = errorsResult.data ?? [];
   const dailySummary = dailySummaryResult.data ?? [];
   const rewardEvents = rewardEventsResult.data ?? [];
+  const cancellations = cancellationsResult.data ?? [];
 
   const publishedVersions = versions.filter(
     (version) => version.status === "published"
@@ -526,6 +533,155 @@ export default async function MiningAdminPage({
             상품이 일시 중지되어도 이미 시작된 계약은 별도 취소 정책이 만들어지기 전까지 계약 기간에 따라 계속 계산됩니다.
           </div>
         </form>
+      </section>
+
+      <section className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-sm font-semibold">채굴 계약 현황</h2>
+            <p className="mt-1 text-[11px] text-zinc-600">
+              계약 종료 시각과 취소 시각을 구분해 확인합니다. 활성 계약은 취소 시점까지 자동 계산·지급한 뒤 종료할 수 있습니다.
+            </p>
+          </div>
+          <span className="rounded-full border border-white/10 px-2.5 py-1 text-[10px] text-zinc-500">
+            {contracts.length}개 계약
+          </span>
+        </div>
+
+        <div className="mt-4 overflow-x-auto">
+          <table className="min-w-[1500px] w-full text-left text-xs">
+            <thead className="border-b border-white/[0.06] text-[10px] uppercase tracking-[0.16em] text-zinc-600">
+              <tr>
+                <th className="px-3 py-2">회원</th>
+                <th className="px-3 py-2">상품</th>
+                <th className="px-3 py-2">용량</th>
+                <th className="px-3 py-2">누적 채굴</th>
+                <th className="px-3 py-2">누적 지급</th>
+                <th className="px-3 py-2">미지급</th>
+                <th className="px-3 py-2">상태</th>
+                <th className="px-3 py-2">시작</th>
+                <th className="px-3 py-2">종료 예정</th>
+                <th className="px-3 py-2">최근 계산</th>
+                <th className="px-3 py-2">관리</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/[0.05]">
+              {contracts.map((contract) => (
+                <tr key={contract.contract_id ?? randomUUID()} className="text-zinc-300">
+                  <td className="px-3 py-4">
+                    <div className="font-medium">
+                      {contract.display_name || contract.username || contract.email || "회원"}
+                    </div>
+                    <div className="mt-1 text-[10px] text-zinc-600">
+                      {contract.email ?? contract.user_id ?? "-"}
+                    </div>
+                  </td>
+                  <td className="px-3 py-4">
+                    <div className="font-medium">{contract.product_code ?? "-"}</div>
+                    <div className="mt-1 text-[10px] text-zinc-600">
+                      {contract.product_name ?? "-"} · v{String(contract.version ?? "-")}
+                    </div>
+                  </td>
+                  <td className="px-3 py-4">
+                    {formatAmount(contract.capacity)} {contract.capacity_unit ?? ""}
+                  </td>
+                  <td className="px-3 py-4">
+                    {formatAmount(contract.total_reward_earned)} {contract.reward_asset_code ?? ""}
+                  </td>
+                  <td className="px-3 py-4">
+                    {formatAmount(contract.total_reward_paid)} {contract.reward_asset_code ?? ""}
+                  </td>
+                  <td className="px-3 py-4">
+                    {formatAmount(contract.pending_reward)} {contract.reward_asset_code ?? ""}
+                  </td>
+                  <td className="px-3 py-4">
+                    {statusLabel[contract.status ?? ""] ?? contract.status ?? "-"}
+                    {contract.cancelled_at ? (
+                      <div className="mt-1 text-[10px] text-amber-200/60">
+                        취소 {formatDate(contract.cancelled_at)}
+                      </div>
+                    ) : null}
+                    {contract.completed_at ? (
+                      <div className="mt-1 text-[10px] text-emerald-200/60">
+                        완료 {formatDate(contract.completed_at)}
+                      </div>
+                    ) : null}
+                  </td>
+                  <td className="px-3 py-4 text-zinc-500">{formatDate(contract.started_at)}</td>
+                  <td className="px-3 py-4 text-zinc-500">{formatDate(contract.scheduled_end_at)}</td>
+                  <td className="px-3 py-4 text-zinc-500">{formatDate(contract.last_calculated_at)}</td>
+                  <td className="px-3 py-4">
+                    {contract.status === "active" ? (
+                      <form action={cancelContract} className="grid min-w-[240px] gap-2">
+                        <input type="hidden" name="contract_id" value={contract.contract_id ?? ""} />
+                        <input type="hidden" name="idempotency_key" value={`mining-cancel:${randomUUID()}`} />
+                        <input
+                          name="reason"
+                          required
+                          minLength={3}
+                          maxLength={1000}
+                          placeholder="취소 사유 입력"
+                          className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-[10px] outline-none"
+                        />
+                        <button
+                          type="submit"
+                          className="rounded-lg border border-rose-300/15 bg-rose-300/[0.04] px-3 py-2 text-[10px] font-semibold text-rose-200"
+                        >
+                          계약 취소 + 최종 계산
+                        </button>
+                      </form>
+                    ) : (
+                      <span className="text-[10px] text-zinc-600">터미널 계약</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {!contracts.length ? (
+            <div className="py-8 text-center text-xs text-zinc-600">
+              활성화된 채굴 계약이 없습니다.
+            </div>
+          ) : null}
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
+        <h2 className="text-sm font-semibold">계약 취소 이력</h2>
+        <p className="mt-1 text-[11px] text-zinc-600">
+          취소 시점까지 확정된 계산·지급 결과와 운영자 사유를 별도 기록으로 남깁니다.
+        </p>
+        <div className="mt-4 overflow-x-auto">
+          <table className="min-w-[1100px] w-full text-left text-xs">
+            <thead className="border-b border-white/[0.06] text-[10px] uppercase tracking-[0.16em] text-zinc-600">
+              <tr>
+                <th className="px-3 py-2">취소 시각</th>
+                <th className="px-3 py-2">회원</th>
+                <th className="px-3 py-2">상품</th>
+                <th className="px-3 py-2">취소 전 계산 완료</th>
+                <th className="px-3 py-2">누적 지급</th>
+                <th className="px-3 py-2">잔여</th>
+                <th className="px-3 py-2">사유</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/[0.05]">
+              {cancellations.map((item) => (
+                <tr key={item.cancellation_id}>
+                  <td className="px-3 py-3 text-[10px] text-zinc-500">{formatDate(item.created_at)}</td>
+                  <td className="px-3 py-3">{item.display_name || item.username || item.email || item.user_id || "-"}</td>
+                  <td className="px-3 py-3">{item.product_code ?? "-"}</td>
+                  <td className="px-3 py-3 text-[10px] text-zinc-500">{formatDate(item.calculated_until)}</td>
+                  <td className="px-3 py-3">{formatAmount(item.reward_paid_on_cancel)}</td>
+                  <td className="px-3 py-3">{formatAmount(item.pending_reward_after_cancel)}</td>
+                  <td className="max-w-[420px] truncate px-3 py-3 text-[10px] text-zinc-500" title={item.reason ?? ""}>{item.reason ?? "-"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {!cancellations.length ? (
+            <div className="py-8 text-center text-xs text-zinc-600">계약 취소 이력이 없습니다.</div>
+          ) : null}
+        </div>
       </section>
 
       <section className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
