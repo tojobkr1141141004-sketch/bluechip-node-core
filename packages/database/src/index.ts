@@ -66,3 +66,5 @@ export {
   updateMiningProduct,
   updateMiningSettings,
 } from "./mining";
+
+export { getAdminOperationsCenter, type OperationsCenterSnapshot } from "./operations-center";
