@@ -1,4 +1,5 @@
 import {
+  getUserMiningContractCancellations,
   getUserMiningProducts,
   getUserMiningRewardHistory,
   getUserMiningRewardPayments,
@@ -212,7 +213,8 @@ export default async function MiningPage() {
             <div className="rounded-xl border border-white/[0.06] bg-black/10 p-8 text-center text-xs text-slate-600">
               계약 취소 이력이 없습니다.
             </div>
-          )}
+          ) : null}
+        </div>
       </section>
 
       <section className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
