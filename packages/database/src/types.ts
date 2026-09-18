@@ -66,6 +66,33 @@ export type Database = {
         };
         Relationships: [];
       };
+      member_directory: {
+        Row: {
+          user_id: string;
+          email: string | null;
+          confirmed_at: string | null;
+          last_sign_in_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          email?: string | null;
+          confirmed_at?: string | null;
+          last_sign_in_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          email?: string | null;
+          confirmed_at?: string | null;
+          last_sign_in_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       admin_roles: {
         Row: {
           id: string;
@@ -247,7 +274,22 @@ export type Database = {
         Relationships: [];
       };
     };
-    Views: Record<string, never>;
+    Views: {
+      admin_member_directory: {
+        Row: {
+          id: string;
+          email: string | null;
+          display_name: string | null;
+          username: string | null;
+          status: string;
+          created_at: string;
+          updated_at: string;
+          confirmed_at: string | null;
+          last_sign_in_at: string | null;
+        };
+        Relationships: [];
+      };
+    };
     Functions: Record<string, never>;
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
