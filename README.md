@@ -1,22 +1,51 @@
-# 🌿 에코 프리미엄 자산 허브 · BLUECHIP NODE CORE
+# BLUECHIP Edge Asset Hub
 
-20대부터 70대까지 누구나 이해할 수 있는 **친화적 커맨드 센터**입니다.
+Production-oriented dashboard demo migrated from the original static HTML prototype.
 
-## 화면 구성
+## Stack
 
-| 메뉴 | 설명 |
-|---|---|
-| 🌍 지구본 노드 | 전 세계 노드를 입체 지도로 확인 |
-| 📊 자산 건강 | 응답 속도·정상/주의 상태 체크 |
-| 🔒 안심 금고 | 준비 → 확인 → 안전 잠금 → 정산 완료 |
-| 🌿 이용 안내 | 쉬운 사용 가이드 |
+- Next.js 16.3.3 (Active LTS)
+- React 19.3
+- TypeScript 6.0.2
+- Tailwind CSS 4.3.3
+- Motion 13.4.0
+- Geist 1.7.2
+- Lucide React 1.47.0
+- Node.js 24 in CI
 
-## 바로 보기
+## Architecture
 
-- **Vercel**: https://bluechip-eco-hub.vercel.app
-- **GitHub Pages / 정적**: 이 레포의 `index.html`을 그대로 열어도 됩니다.
+The app uses the Next.js App Router with Server Components by default and a small client boundary for dashboard interactivity.
 
-## 참고
+Key paths:
 
-이 화면은 **상태·보호 흐름을 보여주는 데모 커맨드 센터**입니다.  
-수익·배당이 자동 확정된다는 의미가 아닙니다.
+- `src/app/page.tsx`: route entry
+- `src/components/dashboard/dashboard-shell.tsx`: interactive dashboard feature
+- `src/lib/nodes.ts`: typed sample edge-node model
+- `src/app/api/health/route.ts`: liveness endpoint
+- `tests/dashboard.spec.ts`: end-to-end smoke coverage
+- `next.config.ts`: React Compiler, typed routes, Cache Components, and security headers
+
+## Performance
+
+- Motion 13.4 for SVG path morphing and micro-interactions.
+- CSS `transform`/opacity effects use compositor-friendly patterns.
+- React state updates are throttled to low-frequency UI changes; animation work remains outside the React render loop where possible.
+- `prefers-reduced-motion` is respected.
+- No third-party runtime CDN dependencies are required.
+
+SVG path morphing itself should not be described as guaranteed GPU-rendered. Compositor-friendly transforms and opacity are used where appropriate.
+
+## Safety boundary
+
+The dashboard is a visual/telemetry demo. Values are synthetic and are not claims about real assets, investment returns, dividends, gold holdings, deposits, escrow, or withdrawals.
+
+## Quality gates
+
+```bash
+pnpm install
+pnpm lint
+pnpm typecheck
+pnpm build
+pnpm test:e2e
+```
