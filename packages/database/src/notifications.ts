@@ -27,6 +27,10 @@ export async function getAdminNotificationSummary(client: DatabaseClient) {
   return client.rpc("get_admin_notification_summary");
 }
 
+export async function getAdminNotificationEvents(client: DatabaseClient, limit = 100) {
+  return client.rpc("get_admin_notification_events", { p_limit: limit });
+}
+
 export async function acknowledgeAdminNotification(
   client: DatabaseClient,
   notificationId: string
