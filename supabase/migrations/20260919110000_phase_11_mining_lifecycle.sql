@@ -7,6 +7,14 @@ alter table public.mining_contracts
   add column if not exists cancelled_at timestamptz,
   add column if not exists cancelled_by uuid references auth.users(id) on delete restrict;
 
+update public.mining_contracts
+set completed_at = coalesce(completed_at, scheduled_end_at)
+where status = 'completed' and completed_at is null;
+
+update public.mining_contracts
+set cancelled_at = coalesce(cancelled_at, updated_at)
+where status = 'cancelled' and cancelled_at is null;
+
 alter table public.mining_contracts
   drop constraint if exists mining_contracts_terminal_fields_chk;
 
@@ -15,7 +23,7 @@ alter table public.mining_contracts
   check (
     (status = 'completed' and completed_at is not null and cancelled_at is null and cancelled_by is null)
     or
-    (status = 'cancelled' and cancelled_at is not null and cancelled_by is not null and completed_at is null)
+    (status = 'cancelled' and cancelled_at is not null and completed_at is null)
     or
     (status in ('active') and completed_at is null and cancelled_at is null and cancelled_by is null)
   );
@@ -671,7 +679,7 @@ with contract_rollup as (
         or last_calculated_at < started_at
         or last_calculated_at > scheduled_end_at
         or (status = 'completed' and completed_at is null)
-        or (status = 'cancelled' and (cancelled_at is null or cancelled_by is null))
+        or (status = 'cancelled' and cancelled_at is null)
     )::integer as invalid_contracts
   from public.mining_contracts
 ),
