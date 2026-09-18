@@ -97,6 +97,11 @@ export function LoginForm() {
           required
         />
       </label>
+      {mode === "signup" ? (
+        <p className="text-[11px] leading-5 text-zinc-500">
+          가입 비밀번호는 12자 이상이며 대문자·소문자·숫자·특수문자를 각각 포함해야 합니다.
+        </p>
+      ) : null}
       <label className="block text-sm text-zinc-300">
         비밀번호
         <input
