@@ -77,3 +77,8 @@ export {
   resolveAdminNotification,
   type AdminNotificationSummary,
 } from "./notifications";
+
+export {
+  getAdminSessionSecurityStatus,
+  type AdminSessionSecurityStatus,
+} from "./auth-security";
