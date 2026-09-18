@@ -161,7 +161,7 @@ export default async function FinancePage({
                       </div>
                     </div>
                     <span className="rounded-full border border-white/10 px-2.5 py-1 text-[10px] text-zinc-300">
-                      {depositStatusLabel[status] ?? status || "상태 확인 중"}
+                      {(depositStatusLabel[status] ?? status) || "상태 확인 중"}
                     </span>
                   </div>
 
@@ -278,7 +278,7 @@ export default async function FinancePage({
                       </div>
                     </div>
                     <span className="rounded-full border border-white/10 px-2.5 py-1 text-[10px] text-zinc-300">
-                      {withdrawalStatusLabel[status] ?? status || "상태 확인 중"}
+                      {(withdrawalStatusLabel[status] ?? status) || "상태 확인 중"}
                     </span>
                   </div>
 
