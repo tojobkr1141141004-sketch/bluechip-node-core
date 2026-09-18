@@ -113,7 +113,7 @@ export default async function NotificationsPage() {
 
                   <div className="flex flex-wrap gap-2">
                     <Link
-                      href={notification.href}
+                      href={notification.href as never}
                       className="inline-flex items-center gap-1.5 rounded-xl border border-white/10 px-3 py-2 text-[10px] font-semibold text-zinc-300 hover:bg-white/[0.04]"
                     >
                       담당 화면
