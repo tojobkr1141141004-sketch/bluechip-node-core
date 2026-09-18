@@ -110,7 +110,7 @@ export async function createMiningProductVersion(
     p_min_capacity: input.minCapacity as unknown as number,
     p_max_capacity: input.maxCapacity
       ? (input.maxCapacity as unknown as number)
-      : null,
+      : undefined,
     p_term_days: input.termDays
   });
 }
