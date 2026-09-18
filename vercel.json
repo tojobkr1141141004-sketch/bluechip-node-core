@@ -4,6 +4,6 @@
   "git": {
     "deploymentEnabled": true
   },
-  "buildCommand": "pnpm turbo build --filter=@apex-matrix/web...",
+  "buildCommand": "cd apps/web && pnpm exec next build",
   "outputDirectory": "apps/web/.next"
 }
