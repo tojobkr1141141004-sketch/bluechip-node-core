@@ -93,7 +93,7 @@ revoke all on function private.get_admin_session_security_status() from public,a
 create or replace function public.get_admin_session_security_status()
 returns jsonb
 language sql
-security invoker
+security definer
 set search_path=public,auth,pg_temp
 as $function$ select private.get_admin_session_security_status(); $function$;
 
