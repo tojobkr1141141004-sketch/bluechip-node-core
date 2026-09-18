@@ -3782,6 +3782,7 @@ export type Database = {
         }
       }
       get_admin_operations_center: { Args: never; Returns: Json }
+      get_admin_session_security_status: { Args: never; Returns: Json }
       get_mining_member_candidates: {
         Args: never
         Returns: {
