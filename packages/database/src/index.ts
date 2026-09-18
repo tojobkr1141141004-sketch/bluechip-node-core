@@ -75,12 +75,5 @@ export {
   getAdminNotificationSummary,
   getAdminNotifications,
   resolveAdminNotification,
-} from "./notifications";
-
-export {
-  acknowledgeAdminNotification,
-  getAdminNotificationSummary,
-  getAdminNotifications,
-  resolveAdminNotification,
   type AdminNotificationSummary,
 } from "./notifications";
