@@ -31,6 +31,9 @@ alter table public.mining_contracts
 create index if not exists mining_contracts_cancelled_idx
   on public.mining_contracts (cancelled_at desc, cancelled_by, id);
 
+create index if not exists mining_contracts_cancelled_by_idx
+  on public.mining_contracts (cancelled_by);
+
 create table if not exists public.mining_contract_cancellations (
   id uuid primary key default gen_random_uuid(),
   contract_id uuid not null unique references public.mining_contracts(id) on delete restrict,
