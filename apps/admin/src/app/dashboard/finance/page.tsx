@@ -1,81 +1,381 @@
-import { getAdminLedgerTransactions } from "@apex-matrix/database";
+import { getAdminDepositRequests, getAdminWithdrawalRequests } from "@apex-matrix/database";
 import { requireAdminUser } from "@/lib/auth";
+import {
+  approveDeposit,
+  approveWithdrawal,
+  beginDepositReview,
+  beginWithdrawalReview,
+  completeWithdrawal,
+  failWithdrawal,
+  rejectDeposit,
+  rejectWithdrawal
+} from "./actions";
 
 export const instant = false;
 
-const TYPE_LABELS: Record<string, string> = {
-  deposit: "입금",
-  withdrawal: "출금",
-  mining_reward: "채굴 보상",
-  settlement: "정산",
-  adjustment: "수동 조정",
-  reversal: "정정 거래"
+type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+
+function first(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+const depositStatusLabel: Record<string, string> = {
+  pending: "접수 대기",
+  reviewing: "확인 중",
+  completed: "입금 완료",
+  rejected: "반려",
+  cancelled: "취소됨"
 };
 
-export default async function FinancePage() {
-  const { supabase } = await requireAdminUser();
-  const { data, error } = await getAdminLedgerTransactions(supabase);
+const withdrawalStatusLabel: Record<string, string> = {
+  pending: "접수 대기",
+  reviewing: "확인 중",
+  processing: "송금 처리 중",
+  completed: "출금 완료",
+  rejected: "반려",
+  cancelled: "취소됨",
+  failed: "처리 실패"
+};
 
-  if (error) {
+function Notice({
+  success,
+  error
+}: {
+  success: boolean;
+  error?: string;
+}) {
+  if (success) {
     return (
-      <section className="rounded-3xl border border-red-300/10 bg-red-300/[0.04] p-6 sm:p-8">
-        <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-red-300/80">
+      <p className="rounded-xl border border-emerald-300/15 bg-emerald-300/[0.05] p-3 text-xs text-emerald-200">
+        금융 요청 처리가 완료되었습니다.
+      </p>
+    );
+  }
+
+  if (!error) return null;
+
+  const messages: Record<string, string> = {
+    forbidden: "금융 처리 권한이 없습니다.",
+    not_found: "요청을 찾을 수 없습니다.",
+    state: "현재 요청 상태에서는 해당 작업을 할 수 없습니다.",
+    reference: "외부 처리 참조값을 입력하세요.",
+    reason: "사유를 입력하세요.",
+    balance: "사용자 잔액이 부족하여 출금 예약을 진행할 수 없습니다.",
+    invalid: "요청값을 확인하세요."
+  };
+
+  return (
+    <p className="rounded-xl border border-rose-300/10 bg-rose-300/[0.04] p-3 text-xs text-rose-200">
+      {messages[error] ?? "금융 요청을 처리하지 못했습니다."}
+    </p>
+  );
+}
+
+function UserId({ id }: { id: string }) {
+  return (
+    <div className="mt-1 max-w-full truncate font-mono text-[10px] text-zinc-600" title={id}>
+      회원 ID · {id}
+    </div>
+  );
+}
+
+export default async function FinancePage({
+  searchParams
+}: {
+  searchParams: SearchParams;
+}) {
+  const { supabase } = await requireAdminUser();
+  const params = await searchParams;
+  const success = first(params.success) === "1";
+  const error = first(params.error);
+
+  const [depositsResult, withdrawalsResult] = await Promise.all([
+    getAdminDepositRequests(supabase),
+    getAdminWithdrawalRequests(supabase)
+  ]);
+
+  if (depositsResult.error || withdrawalsResult.error) {
+    return (
+      <section className="rounded-3xl border border-rose-300/10 bg-rose-300/[0.04] p-6 sm:p-8">
+        <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-300/80">
           FINANCE
         </div>
-        <h1 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">금융 원장</h1>
-        <p className="mt-2 text-sm leading-6 text-slate-400">
-          금융 원장을 불러오지 못했습니다. 금융 조회 권한과 DB 보안 정책을 확인해 주세요.
+        <h1 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">금융 운영</h1>
+        <p className="mt-2 text-sm leading-6 text-zinc-500">
+          금융 요청을 조회할 수 없습니다. finance.read 권한과 DB 정책을 확인해 주세요.
         </p>
       </section>
     );
   }
 
   return (
-    <section>
-      <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-300/80">
-        FINANCE
-      </div>
-      <h1 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">금융 원장</h1>
-      <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
-        관리자는 원장을 직접 수정하지 않습니다. 금융 사건은 정해진 거래 또는 정정 거래를 통해 기록합니다.
-      </p>
-
-      <div className="mt-6 overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.025]">
-        <div className="grid grid-cols-[1fr_100px_160px] gap-4 border-b border-white/[0.07] px-5 py-3 text-[10px] uppercase tracking-[0.15em] text-slate-500">
-          <div>거래</div>
-          <div>상태</div>
-          <div>처리일시</div>
+    <section className="space-y-4">
+      <div className="rounded-3xl border border-white/[0.07] bg-white/[0.025] p-6 sm:p-8">
+        <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-300/80">
+          FINANCE
         </div>
+        <h1 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">금융 운영</h1>
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-500">
+          입금과 출금 요청을 운영자가 직접 확인합니다. 승인·정정·실패 처리는 모두 DB 금융 함수와 Ledger를 통해 기록되며 잔액 숫자를 직접 수정하지 않습니다.
+        </p>
+        <div className="mt-4">
+          <Notice success={success} error={error} />
+        </div>
+      </div>
 
-        {(data ?? []).map((item) => (
-          <div
-            key={item.id}
-            className="grid grid-cols-[1fr_100px_160px] gap-4 border-b border-white/[0.06] px-5 py-4 last:border-b-0"
-          >
-            <div className="min-w-0">
-              <div className="truncate text-sm font-medium">
-                {TYPE_LABELS[item.transaction_type] ?? item.transaction_type}
-              </div>
-              <div className="mt-1 truncate text-[11px] text-slate-500">
-                {item.description || "금융 원장 거래"}
-              </div>
+      <div className="grid gap-4 xl:grid-cols-2">
+        <section className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h2 className="text-sm font-semibold">입금 요청</h2>
+              <p className="mt-1 text-[11px] text-zinc-600">
+                실제 입금 확인 후 승인하면 사용자 계정에 Ledger가 생성됩니다.
+              </p>
             </div>
-            <div className="text-xs text-slate-400">
-              {item.reversal_of_transaction_id ? "정정 거래" : "기록 완료"}
-            </div>
-            <div className="text-[11px] text-slate-500">
-              {new Date(item.created_at).toLocaleString("ko-KR", {
-                timeZone: "Asia/Seoul"
-              })}
-            </div>
+            <span className="rounded-full border border-white/10 px-2.5 py-1 text-[10px] text-zinc-500">
+              {depositsResult.data?.filter((x) => x.status !== "completed" && x.status !== "rejected" && x.status !== "cancelled").length ?? 0}건 대기
+            </span>
           </div>
-        ))}
 
-        {(data ?? []).length === 0 && (
-          <div className="px-5 py-8 text-sm text-slate-500">
-            아직 기록된 금융 거래가 없습니다.
+          <div className="mt-4 space-y-3">
+            {depositsResult.data?.map((request) => (
+              <article
+                key={request.id}
+                className="rounded-xl border border-white/[0.06] bg-black/10 p-4"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold">
+                      {request.asset_code} · {String(request.amount)}
+                    </div>
+                    <UserId id={request.user_id} />
+                    <div className="mt-2 text-[10px] text-zinc-600">
+                      접수 {new Date(request.created_at).toLocaleString("ko-KR", { timeZone: "Asia/Seoul" })}
+                    </div>
+                  </div>
+                  <span className="rounded-full border border-white/10 px-2.5 py-1 text-[10px] text-zinc-300">
+                    {depositStatusLabel[request.status] ?? request.status}
+                  </span>
+                </div>
+
+                {request.user_note ? (
+                  <div className="mt-3 rounded-lg border border-white/[0.05] bg-white/[0.015] p-3 text-[11px] leading-5 text-zinc-400">
+                    사용자 메모: {request.user_note}
+                  </div>
+                ) : null}
+
+                {request.external_reference ? (
+                  <div className="mt-2 text-[11px] text-zinc-500">
+                    참조: {request.external_reference}
+                  </div>
+                ) : null}
+
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {request.status === "pending" ? (
+                    <form action={beginDepositReview}>
+                      <input type="hidden" name="request_id" value={request.id} />
+                      <button
+                        type="submit"
+                        className="rounded-lg bg-white px-3 py-2 text-[10px] font-bold text-zinc-950"
+                      >
+                        확인 시작
+                      </button>
+                    </form>
+                  ) : null}
+
+                  {request.status === "pending" || request.status === "reviewing" ? (
+                    <>
+                      <form action={approveDeposit} className="flex flex-wrap gap-2">
+                        <input type="hidden" name="request_id" value={request.id} />
+                        <input
+                          name="external_reference"
+                          required
+                          maxLength={160}
+                          placeholder="입금 확인 참조값"
+                          className="w-52 rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-[10px] outline-none focus:border-emerald-300/40"
+                        />
+                        <button
+                          type="submit"
+                          className="rounded-lg border border-emerald-300/20 bg-emerald-300/[0.06] px-3 py-2 text-[10px] font-semibold text-emerald-200"
+                        >
+                          입금 승인
+                        </button>
+                      </form>
+                      <form action={rejectDeposit} className="flex flex-wrap gap-2">
+                        <input type="hidden" name="request_id" value={request.id} />
+                        <input
+                          name="reason"
+                          required
+                          maxLength={500}
+                          placeholder="반려 사유"
+                          className="w-52 rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-[10px] outline-none focus:border-rose-300/40"
+                        />
+                        <button
+                          type="submit"
+                          className="rounded-lg border border-rose-300/15 px-3 py-2 text-[10px] text-rose-200"
+                        >
+                          반려
+                        </button>
+                      </form>
+                    </>
+                  ) : null}
+                </div>
+              </article>
+            ))}
+
+            {!depositsResult.data?.length ? (
+              <div className="py-8 text-center text-xs text-zinc-600">
+                현재 입금 요청이 없습니다.
+              </div>
+            ) : null}
           </div>
-        )}
+        </section>
+
+        <section className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h2 className="text-sm font-semibold">출금 요청</h2>
+              <p className="mt-1 text-[11px] text-zinc-600">
+                승인 시 금액을 출금 대기 계정으로 예약합니다. 실제 송금은 운영자가 수동 처리합니다.
+              </p>
+            </div>
+            <span className="rounded-full border border-white/10 px-2.5 py-1 text-[10px] text-zinc-500">
+              {withdrawalsResult.data?.filter((x) => x.status === "pending" || x.status === "reviewing" || x.status === "processing").length ?? 0}건 처리 중
+            </span>
+          </div>
+
+          <div className="mt-4 space-y-3">
+            {withdrawalsResult.data?.map((request) => (
+              <article
+                key={request.id}
+                className="rounded-xl border border-white/[0.06] bg-black/10 p-4"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold">
+                      {request.asset_code} · {String(request.amount)}
+                    </div>
+                    <UserId id={request.user_id} />
+                    <div className="mt-2 text-[10px] text-zinc-600">
+                      접수 {new Date(request.created_at).toLocaleString("ko-KR", { timeZone: "Asia/Seoul" })}
+                    </div>
+                  </div>
+                  <span className="rounded-full border border-white/10 px-2.5 py-1 text-[10px] text-zinc-300">
+                    {withdrawalStatusLabel[request.status] ?? request.status}
+                  </span>
+                </div>
+
+                <div className="mt-3 rounded-lg border border-white/[0.05] bg-white/[0.015] p-3 text-[11px] leading-5 text-zinc-400">
+                  <div>
+                    수취 방식: {request.destination_type === "bank" ? "은행 계좌" : "USDT 지갑"}
+                  </div>
+                  {request.destination_name ? <div>수취인: {request.destination_name}</div> : null}
+                  <div className="break-all">수취 정보: {request.destination_value}</div>
+                  {request.destination_network ? <div>네트워크: {request.destination_network}</div> : null}
+                  {request.user_note ? <div className="mt-2">사용자 메모: {request.user_note}</div> : null}
+                </div>
+
+                {request.external_reference ? (
+                  <div className="mt-2 text-[11px] text-zinc-500">
+                    외부 처리 참조: {request.external_reference}
+                  </div>
+                ) : null}
+
+                <div className="mt-4 space-y-2">
+                  {request.status === "pending" ? (
+                    <form action={beginWithdrawalReview}>
+                      <input type="hidden" name="request_id" value={request.id} />
+                      <button
+                        type="submit"
+                        className="rounded-lg bg-white px-3 py-2 text-[10px] font-bold text-zinc-950"
+                      >
+                        확인 시작
+                      </button>
+                    </form>
+                  ) : null}
+
+                  {request.status === "pending" || request.status === "reviewing" ? (
+                    <div className="flex flex-wrap gap-2">
+                      <form action={approveWithdrawal}>
+                        <input type="hidden" name="request_id" value={request.id} />
+                        <button
+                          type="submit"
+                          className="rounded-lg border border-emerald-300/20 bg-emerald-300/[0.06] px-3 py-2 text-[10px] font-semibold text-emerald-200"
+                        >
+                          승인 및 금액 예약
+                        </button>
+                      </form>
+                      <form action={rejectWithdrawal} className="flex flex-wrap gap-2">
+                        <input type="hidden" name="request_id" value={request.id} />
+                        <input
+                          name="reason"
+                          required
+                          maxLength={500}
+                          placeholder="반려 사유"
+                          className="w-52 rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-[10px] outline-none focus:border-rose-300/40"
+                        />
+                        <button
+                          type="submit"
+                          className="rounded-lg border border-rose-300/15 px-3 py-2 text-[10px] text-rose-200"
+                        >
+                          반려
+                        </button>
+                      </form>
+                    </div>
+                  ) : null}
+
+                  {request.status === "processing" ? (
+                    <div className="space-y-2 rounded-xl border border-amber-300/10 bg-amber-300/[0.03] p-3">
+                      <div className="text-[10px] font-semibold text-amber-100">
+                        실제 외부 송금을 운영자 수동으로 처리한 뒤 결과를 기록하세요.
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <form action={completeWithdrawal} className="flex flex-wrap gap-2">
+                          <input type="hidden" name="request_id" value={request.id} />
+                          <input
+                            name="external_reference"
+                            required
+                            maxLength={160}
+                            placeholder="송금 참조값"
+                            className="w-52 rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-[10px] outline-none focus:border-emerald-300/40"
+                          />
+                          <button
+                            type="submit"
+                            className="rounded-lg border border-emerald-300/20 bg-emerald-300/[0.06] px-3 py-2 text-[10px] font-semibold text-emerald-200"
+                          >
+                            송금 완료 기록
+                          </button>
+                        </form>
+                        <form action={failWithdrawal} className="flex flex-wrap gap-2">
+                          <input type="hidden" name="request_id" value={request.id} />
+                          <input
+                            name="reason"
+                            required
+                            maxLength={500}
+                            placeholder="실패 사유"
+                            className="w-52 rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-[10px] outline-none focus:border-amber-300/40"
+                          />
+                          <button
+                            type="submit"
+                            className="rounded-lg border border-amber-300/15 px-3 py-2 text-[10px] text-amber-100"
+                          >
+                            실패 처리 및 금액 반환
+                          </button>
+                        </form>
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              </article>
+            ))}
+
+            {!withdrawalsResult.data?.length ? (
+              <div className="py-8 text-center text-xs text-zinc-600">
+                현재 출금 요청이 없습니다.
+              </div>
+            ) : null}
+          </div>
+        </section>
       </div>
     </section>
   );
