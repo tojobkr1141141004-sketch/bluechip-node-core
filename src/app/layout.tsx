@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { GeistMono, GeistSans } from "geist/font";
+import { GeistMono } from "geist/font/mono";
+import { GeistSans } from "geist/font/sans";
 import "./globals.css";
 
 const appUrl =
