@@ -1,3 +1,5 @@
+import { Pickaxe, ShieldCheck } from "lucide-react";
+import { PageHeader } from "@/components/app/page-header";
 import {
   getUserMiningContractCancellations,
   getUserMiningProducts,
