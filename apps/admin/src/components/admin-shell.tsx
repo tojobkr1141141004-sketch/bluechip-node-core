@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AdminThemeToggle } from "./admin-theme-toggle";
-import { Bell, ClipboardList, Coins, FileSearch, LayoutDashboard, LogOut, Settings2, ShieldCheck, UsersRound } from "lucide-react";
+import { Bell, ClipboardList, Coins, FileSearch, LayoutDashboard, LogOut, Rocket, Settings2, ShieldCheck, UsersRound } from "lucide-react";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "운영 대시보드", icon: LayoutDashboard },
@@ -12,6 +12,7 @@ const NAV_ITEMS = [
   { href: "/dashboard/finance", label: "금융 운영", icon: Coins },
   { href: "/dashboard/mining", label: "채굴·정산", icon: ClipboardList },
   { href: "/dashboard/notifications", label: "운영 알림", icon: Bell },
+  { href: "/dashboard/launch-readiness", label: "출시 준비", icon: Rocket },
   { href: "/dashboard/system", label: "시스템", icon: Settings2 }
 ] as const;
 
