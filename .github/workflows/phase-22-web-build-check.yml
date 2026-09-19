@@ -10,7 +10,7 @@ on:
       - "tests/**"
       - "supabase/**"
       - "package.json"
-      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
       - "turbo.json"
 
 permissions:
@@ -32,10 +32,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
 
       - name: Web typecheck
         run: pnpm --filter @apex-matrix/web typecheck
