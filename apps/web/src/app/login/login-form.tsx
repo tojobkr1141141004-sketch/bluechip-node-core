@@ -42,7 +42,8 @@ export function LoginForm() {
           options: {
             data: {
               display_name: displayName
-            }
+            },
+            emailRedirectTo: window.location.origin + "/auth/confirm?next=/dashboard"
           }
         });
 
