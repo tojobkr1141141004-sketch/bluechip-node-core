@@ -209,24 +209,44 @@ export default async function UserDashboardPage() {
           <div className="text-sm font-semibold">빠른 업무</div>
           <div className="app-muted mt-1 text-[11px]">자주 사용하는 사용자 기능</div>
           <div className="mt-5 grid gap-2.5">
-            {([
-              ["/dashboard/deposit", "입금 요청", "입금 사실을 운영자에게 전달", ArrowDownToLine],
-              ["/dashboard/withdrawal", "출금 요청", "보유 자산의 출금을 신청", ArrowUpFromLine],
-              ["/dashboard/history", "활동 기록", "최근 금융 거래를 확인", History]
-            ] as const).map(([href, title, description, Icon]) => (
-              <Link key={String(href)} href={String(href)} className="group rounded-2xl border p-3.5 transition hover:-translate-y-0.5" style={{ borderColor: "var(--border)", background: "var(--surface-soft)" }}>
-                <div className="flex items-center gap-3">
-                  <div className="grid h-9 w-9 place-items-center rounded-xl" style={{ background: "var(--surface-strong)", color: "var(--muted-strong)" }}>
-                    <Icon className="h-4 w-4" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-xs font-semibold">{title}</div>
-                    <div className="app-muted mt-1 truncate text-[10px]">{description}</div>
-                  </div>
-                  <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" style={{ color: "var(--muted)" }} />
+            <Link href="/dashboard/deposit" className="group rounded-2xl border p-3.5 transition hover:-translate-y-0.5" style={{ borderColor: "var(--border)", background: "var(--surface-soft)" }}>
+              <div className="flex items-center gap-3">
+                <div className="grid h-9 w-9 place-items-center rounded-xl" style={{ background: "var(--surface-strong)", color: "var(--muted-strong)" }}>
+                  <ArrowDownToLine className="h-4 w-4" />
                 </div>
-              </Link>
-            ))}
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs font-semibold">입금 요청</div>
+                  <div className="app-muted mt-1 truncate text-[10px]">입금 사실을 운영자에게 전달</div>
+                </div>
+                <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" style={{ color: "var(--muted)" }} />
+              </div>
+            </Link>
+
+            <Link href="/dashboard/withdrawal" className="group rounded-2xl border p-3.5 transition hover:-translate-y-0.5" style={{ borderColor: "var(--border)", background: "var(--surface-soft)" }}>
+              <div className="flex items-center gap-3">
+                <div className="grid h-9 w-9 place-items-center rounded-xl" style={{ background: "var(--surface-strong)", color: "var(--muted-strong)" }}>
+                  <ArrowUpFromLine className="h-4 w-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs font-semibold">출금 요청</div>
+                  <div className="app-muted mt-1 truncate text-[10px]">보유 자산의 출금을 신청</div>
+                </div>
+                <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" style={{ color: "var(--muted)" }} />
+              </div>
+            </Link>
+
+            <Link href="/dashboard/history" className="group rounded-2xl border p-3.5 transition hover:-translate-y-0.5" style={{ borderColor: "var(--border)", background: "var(--surface-soft)" }}>
+              <div className="flex items-center gap-3">
+                <div className="grid h-9 w-9 place-items-center rounded-xl" style={{ background: "var(--surface-strong)", color: "var(--muted-strong)" }}>
+                  <History className="h-4 w-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs font-semibold">활동 기록</div>
+                  <div className="app-muted mt-1 truncate text-[10px]">최근 금융 거래를 확인</div>
+                </div>
+                <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" style={{ color: "var(--muted)" }} />
+              </div>
+            </Link>
           </div>
         </section>
       </div>
