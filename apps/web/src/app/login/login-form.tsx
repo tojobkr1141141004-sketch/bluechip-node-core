@@ -132,11 +132,10 @@ export function LoginForm() {
           <p className="app-muted text-[10px] leading-5">
             가입 비밀번호는 12자 이상이며 대문자·소문자·숫자·특수문자를 각각 포함해야 합니다.
           </p>
-          <div className="grid gap-2" style={{ color: "var(--muted-strong)" }}>
           <div className="text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: "var(--muted)" }}>
             Password Policy
           </div>
-          <div className="grid gap-2 text-[10px] sm:grid-cols-2">
+          <div className="grid gap-2 text-[10px] sm:grid-cols-2" style={{ color: "var(--muted-strong)" }}>
             {[
               "12자 이상",
               "영문 대문자 포함",
