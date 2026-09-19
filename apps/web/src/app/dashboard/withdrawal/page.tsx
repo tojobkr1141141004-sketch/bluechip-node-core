@@ -1,3 +1,5 @@
+import { ArrowUpFromLine, ShieldCheck } from "lucide-react";
+import { PageHeader } from "@/components/app/page-header";
 import {
   getActiveAssets,
   getUserAssetBalances,
@@ -68,16 +70,16 @@ export default async function WithdrawalPage({
   const requestKey = crypto.randomUUID();
 
   return (
-    <section className="space-y-4">
-      <div className="rounded-3xl border border-white/[0.07] bg-white/[0.025] p-6 sm:p-8">
-        <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-300/80">
-          WITHDRAWAL
-        </div>
-        <h1 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">출금 요청</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
-          출금 요청을 접수한 뒤 운영자가 확인합니다. 운영자 승인 전에는 원장 자금이 이동하지 않습니다. 승인 시 출금할 금액이 안전하게 예약됩니다.
-        </p>
+    <section className="space-y-6">
+      <PageHeader
+        eyebrow="Withdrawal"
+        title="출금 요청"
+        description="출금 요청을 접수하면 운영자가 확인합니다. 승인 전에는 원장 자금이 이동하지 않습니다."
+        icon={ArrowUpFromLine}
+      />
 
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <section className="app-panel rounded-[24px] p-6 sm:p-8">
         {success ? (
           <p className="mt-4 rounded-xl border border-emerald-300/15 bg-emerald-300/[0.05] p-3 text-xs text-emerald-200">
             출금 요청이 접수되었습니다. 운영자 확인 후 처리됩니다.
@@ -103,7 +105,7 @@ export default async function WithdrawalPage({
               <select
                 name="asset_id"
                 required
-                className="rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none focus:border-emerald-300/40"
+                className="rounded-xl app-input px-4 py-3 text-sm text-white outline-none focus:border-emerald-300/40"
               >
                 {assetsResult.data?.map((asset) => (
                   <option key={asset.id} value={asset.id}>
@@ -122,7 +124,7 @@ export default async function WithdrawalPage({
                 placeholder="예: 100000 또는 10.5"
                 required
                 autoComplete="off"
-                className="rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none focus:border-emerald-300/40"
+                className="rounded-xl app-input px-4 py-3 text-sm text-white outline-none focus:border-emerald-300/40"
               />
             </label>
           </div>
@@ -133,7 +135,7 @@ export default async function WithdrawalPage({
               name="destination_type"
               defaultValue="bank"
               required
-              className="rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none focus:border-emerald-300/40"
+              className="rounded-xl app-input px-4 py-3 text-sm text-white outline-none focus:border-emerald-300/40"
             >
               <option value="bank">은행 계좌</option>
               <option value="wallet">USDT 지갑</option>
@@ -148,7 +150,7 @@ export default async function WithdrawalPage({
                 type="text"
                 maxLength={120}
                 placeholder="은행 계좌 출금 시 입력"
-                className="rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none focus:border-emerald-300/40"
+                className="rounded-xl app-input px-4 py-3 text-sm text-white outline-none focus:border-emerald-300/40"
               />
             </label>
 
@@ -160,7 +162,7 @@ export default async function WithdrawalPage({
                 maxLength={320}
                 required
                 placeholder="출금 받을 계좌번호 또는 지갑 주소"
-                className="rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none focus:border-emerald-300/40"
+                className="rounded-xl app-input px-4 py-3 text-sm text-white outline-none focus:border-emerald-300/40"
               />
             </label>
           </div>
@@ -172,7 +174,7 @@ export default async function WithdrawalPage({
               type="text"
               maxLength={64}
               placeholder="USDT 출금 시 예: TRC20 / ERC20"
-              className="rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none focus:border-emerald-300/40"
+              className="rounded-xl app-input px-4 py-3 text-sm text-white outline-none focus:border-emerald-300/40"
             />
           </label>
 
@@ -183,7 +185,7 @@ export default async function WithdrawalPage({
               rows={3}
               maxLength={500}
               placeholder="운영자가 확인해야 할 추가 내용을 남겨주세요."
-              className="rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none focus:border-emerald-300/40"
+              className="rounded-xl app-input px-4 py-3 text-sm text-white outline-none focus:border-emerald-300/40"
             />
           </label>
 
@@ -193,12 +195,23 @@ export default async function WithdrawalPage({
 
           <button
             type="submit"
-            className="rounded-xl bg-white px-4 py-3 text-xs font-bold text-slate-950 hover:bg-slate-100"
+            className="app-button-primary rounded-xl px-4 py-3 text-xs font-bold hover:bg-slate-100"
             disabled={!assetsResult.data?.length}
           >
             출금 요청 접수
           </button>
         </form>
+        </section>
+
+        <aside className="app-card-soft h-fit rounded-[24px] p-5">
+          <div className="flex items-center gap-2 text-xs font-semibold">
+            <ShieldCheck className="h-4 w-4" style={{ color: "var(--accent)" }} />
+            출금 안전 안내
+          </div>
+          <p className="app-muted mt-2 text-[10px] leading-5">
+            운영자 승인 후 출금 금액이 안전하게 예약되며, 실제 외부 송금 결과는 별도 기록으로 남습니다.
+          </p>
+        </aside>
       </div>
 
       <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">

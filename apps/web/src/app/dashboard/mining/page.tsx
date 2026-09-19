@@ -1,3 +1,5 @@
+import { Pickaxe, ShieldCheck } from "lucide-react";
+import { PageHeader } from "@/components/app/page-header";
 import {
   getUserMiningContractCancellations,
   getUserMiningProducts,
@@ -77,19 +79,27 @@ export default async function MiningPage() {
 
   return (
     <section className="space-y-4">
-      <div className="rounded-3xl border border-white/[0.07] bg-white/[0.025] p-6 sm:p-8">
-        <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-300/80">
-          MINING
+      <PageHeader
+        eyebrow="Mining"
+        title="채굴 현황"
+        description="활성 채굴 계약, 자동 계산 기록, 지급 내역과 정정 기록을 한 곳에서 확인합니다."
+        icon={Pickaxe}
+      />
+
+      <div className="grid gap-3 md:grid-cols-2">
+        <div className="app-card-soft rounded-2xl p-5">
+          <div className="flex items-center gap-2 text-xs font-semibold"><Pickaxe className="h-4 w-4" style={{ color: "var(--accent)" }} /> 채굴 계약</div>
+          <div className="mt-3 text-2xl font-semibold">{contracts.length}</div>
+          <div className="app-muted mt-1 text-[10px]">전체 계약 기록</div>
         </div>
-        <h1 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">
-          채굴 현황
-        </h1>
-        <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
-          운영자가 활성화한 채굴 계약과 자동 계산된 누적 채굴량, 지급량, 미지급 잔여량을 확인합니다. 채굴 보상 지급은 원장(Ledger)을 통해 회원 자산 잔액에 반영됩니다.
-        </p>
+        <div className="app-card-soft rounded-2xl p-5">
+          <div className="flex items-center gap-2 text-xs font-semibold"><ShieldCheck className="h-4 w-4" style={{ color: "var(--accent)" }} /> 기록 보존</div>
+          <div className="mt-3 text-sm font-semibold">영구 기록</div>
+          <div className="app-muted mt-1 text-[10px]">계산·지급·정정 이력을 보존</div>
+        </div>
       </div>
 
-      <section className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
+      <section className="app-panel rounded-[24px] p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-sm font-semibold">내 채굴 계약</h2>
@@ -103,7 +113,7 @@ export default async function MiningPage() {
         </div>
 
         {!contracts.length ? (
-          <div className="mt-4 rounded-xl border border-white/[0.06] bg-black/10 p-8 text-center text-xs text-slate-600">
+          <div className="mt-4 app-card-soft rounded-2xl p-8 text-center text-xs text-slate-600">
             아직 활성화된 채굴 계약이 없습니다.
           </div>
         ) : (
@@ -111,7 +121,7 @@ export default async function MiningPage() {
             {contracts.map((contract) => (
               <article
                 key={contract.contract_id}
-                className="rounded-xl border border-white/[0.06] bg-black/10 p-4"
+                className="app-card-soft rounded-2xl p-4"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div>
@@ -128,27 +138,27 @@ export default async function MiningPage() {
                 </div>
 
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-lg border border-white/[0.05] p-3">
+                  <div className="rounded-lg border  p-3">
                     <div className="text-[10px] text-slate-600">채굴 용량</div>
                     <div className="mt-1 text-sm font-semibold">
                       {formatAmount(contract.capacity)} {contract.capacity_unit ?? ""}
                     </div>
                   </div>
-                  <div className="rounded-lg border border-white/[0.05] p-3">
+                  <div className="rounded-lg border  p-3">
                     <div className="text-[10px] text-slate-600">단위당 일 보상</div>
                     <div className="mt-1 text-sm font-semibold">
                       {formatAmount(contract.reward_per_unit_per_day)}{" "}
                       {contract.reward_asset_code ?? ""}
                     </div>
                   </div>
-                  <div className="rounded-lg border border-white/[0.05] p-3">
+                  <div className="rounded-lg border  p-3">
                     <div className="text-[10px] text-slate-600">누적 채굴량</div>
                     <div className="mt-1 text-sm font-semibold">
                       {formatAmount(contract.total_reward_earned)}{" "}
                       {contract.reward_asset_code ?? ""}
                     </div>
                   </div>
-                  <div className="rounded-lg border border-white/[0.05] p-3">
+                  <div className="rounded-lg border  p-3">
                     <div className="text-[10px] text-slate-600">누적 지급량</div>
                     <div className="mt-1 text-sm font-semibold">
                       {formatAmount(contract.total_reward_paid)}{" "}
@@ -182,14 +192,14 @@ export default async function MiningPage() {
         )}
       </section>
 
-      <section className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
+      <section className="app-panel rounded-[24px] p-6">
         <h2 className="text-sm font-semibold">계약 종료 기록</h2>
         <p className="mt-1 text-[11px] text-slate-600">
           운영자가 계약을 취소한 경우 취소 시각까지 계산된 지급량과 미지급 잔여량, 취소 사유가 기록됩니다.
         </p>
         <div className="mt-4 space-y-3">
           {cancellations.map((item) => (
-            <article key={item.cancellation_id} className="rounded-xl border border-white/[0.06] bg-black/10 p-4">
+            <article key={item.cancellation_id} className="app-card-soft rounded-2xl p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="text-xs font-semibold">채굴 계약 취소</div>
                 <div className="text-[10px] text-slate-600">{formatDate(item.created_at)}</div>
@@ -208,21 +218,21 @@ export default async function MiningPage() {
                   <div className="mt-1 text-sm font-semibold">{formatDate(item.calculated_until)}</div>
                 </div>
               </div>
-              <div className="mt-3 rounded-lg border border-white/[0.05] p-3">
+              <div className="mt-3 rounded-lg border  p-3">
                 <div className="text-[10px] text-slate-600">취소 사유</div>
                 <div className="mt-1 text-xs leading-5 text-slate-300">{item.reason}</div>
               </div>
             </article>
           ))}
           {!cancellations.length ? (
-            <div className="rounded-xl border border-white/[0.06] bg-black/10 p-8 text-center text-xs text-slate-600">
+            <div className="app-card-soft rounded-2xl p-8 text-center text-xs text-slate-600">
               계약 취소 이력이 없습니다.
             </div>
           ) : null}
         </div>
       </section>
 
-      <section className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
+      <section className="app-panel rounded-[24px] p-6">
         <h2 className="text-sm font-semibold">채굴 계산 기록</h2>
         <p className="mt-1 text-[11px] text-slate-600">
           자동 계산 엔진이 처리한 시간 구간과 계산된 보상량을 영구적으로 조회할 수 있습니다.
@@ -272,14 +282,14 @@ export default async function MiningPage() {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
+      <section className="app-panel rounded-[24px] p-6">
         <h2 className="text-sm font-semibold">보상 정정 내역</h2>
         <p className="mt-1 text-[11px] text-slate-600">
           계산 기록 자체를 지우거나 바꾸지 않고 별도 정정 기록으로 반영된 내역입니다.
         </p>
         <div className="mt-4 space-y-3">
           {corrections.map((item) => (
-            <article key={item.correction_id} className="rounded-xl border border-white/[0.06] bg-black/10 p-4">
+            <article key={item.correction_id} className="app-card-soft rounded-2xl p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="text-xs font-semibold">{item.correction_type ?? "보상 정정"}</div>
                 <div className="text-[10px] text-slate-600">{formatDate(item.applied_at)}</div>
@@ -302,21 +312,21 @@ export default async function MiningPage() {
                   </div>
                 </div>
               </div>
-              <div className="mt-3 rounded-lg border border-white/[0.05] p-3">
+              <div className="mt-3 rounded-lg border  p-3">
                 <div className="text-[10px] text-slate-600">정정 사유</div>
                 <div className="mt-1 text-xs leading-5 text-slate-300">{item.reason ?? "-"}</div>
               </div>
             </article>
           ))}
           {!corrections.length ? (
-            <div className="rounded-xl border border-white/[0.06] bg-black/10 p-8 text-center text-xs text-slate-600">
+            <div className="app-card-soft rounded-2xl p-8 text-center text-xs text-slate-600">
               보상 정정 내역이 없습니다.
             </div>
           ) : null}
         </div>
       </section>
 
-      <section className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
+      <section className="app-panel rounded-[24px] p-6">
         <h2 className="text-sm font-semibold">보상 지급 기록</h2>
         <p className="mt-1 text-[11px] text-slate-600">
           지급된 보상은 Ledger 거래와 연결되어 회원 자산 잔액에 반영됩니다.
@@ -359,14 +369,14 @@ export default async function MiningPage() {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
+      <section className="app-panel rounded-[24px] p-6">
         <h2 className="text-sm font-semibold">현재 공개된 채굴 상품</h2>
         <p className="mt-1 text-[11px] text-slate-600">
           아래 상품은 현재 공개된 기준이며, 실제 채굴 계약은 운영자가 발행 버전을 선택해 활성화합니다.
         </p>
 
         {!products.length ? (
-          <div className="mt-4 rounded-xl border border-white/[0.06] bg-black/10 p-8 text-center text-xs text-slate-600">
+          <div className="mt-4 app-card-soft rounded-2xl p-8 text-center text-xs text-slate-600">
             현재 공개된 채굴 상품이 없습니다.
           </div>
         ) : (
@@ -374,7 +384,7 @@ export default async function MiningPage() {
             {products.map((product) => (
               <article
                 key={product.product_id ?? product.version_id}
-                className="rounded-xl border border-white/[0.06] bg-black/10 p-4"
+                className="app-card-soft rounded-2xl p-4"
               >
                 <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-300/70">
                   {product.product_code ?? "PRODUCT"}
@@ -386,13 +396,13 @@ export default async function MiningPage() {
                   {product.description || "상품 설명이 등록되지 않았습니다."}
                 </p>
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-lg border border-white/[0.05] p-3">
+                  <div className="rounded-lg border  p-3">
                     <div className="text-[10px] text-slate-600">보상</div>
                     <div className="mt-1 text-sm font-semibold">
                       {formatAmount(product.reward_per_unit_per_day)} {product.reward_asset_code ?? ""}
                     </div>
                   </div>
-                  <div className="rounded-lg border border-white/[0.05] p-3">
+                  <div className="rounded-lg border  p-3">
                     <div className="text-[10px] text-slate-600">용량</div>
                     <div className="mt-1 text-sm font-semibold">
                       {formatAmount(product.min_capacity)} ~ {formatAmount(product.max_capacity)} {product.capacity_unit ?? ""}

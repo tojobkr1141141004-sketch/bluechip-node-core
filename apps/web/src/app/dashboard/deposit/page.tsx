@@ -1,3 +1,5 @@
+import { ArrowDownToLine, ClipboardCheck } from "lucide-react";
+import { PageHeader } from "@/components/app/page-header";
 import {
   getActiveAssets,
   getUserDepositRequests,
@@ -56,16 +58,25 @@ export default async function DepositPage({
   const requestKey = crypto.randomUUID();
 
   return (
-    <section className="space-y-4">
-      <div className="rounded-3xl border border-white/[0.07] bg-white/[0.025] p-6 sm:p-8">
-        <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-300/80">
-          DEPOSIT
-        </div>
-        <h1 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">입금 요청</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
-          운영자가 실제 입금 사실을 확인한 뒤 원장에 반영합니다. 입금 요청을 제출하는 것만으로 잔액이 증가하지 않습니다.
-        </p>
+    <section className="space-y-6">
+      <PageHeader
+        eyebrow="Deposit"
+        title="입금 요청"
+        description="입금 사실을 운영자에게 전달하면 운영자가 실제 입금을 확인한 뒤 Ledger에 반영합니다."
+        icon={ArrowDownToLine}
+      />
 
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <section className="app-panel rounded-[24px] p-6 sm:p-8">
+          <div className="flex items-center gap-3">
+            <div className="grid h-10 w-10 place-items-center rounded-xl" style={{ background: "var(--accent-soft)", color: "var(--accent)" }}>
+              <ClipboardCheck className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="text-sm font-semibold">입금 요청 작성</div>
+              <div className="app-muted mt-1 text-[10px]">요청 접수만으로 잔액이 증가하지 않습니다.</div>
+            </div>
+          </div>
         {success ? (
           <p className="mt-4 rounded-xl border border-emerald-300/15 bg-emerald-300/[0.05] p-3 text-xs text-emerald-200">
             입금 요청이 접수되었습니다. 운영자 확인 후 잔액에 반영됩니다.
@@ -90,7 +101,7 @@ export default async function DepositPage({
             <select
               name="asset_id"
               required
-              className="rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none focus:border-emerald-300/40"
+              className="rounded-xl app-input px-4 py-3 text-sm text-white outline-none focus:border-emerald-300/40"
             >
               {assetsResult.data?.map((asset) => (
                 <option key={asset.id} value={asset.id}>
@@ -109,7 +120,7 @@ export default async function DepositPage({
               placeholder="예: 100000 또는 10.5"
               required
               autoComplete="off"
-              className="rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none focus:border-emerald-300/40"
+              className="rounded-xl app-input px-4 py-3 text-sm text-white outline-none focus:border-emerald-300/40"
             />
           </label>
 
@@ -120,22 +131,30 @@ export default async function DepositPage({
               rows={3}
               maxLength={500}
               placeholder="입금자명, 송금 시각 등 운영자가 확인하기 쉬운 내용을 남겨주세요."
-              className="rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none focus:border-emerald-300/40"
+              className="rounded-xl app-input px-4 py-3 text-sm text-white outline-none focus:border-emerald-300/40"
             />
           </label>
 
-          <div className="rounded-xl border border-white/[0.06] bg-black/10 p-4 text-[11px] leading-5 text-slate-500">
+          <div className="rounded-xl app-card-soft p-4 text-[11px] leading-5 text-slate-500">
             실제 입금 방법은 운영자가 안내한 계좌 또는 지갑 정보를 사용하세요. 외부 금융기관이나 블록체인 네트워크 전송은 이 화면에서 자동 처리하지 않습니다.
           </div>
 
           <button
             type="submit"
-            className="rounded-xl bg-white px-4 py-3 text-xs font-bold text-slate-950 hover:bg-slate-100"
+            className="app-button-primary rounded-xl px-4 py-3 text-xs font-bold hover:bg-slate-100"
             disabled={!assetsResult.data?.length}
           >
             입금 요청 접수
           </button>
         </form>
+        </section>
+
+        <aside className="app-card-soft h-fit rounded-[24px] p-5">
+          <div className="text-xs font-semibold">입금 처리 안내</div>
+          <p className="app-muted mt-2 text-[10px] leading-5">
+            실제 송금은 운영자가 안내한 계좌 또는 지갑 정보를 사용하세요. 외부 금융기관·블록체인 전송은 자동 처리되지 않습니다.
+          </p>
+        </aside>
       </div>
 
       <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">

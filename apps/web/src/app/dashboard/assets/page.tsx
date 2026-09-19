@@ -1,4 +1,6 @@
+import { WalletCards } from "lucide-react";
 import { getActiveAssets, getUserAssetBalances } from "@apex-matrix/database";
+import { PageHeader } from "@/components/app/page-header";
 import { requireWebUser } from "@/lib/auth";
 
 export const instant = false;
@@ -36,30 +38,29 @@ export default async function AssetsPage() {
   );
 
   return (
-    <section>
-      <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-300/80">
-        ASSETS
-      </div>
-      <h1 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">내 자산</h1>
-      <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
-        표시되는 잔액은 금융 원장에서 파생된 현재 잔액입니다. 이 화면에서는 잔액을 직접 변경하지 않습니다.
-      </p>
+    <section className="space-y-6">
+      <PageHeader
+        eyebrow="Assets"
+        title="내 자산"
+        description="현재 계정에 귀속된 자산과 원장 기준 잔액을 한눈에 확인합니다."
+        icon={WalletCards}
+      />
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2">
         {(assetsResult.data ?? []).map((asset) => {
           const balance = balances.get(asset.id);
 
           return (
             <article
               key={asset.id}
-              className="rounded-2xl border border-white/[0.07] bg-white/[0.025] p-5"
+              className="app-card rounded-[24px] p-5"
             >
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <div className="text-xs text-slate-500">{asset.name}</div>
                   <div className="mt-1 text-lg font-semibold">{asset.code}</div>
                 </div>
-                <div className="rounded-full border border-emerald-300/10 bg-emerald-300/[0.04] px-2.5 py-1 text-[10px] text-emerald-200">
+                <div className="rounded-full border  px-2.5 py-1 text-[10px] ">
                   {asset.asset_type === "fiat" ? "원화" : "디지털 자산"}
                 </div>
               </div>
@@ -75,7 +76,7 @@ export default async function AssetsPage() {
         })}
 
         {(assetsResult.data ?? []).length === 0 && (
-          <div className="rounded-2xl border border-white/[0.07] bg-white/[0.025] p-5 text-sm text-slate-500 sm:col-span-2">
+          <div className="app-card rounded-[24px] p-5 text-sm text-slate-500 sm:col-span-2">
             현재 활성화된 자산이 없습니다.
           </div>
         )}

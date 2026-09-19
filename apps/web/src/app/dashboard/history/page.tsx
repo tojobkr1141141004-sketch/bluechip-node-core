@@ -1,4 +1,6 @@
+import { History as HistoryIcon } from "lucide-react";
 import { getUserLedgerHistory } from "@apex-matrix/database";
+import { PageHeader } from "@/components/app/page-header";
 import { requireWebUser } from "@/lib/auth";
 
 export const instant = false;
@@ -29,7 +31,7 @@ export default async function HistoryPage() {
           HISTORY
         </div>
         <h1 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">활동 기록</h1>
-        <p className="mt-2 text-sm leading-6 text-slate-400">
+        <p className="mt-2 text-sm leading-6 app-muted-strong">
           금융 기록을 불러오지 못했습니다. 관리자에게 확인을 요청해 주세요.
         </p>
       </section>
@@ -37,17 +39,16 @@ export default async function HistoryPage() {
   }
 
   return (
-    <section>
-      <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-300/80">
-        HISTORY
-      </div>
-      <h1 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">금융 활동 기록</h1>
-      <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
-        원장에 기록된 내 금융 거래를 최신순으로 보여줍니다. 원본 거래는 수정하거나 삭제하지 않고 정정 거래로 남깁니다.
-      </p>
+    <section className="space-y-6">
+      <PageHeader
+        eyebrow="History"
+        title="금융 활동 기록"
+        description="내 계정에서 발생한 원장 거래를 최신순으로 확인합니다. 원본 기록은 삭제하지 않고 정정 거래로 남깁니다."
+        icon={HistoryIcon}
+      />
 
-      <div className="mt-6 overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.025]">
-        <div className="hidden grid-cols-[1fr_120px_120px_140px] gap-4 border-b border-white/[0.07] px-5 py-3 text-[10px] uppercase tracking-[0.15em] text-slate-500 sm:grid">
+      <div className="overflow-hidden rounded-[24px] border" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
+        <div className="hidden grid-cols-[1fr_120px_120px_140px] gap-4 border-b px-5 py-3 text-[10px] uppercase tracking-[0.15em] app-muted sm:grid">
           <div>거래</div>
           <div>자산</div>
           <div>변동</div>
@@ -62,13 +63,13 @@ export default async function HistoryPage() {
           return (
             <div
               key={item.entry_id}
-              className="grid gap-3 border-b border-white/[0.06] px-5 py-4 last:border-b-0 sm:grid-cols-[1fr_120px_120px_140px] sm:items-center"
+              className="grid gap-3 border-b px-5 py-4 last:border-b-0 sm:grid-cols-[1fr_120px_120px_140px] sm:items-center"
             >
               <div className="min-w-0">
                 <div className="truncate text-sm font-medium">
                   {TYPE_LABELS[transactionType] ?? transactionType ?? "금융 거래"}
                 </div>
-                <div className="mt-1 truncate text-[11px] text-slate-500">
+                <div className="mt-1 truncate text-[11px] app-muted">
                   {item.description || "금융 원장 거래"}
                   {STATUS_LABELS[transactionStatus]
                     ? ` · ${STATUS_LABELS[transactionStatus]}`
@@ -82,7 +83,7 @@ export default async function HistoryPage() {
                   {String(item.amount)}
                 </span>
               </div>
-              <div className="text-[11px] text-slate-500">
+              <div className="text-[11px] app-muted">
                 {entryCreatedAt
                   ? new Date(entryCreatedAt).toLocaleString("ko-KR", {
                       timeZone: "Asia/Seoul"
@@ -94,7 +95,7 @@ export default async function HistoryPage() {
         })}
 
         {(data ?? []).length === 0 && (
-          <div className="px-5 py-8 text-sm text-slate-500">
+          <div className="px-5 py-8 text-sm app-muted">
             아직 기록된 금융 거래가 없습니다.
           </div>
         )}

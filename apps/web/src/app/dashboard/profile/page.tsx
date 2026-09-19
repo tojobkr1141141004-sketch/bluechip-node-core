@@ -1,6 +1,8 @@
+import { UserRound } from "lucide-react";
 import Link from "next/link";
 import { requireWebUser } from "@/lib/auth";
 import { saveProfile } from "./actions";
+import { PageHeader } from "@/components/app/page-header";
 
 export const instant = false;
 
@@ -42,18 +44,18 @@ export default async function ProfilePage({
   const error = first(params.error);
 
   return (
-    <section className="space-y-4">
-      <div className="rounded-3xl border border-white/[0.07] bg-white/[0.025] p-6 sm:p-8">
-        <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-300/80">
-          PROFILE
-        </div>
-        <h1 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">내 정보</h1>
-        <p className="mt-2 text-sm leading-6 text-slate-500">
-          프로필과 사용자 설정을 직접 수정할 수 있습니다. 이메일은 인증 계정에서 관리됩니다.
+    <section className="space-y-6">
+      <PageHeader eyebrow="Profile" title="내 정보" description="서비스에서 표시되는 기본 정보와 언어 설정을 관리합니다." icon={UserRound} />
+
+      <div className="app-panel rounded-[24px] p-6 sm:p-8">
+        <div className="app-muted text-[10px] font-semibold uppercase tracking-[0.14em]">Account Profile</div>
+        <h2 className="mt-2 text-lg font-semibold">기본 프로필</h2>
+        <p className="app-muted mt-1 text-xs leading-5">
+          계정에 표시되는 사용자 정보를 관리합니다.
         </p>
 
         {updated ? (
-          <p className="mt-4 rounded-xl border border-emerald-300/15 bg-emerald-300/[0.05] p-3 text-xs text-emerald-200">
+          <p className="mt-4 rounded-xl border border-emerald-300/15 bg-[var(--accent)]/[0.05] p-3 text-xs text-emerald-200">
             저장되었습니다.
           </p>
         ) : null}
@@ -81,7 +83,7 @@ export default async function ProfilePage({
               minLength={1}
               maxLength={80}
               required
-              className="mt-2 w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm outline-none focus:border-emerald-300/40"
+              className="mt-2 w-full rounded-xl border app-input px-4 py-3 text-sm outline-none focus:border-emerald-300/40"
             />
           </label>
 
@@ -94,7 +96,7 @@ export default async function ProfilePage({
               maxLength={32}
               pattern="[a-z0-9_]{3,32}"
               placeholder="영문 소문자·숫자·밑줄"
-              className="mt-2 w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm outline-none focus:border-emerald-300/40"
+              className="mt-2 w-full rounded-xl border app-input px-4 py-3 text-sm outline-none focus:border-emerald-300/40"
             />
           </label>
 
@@ -103,20 +105,20 @@ export default async function ProfilePage({
             <select
               name="locale"
               defaultValue={settingsResult.data?.locale ?? "ko-KR"}
-              className="mt-2 w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm outline-none focus:border-emerald-300/40"
+              className="mt-2 w-full rounded-xl border app-input px-4 py-3 text-sm outline-none focus:border-emerald-300/40"
             >
               <option value="ko-KR">한국어</option>
               <option value="en-US">English</option>
             </select>
           </label>
 
-          <div className="rounded-xl border border-white/[0.06] bg-black/10 p-3 text-xs text-slate-600">
+          <div className="rounded-xl border app-card-soft p-3 text-xs text-slate-600">
             시간대: {settingsResult.data?.timezone ?? "Asia/Seoul"}
           </div>
 
           <button
             type="submit"
-            className="rounded-xl bg-emerald-300 px-5 py-3 text-xs font-bold text-zinc-950 hover:bg-emerald-200"
+            className="rounded-xl bg-[var(--accent)] px-5 py-3 text-xs font-bold text-slate-950 hover:bg-emerald-200"
           >
             저장
           </button>
