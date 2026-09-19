@@ -213,7 +213,7 @@ export default async function UserDashboardPage() {
               ["/dashboard/deposit", "입금 요청", "입금 사실을 운영자에게 전달", ArrowDownToLine],
               ["/dashboard/withdrawal", "출금 요청", "보유 자산의 출금을 신청", ArrowUpFromLine],
               ["/dashboard/history", "활동 기록", "최근 금융 거래를 확인", History]
-            ].map(([href, title, description, Icon]) => (
+            ] as const).map(([href, title, description, Icon]) => (
               <Link key={String(href)} href={String(href)} className="group rounded-2xl border p-3.5 transition hover:-translate-y-0.5" style={{ borderColor: "var(--border)", background: "var(--surface-soft)" }}>
                 <div className="flex items-center gap-3">
                   <div className="grid h-9 w-9 place-items-center rounded-xl" style={{ background: "var(--surface-strong)", color: "var(--muted-strong)" }}>
