@@ -35,7 +35,8 @@ export function AdminShell({
             <div className="text-[10px] text-zinc-500">운영자 통합 관리센터</div>
           </Link>
           <div className="flex items-center gap-3">
-            <span className="hidden max-w-56 truncate text-[11px] admin-muted sm:block">{email ?? "운영자"}</span>\n            <AdminThemeToggle />
+            <span className="hidden max-w-56 truncate text-[11px] admin-muted sm:block">{email ?? "운영자"}</span>
+            <AdminThemeToggle />
             <form action="/auth/signout" method="post">
               <button
                 type="submit"
