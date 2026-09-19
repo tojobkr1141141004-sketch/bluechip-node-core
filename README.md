@@ -46,7 +46,7 @@ Data API에 노출되는 USER용 public wrapper는 SECURITY INVOKER로 실행합
 - privileged private implementation은 SECURITY DEFINER + auth.uid() 재검증
 - private implementation의 EXECUTE는 authenticated에만 필요한 범위로 부여하고 public/anon은 차단
 - Supabase Security Advisor 잔여 WARN은 Auth의 leaked password protection 항목 1건이며, 현재 운영 정책은 유료 플랜 기능에 의존하지 않고 Free 플랜 범위에서 운영하는 것입니다.
-- main merge 커밋에서 USER / ADMIN Vercel 배포 상태는 모두 success / Ready
+- PHASE 23 작업 당시 USER / ADMIN Vercel Preview는 모두 Ready로 확인되었으며, 최신 main 병합 커밋의 Vercel 상태는 별도 배포 파이프라인에서 확인합니다.
 - 테스트 데이터 및 금융·채굴 운영 데이터는 검증 과정에서 영구 저장하지 않습니다.
 
 ## Free 플랜 운영 원칙
