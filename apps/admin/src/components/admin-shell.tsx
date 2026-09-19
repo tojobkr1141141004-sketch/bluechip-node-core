@@ -26,13 +26,18 @@ export function AdminShell({
   email: string | null | undefined;
   notificationCount?: number;
 }) {
+  const pathname = usePathname();
+
   return (
-    <div className="min-h-screen bg-[#09090b] text-zinc-50">
+    <div className="admin-shell">
       <header className="admin-header sticky top-0 z-50">
         <div className="mx-auto flex h-[72px] max-w-[1480px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-          <Link href="/dashboard" className="min-w-0">
-            <div className="text-sm font-semibold">APEX-MATRIX ADMIN</div>
-            <div className="text-[10px] text-zinc-500">운영자 통합 관리센터</div>
+          <Link href="/dashboard" className="flex min-w-0 items-center gap-3">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-emerald-300 via-emerald-400 to-cyan-400 text-sm font-black text-slate-950">A</span>
+            <span className="min-w-0">
+              <span className="block truncate text-sm font-bold">APEX-MATRIX ADMIN</span>
+              <span className="admin-muted block text-[10px]">운영자 통합 관리센터</span>
+            </span>
           </Link>
           <div className="flex items-center gap-3">
             <span className="hidden max-w-56 truncate text-[11px] admin-muted sm:block">{email ?? "운영자"}</span>
