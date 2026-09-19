@@ -201,9 +201,8 @@ export default async function WithdrawalPage({
             출금 요청 접수
           </button>
         </form>
-      </div>
-
         </section>
+
         <aside className="app-card-soft h-fit rounded-[24px] p-5">
           <div className="flex items-center gap-2 text-xs font-semibold">
             <ShieldCheck className="h-4 w-4" style={{ color: "var(--accent)" }} />
