@@ -1,7 +1,9 @@
 -- PHASE 23 verification
--- Expected: public wrappers are SECURITY INVOKER; authenticated can execute them;
--- anon cannot; private privileged implementations remain SECURITY DEFINER and are
--- executable only by postgres. This file is read-only verification.
+-- Expected:
+--   public USER wrappers: SECURITY INVOKER; authenticated execute=true; anon execute=false
+--   private implementations: SECURITY DEFINER; authenticated execute=true; anon execute=false
+-- The private schema is intentionally not an API surface; wrappers derive actor identity
+-- from auth.uid() and private functions validate the same identity again.
 
 select
   p.oid::regprocedure::text as signature,
@@ -33,3 +35,10 @@ where n.nspname = 'private'
     'mark_all_my_notifications_read'
   )
 order by signature;
+
+begin;
+set local role authenticated;
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',true);
+select public.mark_all_my_notifications_read() as all_read_count;
+select public.mark_my_notification_read('00000000-0000-0000-0000-000000000002') as one_read_count;
+rollback;
