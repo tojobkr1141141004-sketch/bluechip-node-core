@@ -2,21 +2,60 @@
 
 :root {
   color-scheme: dark;
-  --background: #09090b;
-  --foreground: #f4f4f5;
+  --admin-bg: #090d14;
+  --admin-fg: #f8fafc;
+  --admin-surface: rgba(17, 24, 39, 0.88);
+  --admin-soft: rgba(255,255,255,.045);
+  --admin-border: rgba(148,163,184,.14);
+  --admin-muted: #8792a6;
+  --admin-muted-strong: #b7c0cf;
+  --admin-accent: #34d399;
+  --admin-warning: #fbbf24;
+  --admin-danger: #fb7185;
+}
+
+html[data-admin-theme="light"] {
+  color-scheme: light;
+  --admin-bg: #f4f6fa;
+  --admin-fg: #101828;
+  --admin-surface: rgba(255,255,255,.95);
+  --admin-soft: rgba(15,23,42,.035);
+  --admin-border: rgba(15,23,42,.11);
+  --admin-muted: #667085;
+  --admin-muted-strong: #475467;
+  --admin-accent: #059669;
+  --admin-warning: #b45309;
+  --admin-danger: #e11d48;
 }
 
 * { box-sizing: border-box; }
-html { background: var(--background); }
+html { background: var(--admin-bg); scroll-behavior: smooth; }
 body {
   margin: 0;
   min-height: 100vh;
-  background:
-    radial-gradient(circle at 15% 0%, rgba(16, 185, 129, 0.08), transparent 30%),
-    radial-gradient(circle at 85% 0%, rgba(14, 165, 233, 0.07), transparent 30%),
-    var(--background);
-  color: var(--foreground);
+  background: radial-gradient(circle at 15% 0%, color-mix(in srgb, var(--admin-accent) 7%, transparent), transparent 28%), radial-gradient(circle at 85% 0%, rgba(59,130,246,.07), transparent 30%), var(--admin-bg);
+  color: var(--admin-fg);
   font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
 }
+.admin-shell { min-height: 100vh; color: var(--admin-fg); }
+.admin-header { background: color-mix(in srgb, var(--admin-bg) 86%, transparent); border-bottom: 1px solid var(--admin-border); backdrop-filter: blur(20px); }
+.admin-sidebar { background: var(--admin-surface); border: 1px solid var(--admin-border); box-shadow: 0 24px 80px rgba(0,0,0,.18); backdrop-filter: blur(18px); }
+.admin-nav { color: var(--admin-muted); }
+.admin-nav:hover { color: var(--admin-fg); background: var(--admin-soft); }
+.admin-nav-active { color: var(--admin-fg); background: color-mix(in srgb, var(--admin-accent) 10%, var(--admin-soft)); border-color: color-mix(in srgb, var(--admin-accent) 18%, var(--admin-border)); box-shadow: inset 3px 0 0 var(--admin-accent); }
+.admin-panel { background: var(--admin-surface); border: 1px solid var(--admin-border); box-shadow: 0 24px 80px rgba(0,0,0,.16); }
+.admin-soft { background: var(--admin-soft); border: 1px solid var(--admin-border); }
+.admin-theme-toggle { color: var(--admin-muted-strong); border-color: var(--admin-border); background: var(--admin-soft); }
+.admin-theme-toggle:hover { color: var(--admin-fg); }
+.admin-muted { color: var(--admin-muted); }
+html[data-admin-theme="light"] [class~="text-zinc-50"], html[data-admin-theme="light"] [class~="text-white"] { color: var(--admin-fg) !important; }
+html[data-admin-theme="light"] [class*="border-white/"] { border-color: var(--admin-border) !important; }
+html[data-admin-theme="light"] [class*="bg-white/"] { background-color: rgba(255,255,255,.82) !important; }
+html[data-admin-theme="light"] [class*="bg-black/"] { background-color: rgba(15,23,42,.025) !important; }
+html[data-admin-theme="light"] [class~="text-zinc-500"], html[data-admin-theme="light"] [class~="text-zinc-600"], html[data-admin-theme="light"] [class~="text-zinc-700"] { color: var(--admin-muted) !important; }
+html[data-admin-theme="dark"] .admin-theme-sun { display:block; }
+html[data-admin-theme="dark"] .admin-theme-moon { display:none; }
+html[data-admin-theme="light"] .admin-theme-sun { display:none; }
+html[data-admin-theme="light"] .admin-theme-moon { display:block; }
+@media (max-width: 1023px) { .admin-desktop-sidebar { display:none; } }
