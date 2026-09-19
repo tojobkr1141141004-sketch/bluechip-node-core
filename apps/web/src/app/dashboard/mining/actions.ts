@@ -1,6 +1,5 @@
 "use server";
 
-import { randomUUID } from "crypto";
 import { redirect } from "next/navigation";
 import { startMyMiningContract } from "@apex-matrix/database";
 import { requireWebUser } from "@/lib/auth";
