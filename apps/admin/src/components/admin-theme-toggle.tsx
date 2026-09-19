@@ -1,8 +1,14 @@
 "use client";
 
 import { Moon, Sun } from "lucide-react";
+import { useEffect } from "react";
 
 export function AdminThemeToggle() {
+  useEffect(() => {
+    const stored = window.localStorage.getItem("apex-admin-theme");
+    const next = stored === "light" || stored === "dark" ? stored : "dark";
+    document.documentElement.dataset.adminTheme = next;
+  }, []);
   function toggleTheme() {
     const current = document.documentElement.dataset.adminTheme === "light" ? "light" : "dark";
     const next = current === "dark" ? "light" : "dark";
