@@ -61,7 +61,7 @@ function MetricCard({
   return (
     <Link
       href={href as never}
-      className="group rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5 transition hover:border-emerald-300/20 hover:bg-white/[0.04]"
+      className="group admin-panel rounded-[22px] p-5 transition hover:border-emerald-300/20 hover:bg-white/[0.04]"
     >
       <div className="flex items-start justify-between gap-3">
         <Icon className="h-5 w-5 text-emerald-300" />
@@ -81,8 +81,8 @@ function Center({ snapshot }: { snapshot: OperationsCenterSnapshot }) {
     && (snapshot.mining?.reconciliation_status ?? "unknown") === "healthy";
 
   return (
-    <section className="space-y-4">
-      <div className="rounded-3xl border border-white/[0.07] bg-white/[0.025] p-6 sm:p-8">
+    <section className="space-y-6">
+      <div className="admin-panel rounded-[26px] p-6 sm:p-8">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-300/80">
@@ -104,7 +104,7 @@ function Center({ snapshot }: { snapshot: OperationsCenterSnapshot }) {
               <Link
                 key={module.key}
                 href={module.href}
-                className="rounded-2xl border border-white/[0.06] bg-black/10 p-4 transition hover:border-emerald-300/15"
+                className="admin-soft rounded-2xl p-4 transition hover:border-emerald-300/15"
               >
                 <Icon className="h-4 w-4 text-emerald-300" />
                 <div className="mt-3 text-xs font-semibold">{module.label}</div>
@@ -132,7 +132,7 @@ function Center({ snapshot }: { snapshot: OperationsCenterSnapshot }) {
               <Link
                 key={alert.code}
                 href={alert.href as never}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/[0.05] bg-black/10 px-4 py-3 transition hover:border-white/10"
+                className="flex flex-wrap items-center justify-between gap-3 admin-soft rounded-xl px-4 py-3 transition hover:border-white/10"
               >
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
@@ -201,7 +201,7 @@ function Center({ snapshot }: { snapshot: OperationsCenterSnapshot }) {
       </div>
 
       {snapshot.mining ? (
-        <section className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
+        <section className="admin-panel rounded-[22px] p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 className="text-sm font-semibold">시스템 상태</h2>
@@ -212,7 +212,7 @@ function Center({ snapshot }: { snapshot: OperationsCenterSnapshot }) {
             </Link>
           </div>
           <div className="mt-4 grid gap-3 sm:grid-cols-3">
-            <div className="rounded-xl border border-white/[0.05] bg-black/10 p-4">
+            <div className="admin-soft rounded-xl p-4">
               <div className="text-[10px] text-zinc-600">자동 계산</div>
               <div className="mt-2">
                 <StatusPill ok={!snapshot.system?.calculation_enabled}>
@@ -220,11 +220,11 @@ function Center({ snapshot }: { snapshot: OperationsCenterSnapshot }) {
                 </StatusPill>
               </div>
             </div>
-            <div className="rounded-xl border border-white/[0.05] bg-black/10 p-4">
+            <div className="admin-soft rounded-xl p-4">
               <div className="text-[10px] text-zinc-600">보상 발행 정책</div>
               <div className="mt-2 text-sm font-semibold">{n(snapshot.system?.issuance_enabled_policies)}개 활성</div>
             </div>
-            <div className="rounded-xl border border-white/[0.05] bg-black/10 p-4">
+            <div className="admin-soft rounded-xl p-4">
               <div className="text-[10px] text-zinc-600">마지막 정상 계산</div>
               <div className="mt-2 text-xs font-medium text-zinc-300">{date(snapshot.mining.last_successful_run_at)}</div>
             </div>
@@ -232,7 +232,7 @@ function Center({ snapshot }: { snapshot: OperationsCenterSnapshot }) {
         </section>
       ) : null}
 
-      <div className="rounded-2xl border border-white/[0.06] bg-black/10 p-4 text-[11px] leading-5 text-zinc-600">
+      <div className="admin-soft rounded-2xl p-4 text-[11px] leading-5 text-zinc-600">
         운영센터는 상태를 보여주는 화면입니다. 잔액·원장·채굴 보상 숫자를 직접 수정하지 않으며, 실제 변경은 각 도메인의 승인된 서버 작업을 통해서만 수행됩니다.
       </div>
     </section>
