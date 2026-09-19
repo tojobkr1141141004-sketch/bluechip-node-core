@@ -119,7 +119,7 @@ export async function getAdminLaunchReadiness(client: DatabaseClient) {
     (operations?.mining?.reconciliation_status ?? "unknown") === "healthy" &&
     (operations?.mining?.unbalanced_ledger_count ?? 0) === 0 &&
     (operations?.mining?.open_errors ?? 0) === 0 &&
-    (operations?.mining?.stale_run_count ?? operations?.mining?.stale_runs ?? 0) === 0;
+    (operations?.mining?.stale_runs ?? 0) === 0;
 
   const items: LaunchReadinessItem[] = [
     item(
