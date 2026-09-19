@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import type { Route } from "next";
 import {
   markAllMyNotificationsRead,
   markMyNotificationRead
@@ -29,7 +30,7 @@ export async function markNotificationRead(formData: FormData) {
   }
 
   await markMyNotificationRead(supabase, notificationId);
-  redirect(redirectTo);
+  redirect(redirectTo as Route);
 }
 
 export async function markAllNotificationsRead() {
