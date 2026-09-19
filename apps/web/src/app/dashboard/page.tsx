@@ -209,7 +209,7 @@ export default async function UserDashboardPage() {
           <div className="text-sm font-semibold">빠른 업무</div>
           <div className="app-muted mt-1 text-[11px]">자주 사용하는 사용자 기능</div>
           <div className="mt-5 grid gap-2.5">
-            {[
+            {([
               ["/dashboard/deposit", "입금 요청", "입금 사실을 운영자에게 전달", ArrowDownToLine],
               ["/dashboard/withdrawal", "출금 요청", "보유 자산의 출금을 신청", ArrowUpFromLine],
               ["/dashboard/history", "활동 기록", "최근 금융 거래를 확인", History]
