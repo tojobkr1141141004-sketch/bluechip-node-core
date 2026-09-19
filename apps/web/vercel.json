@@ -4,6 +4,7 @@
   "git": {
     "deploymentEnabled": true
   },
-  "buildCommand": "cd ../.. && pnpm turbo build --filter=@apex-matrix/web...",
+  "installCommand": "cd ../.. && npm install --include=dev",
+  "buildCommand": "cd ../.. && npm run build --workspace=@apex-matrix/web",
   "outputDirectory": ".next"
 }
