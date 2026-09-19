@@ -1,3 +1,5 @@
+import { ArrowUpFromLine, ShieldCheck } from "lucide-react";
+import { PageHeader } from "@/components/app/page-header";
 import {
   getActiveAssets,
   getUserAssetBalances,
