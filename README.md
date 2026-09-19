@@ -36,7 +36,7 @@ ADMIN에서는 권한이 있는 운영자만 회원 검색과 상태 관리를 �
 
 ## PHASE 23 보안 원칙
 
-Data API에 노출되는 USER용 public wrapper는 SECURITY INVOKER로 실행합니다. 권한 상승이 실제로 필요한 구현은 private schema의 SECURITY DEFINER 함수로 격리하고, private 함수는 인증된 USER가 직접 실행할 수 없도록 유지합니다.
+Data API에 노출되는 USER용 public wrapper는 SECURITY INVOKER로 실행합니다. 권한 상승이 실제로 필요한 구현은 private schema의 SECURITY DEFINER 함수로 격리합니다. private 구현 함수에는 USER wrapper가 내부적으로 호출할 수 있을 정도의 authenticated EXECUTE만 부여하고 public/anon EXECUTE는 차단하며, 실제 호출 주체는 private 함수 내부에서 auth.uid()로 다시 검증합니다.
 
 ## 앱 포트
 
