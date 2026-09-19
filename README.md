@@ -22,9 +22,11 @@ APEX-MATRIX는 사용자 앱과 운영자 앱을 분리하고, Supabase를 데�
 - PHASE 16 ✅ 운영 알림 / 장애 감시 기반
 - PHASE 17 ✅ 관리자 세션 보안
 - PHASE 18 ✅ RBAC / RLS / 실행권한 / 동시성 강화
+- PHASE 19 ✅ Vercel / 모노레포 배포 안정화
+- PHASE 20 ✅ USER / ADMIN UI·UX 및 운영센터 완성
 - PHASE 21 ✅ USER 채굴 시작
 - PHASE 22 ✅ USER 알림센터
-- PHASE 23 🔄 USER 공개 함수 wrapper 보안 강화
+- PHASE 23 ✅ USER 공개 함수 wrapper 보안 강화
 
 ## PHASE 5 범위
 
@@ -37,6 +39,19 @@ ADMIN에서는 권한이 있는 운영자만 회원 검색과 상태 관리를 �
 ## PHASE 23 보안 원칙
 
 Data API에 노출되는 USER용 public wrapper는 SECURITY INVOKER로 실행합니다. 권한 상승이 실제로 필요한 구현은 private schema의 SECURITY DEFINER 함수로 격리합니다. private 구현 함수에는 USER wrapper가 내부적으로 호출할 수 있을 정도의 authenticated EXECUTE만 부여하고 public/anon EXECUTE는 차단하며, 실제 호출 주체는 private 함수 내부에서 auth.uid()로 다시 검증합니다.
+
+## PHASE 23 최종 검증
+
+- public USER wrapper 3개는 SECURITY INVOKER
+- privileged private implementation은 SECURITY DEFINER + auth.uid() 재검증
+- private implementation의 EXECUTE는 authenticated에만 필요한 범위로 부여하고 public/anon은 차단
+- Supabase Security Advisor 잔여 WARN은 Auth의 leaked password protection 항목 1건이며, 현재 운영 정책은 유료 플랜 기능에 의존하지 않고 Free 플랜 범위에서 운영하는 것입니다.
+- main merge 커밋에서 USER / ADMIN Vercel 배포 상태는 모두 success / Ready
+- 테스트 데이터 및 금융·채굴 운영 데이터는 검증 과정에서 영구 저장하지 않습니다.
+
+## Free 플랜 운영 원칙
+
+APEX-MATRIX의 기본 운영 환경은 Supabase Free 플랜을 유지합니다. 유료 전용 기능을 필수 전제로 삼지 않으며, 현재 제공 범위 밖의 Advisor 권고 항목은 별도 장애로 취급하지 않습니다.
 
 ## 앱 포트
 
