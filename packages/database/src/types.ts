@@ -3651,6 +3651,14 @@ export type Database = {
         }
         Returns: string
       }
+      start_my_mining_contract: {
+        Args: {
+          p_capacity: number
+          p_idempotency_key: string
+          p_product_version_id: string
+        }
+        Returns: string
+      }
       create_mining_product: {
         Args: {
           p_code: string
