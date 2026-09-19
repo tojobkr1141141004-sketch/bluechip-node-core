@@ -3658,7 +3658,7 @@ export type Database = {
           p_product_version_id: string
         }
         Returns: string
-      }
+      },
       create_mining_product: {
         Args: {
           p_code: string
