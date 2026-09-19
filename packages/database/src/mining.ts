@@ -312,6 +312,21 @@ export async function createMiningContract(
   });
 }
 
+export async function startMyMiningContract(
+  client: DatabaseClient,
+  input: {
+    productVersionId: string;
+    capacity: string;
+    idempotencyKey: string;
+  }
+) {
+  return client.rpc("start_my_mining_contract", {
+    p_product_version_id: input.productVersionId,
+    p_capacity: input.capacity as unknown as number,
+    p_idempotency_key: input.idempotencyKey
+  });
+}
+
 export async function cancelMiningContract(
   client: DatabaseClient,
   input: {

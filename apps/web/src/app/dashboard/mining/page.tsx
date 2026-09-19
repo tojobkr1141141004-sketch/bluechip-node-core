@@ -9,8 +9,48 @@ import {
   getUserMiningContracts
 } from "@apex-matrix/database";
 import { requireWebUser } from "@/lib/auth";
+import { startMining } from "./actions";
 
 export const instant = false;
+
+type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+
+function first(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function StartNotice({
+  success,
+  error
+}: {
+  success?: string;
+  error?: string;
+}) {
+  if (success === "started") {
+    return (
+      <div className="rounded-2xl border border-emerald-300/15 bg-emerald-300/[0.05] p-4 text-xs leading-5 text-emerald-200">
+        ⛏️ 채굴이 시작되었습니다. 이 페이지에서 채굴 상태와 보상 내역을 확인할 수 있습니다.
+      </div>
+    );
+  }
+
+  if (error) {
+    const messages: Record<string, string> = {
+      invalid: "입력 내용을 확인한 뒤 다시 시도해 주세요.",
+      capacity: "선택한 채굴 용량이 이 상품의 허용 범위를 벗어났습니다.",
+      unavailable: "현재 시작할 수 없는 채굴 상품입니다. 공개된 상품을 다시 확인해 주세요.",
+      failed: "채굴 시작을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요."
+    };
+
+    return (
+      <div className="rounded-2xl border border-rose-300/10 bg-rose-300/[0.04] p-4 text-xs leading-5 text-rose-200" role="alert">
+        ⚠️ {messages[error] ?? "채굴 시작을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요."}
+      </div>
+    );
+  }
+
+  return null;
+}
 
 function formatAmount(value: number | null | undefined) {
   return value == null ? "-" : String(value);
@@ -28,8 +68,15 @@ const statusLabel: Record<string, string> = {
   cancelled: "취소"
 };
 
-export default async function MiningPage() {
+export default async function MiningPage({
+  searchParams
+}: {
+  searchParams: SearchParams;
+}) {
   const { supabase } = await requireWebUser();
+  const params = await searchParams;
+  const success = first(params.success);
+  const error = first(params.error);
 
   const [
     productsResult,
@@ -85,6 +132,120 @@ export default async function MiningPage() {
         description="활성 채굴 계약, 자동 계산 기록, 지급 내역과 정정 기록을 한 곳에서 확인합니다."
         icon={Pickaxe}
       />
+
+      <StartNotice success={success} error={error} />
+
+      <section className="app-panel rounded-[24px] p-6 sm:p-7">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-300/80">
+              내 채굴 시작
+            </div>
+            <h2 className="mt-2 text-xl font-semibold tracking-[-0.04em]">⛏️ 채굴을 시작하세요</h2>
+            <p className="mt-2 max-w-3xl text-xs leading-5 text-slate-500">
+              공개된 채굴 상품을 선택하고 용량을 입력하면 내 계정으로 바로 채굴 계약이 시작됩니다. 시작 시점과 조건은 서버에서 다시 확인합니다.
+            </p>
+          </div>
+          <span className="rounded-full border border-white/10 px-3 py-1.5 text-[10px] text-slate-500">
+            안전한 시작
+          </span>
+        </div>
+
+        {!products.length ? (
+          <div className="mt-5 app-card-soft rounded-2xl p-7 text-center text-xs text-slate-600">
+            현재 신청할 수 있는 공개 채굴 상품이 없습니다.
+          </div>
+        ) : (
+          <div className="mt-5 grid gap-4 lg:grid-cols-2">
+            {products.map((product) => {
+              const capacityHint =
+                product.max_capacity == null
+                  ? "최소 " + formatAmount(product.min_capacity) + " " + (product.capacity_unit ?? "")
+                  : formatAmount(product.min_capacity) + " ~ " + formatAmount(product.max_capacity) + " " + (product.capacity_unit ?? "");
+
+              return (
+                <article key={product.version_id ?? product.product_id} className="app-card-soft rounded-2xl p-5">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-300/70">
+                        채굴 상품
+                      </div>
+                      <h3 className="mt-1 text-lg font-semibold">
+                        {product.product_name ?? "채굴 상품"}
+                      </h3>
+                      <p className="mt-1 text-[10px] text-slate-500">
+                        보상 자산 · {product.reward_asset_name ?? product.reward_asset_code ?? "-"} · 기간 {String(product.term_days ?? "-")}일
+                      </p>
+                    </div>
+                    <span className="shrink-0 rounded-full border border-emerald-300/15 bg-emerald-300/[0.04] px-2.5 py-1 text-[9px] font-semibold text-emerald-200">
+                      이용 가능
+                    </span>
+                  </div>
+
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                    <div className="rounded-xl border border-white/[0.06] p-3">
+                      <div className="text-[10px] text-slate-600">단위당 하루 보상</div>
+                      <div className="mt-1 text-sm font-semibold">
+                        {formatAmount(product.reward_per_unit_per_day)} {product.reward_asset_code ?? ""}
+                      </div>
+                    </div>
+                    <div className="rounded-xl border border-white/[0.06] p-3">
+                      <div className="text-[10px] text-slate-600">채굴 용량 범위</div>
+                      <div className="mt-1 text-sm font-semibold">
+                        {formatAmount(product.min_capacity)} ~ {formatAmount(product.max_capacity)} {product.capacity_unit ?? ""}
+                      </div>
+                    </div>
+                  </div>
+
+                  <form action={startMining} className="mt-4 grid gap-3">
+                    <input
+                      type="hidden"
+                      name="product_version_id"
+                      value={product.version_id ?? ""}
+                    />
+                    <input
+                      type="hidden"
+                      name="idempotency_key"
+                      value={crypto.randomUUID()}
+                    />
+                    <label className="grid gap-2 text-xs text-slate-400">
+                      시작할 채굴 용량
+                      <div className="flex gap-2">
+                        <input
+                          name="capacity"
+                          type="number"
+                          inputMode="decimal"
+                          step="any"
+                          min={String(product.min_capacity ?? 0)}
+                          max={product.max_capacity == null ? undefined : String(product.max_capacity)}
+                          defaultValue={String(product.min_capacity ?? "")}
+                          required
+                          className="min-w-0 flex-1 rounded-xl app-input px-4 py-3 text-sm outline-none focus:border-emerald-300/40"
+                        />
+                        <span className="grid min-w-20 place-items-center rounded-xl border border-white/[0.06] px-3 text-xs text-slate-500">
+                          {product.capacity_unit ?? "단위"}
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-slate-600">{capacityHint}</span>
+                    </label>
+
+                    <div className="rounded-xl border border-amber-300/10 bg-amber-300/[0.03] p-3 text-[10px] leading-5 text-amber-100/70">
+                      시작 후에는 서버가 공개 상품 상태와 허용 용량을 다시 확인하며, 실제 보상 지급은 기존 자동 정산 및 발행 안전정책을 따릅니다.
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-300 px-4 py-3 text-xs font-bold text-slate-950 transition hover:bg-emerald-200"
+                    >
+                      ⛏️ 이 상품으로 채굴 시작
+                    </button>
+                  </form>
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </section>
 
       <div className="grid gap-3 md:grid-cols-2">
         <div className="app-card-soft rounded-2xl p-5">
@@ -370,7 +531,7 @@ export default async function MiningPage() {
       </section>
 
       <section className="app-panel rounded-[24px] p-6">
-        <h2 className="text-sm font-semibold">현재 공개된 채굴 상품</h2>
+        <h2 className="text-sm font-semibold">상품 기준 정보</h2>
         <p className="mt-1 text-[11px] text-slate-600">
           아래 상품은 현재 공개된 기준이며, 실제 채굴 계약은 운영자가 발행 버전을 선택해 활성화합니다.
         </p>

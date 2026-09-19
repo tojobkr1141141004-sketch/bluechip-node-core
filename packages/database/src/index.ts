@@ -36,6 +36,7 @@ export {
   applyMiningRewardCorrection,
   cancelMiningContract,
   createMiningContract,
+  startMyMiningContract,
   createMiningProduct,
   createMiningProductVersion,
   getAdminMiningCalculationErrors,
