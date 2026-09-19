@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
+const supabaseUrl =
+  process.env.NEXT_PUBLIC_SUPABASE_URL ??
+  "https://wqrowfdwjmoaajuogusu.supabase.co";
 
 const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
@@ -15,7 +18,7 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob:",
       "font-src 'self' data:",
-      "connect-src 'self'",
+      `connect-src 'self' ${supabaseUrl}`,
       "media-src 'none'",
       "object-src 'none'",
       "base-uri 'self'",
