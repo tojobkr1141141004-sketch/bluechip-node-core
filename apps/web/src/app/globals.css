@@ -80,14 +80,12 @@ button, a, input, select, textarea {
 .app-header {
   background: var(--header);
   border-bottom: 1px solid var(--border);
-  backdrop-filter: blur(20px);
 }
 
 .app-sidebar {
   background: color-mix(in srgb, var(--surface) 86%, transparent);
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
-  backdrop-filter: blur(18px);
 }
 
 .app-content {
@@ -98,7 +96,6 @@ button, a, input, select, textarea {
   background: var(--surface);
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
-  backdrop-filter: blur(16px);
 }
 
 .app-card-soft {
@@ -185,6 +182,91 @@ button, a, input, select, textarea {
   color: color-mix(in srgb, var(--accent) 78%, var(--foreground));
 }
 
+.language-switcher select,
+.language-switcher option {
+  color: var(--foreground);
+  background: var(--surface);
+}
+
+html[data-connectivity="offline"] form button[type="submit"] {
+  cursor: not-allowed;
+  pointer-events: none;
+  opacity: .48;
+}
+
+.mining-visual {
+  background:
+    radial-gradient(circle at 76% 45%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 27%),
+    linear-gradient(135deg, var(--surface), color-mix(in srgb, var(--accent-soft) 52%, var(--surface)));
+}
+
+.mining-stage {
+  color: color-mix(in srgb, var(--accent) 82%, var(--foreground));
+  background: linear-gradient(145deg, transparent, color-mix(in srgb, var(--accent) 7%, transparent));
+}
+
+.mining-grid {
+  opacity: .34;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--accent) 13%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--accent) 13%, transparent) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(circle at center, black, transparent 72%);
+}
+
+.mining-orbit {
+  border: 1px dashed color-mix(in srgb, var(--accent) 38%, transparent);
+  animation: mining-orbit-spin 18s linear infinite;
+}
+
+.mining-orbit-inner {
+  animation-direction: reverse;
+  animation-duration: 12s;
+}
+
+.mining-core {
+  border: 1px solid color-mix(in srgb, var(--accent) 38%, var(--border));
+  background: linear-gradient(145deg, color-mix(in srgb, var(--accent) 22%, var(--surface)), var(--surface));
+  box-shadow:
+    0 18px 42px color-mix(in srgb, var(--accent) 16%, transparent),
+    inset 0 1px 0 color-mix(in srgb, white 22%, transparent);
+  animation: mining-core-float 4.8s ease-in-out infinite;
+}
+
+.mining-spark {
+  animation: mining-spark-pulse 2.4s ease-in-out infinite;
+}
+
+.mining-live-dot {
+  background: var(--accent);
+  animation: mining-live-pulse 2.2s ease-in-out infinite;
+}
+
+.mining-chip {
+  border-color: color-mix(in srgb, var(--accent) 24%, var(--border));
+  color: color-mix(in srgb, var(--accent) 76%, var(--foreground));
+  background: var(--surface);
+}
+
+@keyframes mining-orbit-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes mining-core-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes mining-spark-pulse {
+  0%, 100% { opacity: .48; transform: scale(.88); }
+  50% { opacity: 1; transform: scale(1.08); }
+}
+
+@keyframes mining-live-pulse {
+  0%, 100% { opacity: .55; transform: scale(.85); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
 @media (max-width: 1023px) {
   .desktop-sidebar {
     display: none;
@@ -197,6 +279,23 @@ button, a, input, select, textarea {
     animation-duration: .001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: .001ms !important;
+  }
+}
+
+@media (update: slow), (max-width: 359px) {
+  .mining-grid,
+  .mining-orbit {
+    display: none;
+  }
+
+  .mining-core,
+  .mining-live-dot,
+  .mining-spark {
+    animation: none;
+  }
+
+  .mining-core {
+    box-shadow: inset 0 1px 0 color-mix(in srgb, white 18%, transparent);
   }
 }
 

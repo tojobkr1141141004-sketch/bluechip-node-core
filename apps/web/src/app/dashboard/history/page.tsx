@@ -1,38 +1,28 @@
 import { History as HistoryIcon } from "lucide-react";
 import { getUserLedgerHistory } from "@apex-matrix/database";
+import { historyMessages, localeFormats } from "@apex-matrix/i18n";
 import { PageHeader } from "@/components/app/page-header";
 import { requireWebUser } from "@/lib/auth";
+import { getRequestLocale } from "@/lib/locale";
 
 export const instant = false;
 
-const TYPE_LABELS: Record<string, string> = {
-  deposit: "입금",
-  withdrawal: "출금",
-  mining_reward: "채굴 보상",
-  settlement: "정산",
-  adjustment: "수동 조정",
-  reversal: "정정 거래"
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  posted: "처리 완료",
-  reversed: "정정됨",
-  reversal: "정정 거래"
-};
-
 export default async function HistoryPage() {
   const { supabase, user } = await requireWebUser();
+  const locale = await getRequestLocale();
+  const messages = historyMessages[locale];
+  const dateFormat = localeFormats[locale];
   const { data, error } = await getUserLedgerHistory(supabase, user.id);
 
   if (error) {
     return (
       <section className="rounded-3xl border border-red-300/10 bg-red-300/[0.04] p-6 sm:p-8">
         <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-red-300/80">
-          HISTORY
+          {messages.eyebrow}
         </div>
-        <h1 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">활동 기록</h1>
+        <h1 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">{messages.title}</h1>
         <p className="mt-2 text-sm leading-6 app-muted-strong">
-          금융 기록을 불러오지 못했습니다. 관리자에게 확인을 요청해 주세요.
+          {messages.loadError}
         </p>
       </section>
     );
@@ -41,18 +31,18 @@ export default async function HistoryPage() {
   return (
     <section className="space-y-6">
       <PageHeader
-        eyebrow="History"
-        title="금융 활동 기록"
-        description="내 계정에서 발생한 원장 거래를 최신순으로 확인합니다. 원본 기록은 삭제하지 않고 정정 거래로 남깁니다."
+        eyebrow={messages.eyebrow}
+        title={messages.title}
+        description={messages.description}
         icon={HistoryIcon}
       />
 
       <div className="overflow-hidden rounded-[24px] border" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
         <div className="hidden grid-cols-[1fr_120px_120px_140px] gap-4 border-b px-5 py-3 text-[10px] uppercase tracking-[0.15em] app-muted sm:grid">
-          <div>거래</div>
-          <div>자산</div>
-          <div>변동</div>
-          <div>처리일시</div>
+          <div>{messages.transaction}</div>
+          <div>{messages.asset}</div>
+          <div>{messages.change}</div>
+          <div>{messages.processedAt}</div>
         </div>
 
         {(data ?? []).map((item) => {
@@ -67,12 +57,12 @@ export default async function HistoryPage() {
             >
               <div className="min-w-0">
                 <div className="truncate text-sm font-medium">
-                  {TYPE_LABELS[transactionType] ?? transactionType ?? "금융 거래"}
+                  {messages.types[transactionType] ?? transactionType ?? messages.financialTransaction}
                 </div>
                 <div className="mt-1 truncate text-[11px] app-muted">
-                  {item.description || "금융 원장 거래"}
-                  {STATUS_LABELS[transactionStatus]
-                    ? ` · ${STATUS_LABELS[transactionStatus]}`
+                  {item.description || messages.ledgerTransaction}
+                  {messages.statuses[transactionStatus]
+                    ? ` · ${messages.statuses[transactionStatus]}`
                     : ""}
                 </div>
               </div>
@@ -85,10 +75,10 @@ export default async function HistoryPage() {
               </div>
               <div className="text-[11px] app-muted">
                 {entryCreatedAt
-                  ? new Date(entryCreatedAt).toLocaleString("ko-KR", {
-                      timeZone: "Asia/Seoul"
+                  ? new Date(entryCreatedAt).toLocaleString(dateFormat.intlLocale, {
+                      timeZone: dateFormat.timeZone
                     })
-                  : "처리일시 확인 중"}
+                  : messages.processedAtPending}
               </div>
             </div>
           );
@@ -96,7 +86,7 @@ export default async function HistoryPage() {
 
         {(data ?? []).length === 0 && (
           <div className="px-5 py-8 text-sm app-muted">
-            아직 기록된 금융 거래가 없습니다.
+            {messages.empty}
           </div>
         )}
       </div>

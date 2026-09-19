@@ -15,6 +15,7 @@ import {
   runMiningCalculationNow,
   updateMiningIssuancePolicy,
   updateMiningProduct,
+  upsertMiningProductLocalization,
   updateMiningSettings
 } from "@apex-matrix/database";
 import { requireAdminUser } from "@/lib/auth";
@@ -39,6 +40,32 @@ function redirectFailed() {
   redirect("/dashboard/mining?error=failed" as never);
 }
 
+function productReturnPath(formData: FormData) {
+  return value(formData, "return_to") === "/dashboard/products"
+    ? "/dashboard/products"
+    : "/dashboard/mining";
+}
+
+function redirectProductResult(
+  formData: FormData,
+  result: `error=${string}` | `success=${string}`
+) {
+  redirect(`${productReturnPath(formData)}?${result}` as never);
+}
+
+function operationReturnPath(formData: FormData) {
+  return value(formData, "return_to") === "/dashboard/contracts"
+    ? "/dashboard/contracts"
+    : "/dashboard/mining";
+}
+
+function redirectOperationResult(
+  formData: FormData,
+  result: `error=${string}` | `success=${string}`
+) {
+  redirect(`${operationReturnPath(formData)}?${result}` as never);
+}
+
 export async function submitMiningProduct(formData: FormData) {
   const { supabase } = await requireAdminUser();
   const code = value(formData, "code").toUpperCase();
@@ -47,7 +74,7 @@ export async function submitMiningProduct(formData: FormData) {
   const sortOrder = value(formData, "sort_order");
 
   if (!/^[A-Z0-9][A-Z0-9_-]{2,63}$/.test(code) || !name) {
-    redirect("/dashboard/mining?error=invalid" as never);
+    redirectProductResult(formData, "error=invalid");
   }
 
   const result = await createMiningProduct(supabase, {
@@ -57,8 +84,8 @@ export async function submitMiningProduct(formData: FormData) {
     sortOrder: /^\d+$/.test(sortOrder) ? Number(sortOrder) : 0
   });
 
-  if (result.error) redirectFailed();
-  redirect("/dashboard/mining?success=product_created" as never);
+  if (result.error) redirectProductResult(formData, "error=failed");
+  redirectProductResult(formData, "success=product_created");
 }
 
 export async function updateProduct(formData: FormData) {
@@ -69,9 +96,10 @@ export async function updateProduct(formData: FormData) {
   const sortOrder = value(formData, "sort_order");
   const status = value(formData, "status");
   const isPublic = value(formData, "is_public") === "true";
+  const publicConfirmed = value(formData, "public_confirmation") === "confirmed";
 
-  if (!uuid(productId) || !name) {
-    redirect("/dashboard/mining?error=invalid" as never);
+  if (!uuid(productId) || !name || (isPublic && !publicConfirmed)) {
+    redirectProductResult(formData, "error=invalid");
   }
 
   const result = await updateMiningProduct(supabase, {
@@ -83,8 +111,42 @@ export async function updateProduct(formData: FormData) {
     isPublic
   });
 
-  if (result.error) redirectFailed();
-  redirect("/dashboard/mining?success=product_updated" as never);
+  if (result.error) redirectProductResult(formData, "error=failed");
+  redirectProductResult(formData, "success=product_updated");
+}
+
+export async function saveProductLocalization(formData: FormData) {
+  const { supabase } = await requireAdminUser();
+  const productId = value(formData, "product_id");
+  const category = value(formData, "category");
+  const locale = value(formData, "locale");
+  const name = value(formData, "localized_name");
+  const description = value(formData, "localized_description");
+  const riskNotice = value(formData, "risk_notice");
+
+  if (
+    !uuid(productId) ||
+    !["stock", "crypto", "gold", "silver"].includes(category) ||
+    !["ko", "ja", "en"].includes(locale) ||
+    !name ||
+    name.length > 120 ||
+    description.length > 2000 ||
+    riskNotice.length > 1000
+  ) {
+    redirectProductResult(formData, "error=invalid");
+  }
+
+  const result = await upsertMiningProductLocalization(supabase, {
+    productId,
+    category: category as "stock" | "crypto" | "gold" | "silver",
+    locale: locale as "ko" | "ja" | "en",
+    name,
+    description,
+    riskNotice
+  });
+
+  if (result.error) redirectProductResult(formData, "error=failed");
+  redirectProductResult(formData, "success=localization_saved");
 }
 
 export async function submitMiningVersion(formData: FormData) {
@@ -106,7 +168,7 @@ export async function submitMiningVersion(formData: FormData) {
     (maxCapacity && !decimal(maxCapacity)) ||
     !positiveInteger(termDays)
   ) {
-    redirect("/dashboard/mining?error=invalid" as never);
+    redirectProductResult(formData, "error=invalid");
   }
 
   const result = await createMiningProductVersion(supabase, {
@@ -119,19 +181,20 @@ export async function submitMiningVersion(formData: FormData) {
     termDays: Number(termDays)
   });
 
-  if (result.error) redirectFailed();
-  redirect("/dashboard/mining?success=version_created" as never);
+  if (result.error) redirectProductResult(formData, "error=failed");
+  redirectProductResult(formData, "success=version_created");
 }
 
 export async function publishVersion(formData: FormData) {
   const { supabase } = await requireAdminUser();
   const versionId = value(formData, "version_id");
+  const confirmed = value(formData, "publish_confirmation") === "confirmed";
 
-  if (!uuid(versionId)) redirect("/dashboard/mining?error=invalid" as never);
+  if (!uuid(versionId) || !confirmed) redirectProductResult(formData, "error=invalid");
 
   const result = await publishMiningProductVersion(supabase, versionId);
-  if (result.error) redirectFailed();
-  redirect("/dashboard/mining?success=version_published" as never);
+  if (result.error) redirectProductResult(formData, "error=failed");
+  redirectProductResult(formData, "success=version_published");
 }
 
 export async function submitMiningContract(formData: FormData) {
@@ -147,7 +210,7 @@ export async function submitMiningContract(formData: FormData) {
     !decimal(capacity) ||
     !/^mining-contract:[0-9a-f-]{36}$/i.test(idempotencyKey)
   ) {
-    redirect("/dashboard/mining?error=invalid" as never);
+    redirectOperationResult(formData, "error=invalid");
   }
 
   const result = await createMiningContract(supabase, {
@@ -158,8 +221,8 @@ export async function submitMiningContract(formData: FormData) {
     idempotencyKey
   });
 
-  if (result.error) redirectFailed();
-  redirect("/dashboard/mining?success=contract_created" as never);
+  if (result.error) redirectOperationResult(formData, "error=failed");
+  redirectOperationResult(formData, "success=contract_created");
 }
 
 
@@ -175,7 +238,7 @@ export async function cancelContract(formData: FormData) {
     reason.length > 1000 ||
     !/^mining-cancel:[0-9a-f-]{36}$/i.test(idempotencyKey)
   ) {
-    redirect("/dashboard/mining?error=invalid" as never);
+    redirectOperationResult(formData, "error=invalid");
   }
 
   const result = await cancelMiningContract(supabase, {
@@ -184,8 +247,8 @@ export async function cancelContract(formData: FormData) {
     idempotencyKey
   });
 
-  if (result.error) redirectFailed();
-  redirect("/dashboard/mining?success=contract_cancelled" as never);
+  if (result.error) redirectOperationResult(formData, "error=failed");
+  redirectOperationResult(formData, "success=contract_cancelled");
 }
 
 export async function runMiningNow() {
@@ -205,7 +268,7 @@ export async function recalculateContract(formData: FormData) {
     !uuid(contractId) ||
     !/^mining-recalc:[0-9a-f-]{36}$/i.test(idempotencyKey)
   ) {
-    redirect("/dashboard/mining?error=invalid" as never);
+    redirectOperationResult(formData, "error=invalid");
   }
 
   const result = await recalculateMiningContract(supabase, {
@@ -213,8 +276,8 @@ export async function recalculateContract(formData: FormData) {
     idempotencyKey
   });
 
-  if (result.error) redirectFailed();
-  redirect("/dashboard/mining?success=contract_recalculated" as never);
+  if (result.error) redirectOperationResult(formData, "error=failed");
+  redirectOperationResult(formData, "success=contract_recalculated");
 }
 
 export async function retryCalculationError(formData: FormData) {
@@ -289,6 +352,7 @@ export async function saveMiningSettings(formData: FormData) {
   const interval = Number(value(formData, "calculation_interval_seconds"));
   const precision = Number(value(formData, "reward_precision"));
   const batch = Number(value(formData, "max_accounts_per_run"));
+  const enableConfirmed = value(formData, "enable_confirmation") === "confirmed";
 
   if (
     ![60, 300, 900, 1800, 3600, 7200, 14400, 86400].includes(interval) ||
@@ -297,7 +361,8 @@ export async function saveMiningSettings(formData: FormData) {
     precision > 18 ||
     !Number.isInteger(batch) ||
     batch < 1 ||
-    batch > 100000
+    batch > 100000 ||
+    (enabled && !enableConfirmed)
   ) {
     redirect("/dashboard/mining?error=invalid" as never);
   }
@@ -334,6 +399,7 @@ export async function saveMiningIssuancePolicy(formData: FormData) {
   const maxSourceNegativeBalance = value(formData, "max_source_negative_balance");
   const minimumReserveBalance = value(formData, "minimum_reserve_balance");
   const idempotencyKey = value(formData, "idempotency_key");
+  const enableConfirmed = value(formData, "enable_confirmation") === "confirmed";
 
   if (
     !uuid(assetId) ||
@@ -341,7 +407,8 @@ export async function saveMiningIssuancePolicy(formData: FormData) {
     !optionalPositiveDecimal(totalLimit) ||
     !optionalNonNegativeDecimal(maxSourceNegativeBalance) ||
     !optionalNonNegativeDecimal(minimumReserveBalance) ||
-    !/^mining-issuance-policy:[0-9a-f-]{36}$/i.test(idempotencyKey)
+    !/^mining-issuance-policy:[0-9a-f-]{36}$/i.test(idempotencyKey) ||
+    (issuanceEnabled && !enableConfirmed)
   ) {
     redirect("/dashboard/mining?error=invalid" as never);
   }

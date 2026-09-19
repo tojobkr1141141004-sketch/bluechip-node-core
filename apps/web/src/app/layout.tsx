@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 import "./globals.css";
+import { ConnectivityGuard } from "@/components/app/connectivity-guard";
 
 const appUrl =
   process.env.NEXT_PUBLIC_APP_URL ??
@@ -14,7 +15,7 @@ export const metadata: Metadata = {
     template: "%s · APEX-MATRIX"
   },
   description:
-    "APEX-MATRIX 사용자 운영센터. 인증된 사용자의 자산, 입출금, 채굴 및 영구 거래 기록을 확인하는 플랫폼입니다.",
+    "APEX-MATRIX global mining asset platform for account assets, requests, mining, and permanent ledger records.",
   applicationName: "APEX-MATRIX",
   generator: "Next.js 16.3.5",
   authors: [{ name: "APEX-MATRIX" }],
@@ -23,7 +24,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "APEX-MATRIX",
     description:
-      "APEX-MATRIX 사용자 운영센터. 자산, 입출금, 채굴 및 영구 활동 기록을 확인할 수 있습니다.",
+      "Review assets, requests, mining activity, and permanent ledger records with APEX-MATRIX.",
     type: "website",
     siteName: "APEX-MATRIX"
   }
@@ -47,9 +48,16 @@ export default function RootLayout({
       lang="ko"
       suppressHydrationWarning
       className={GeistSans.variable + " " + GeistMono.variable}
-      data-theme="dark"
+      data-theme="light"
     >
-      <body>{children}</body>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: "(function(){var m=location.pathname.match(/^\\/(ko|ja|en)(?:\\/|$)/);document.documentElement.lang=m?m[1]:'ko';})();"
+          }}
+        />
+      </head>
+      <body><ConnectivityGuard />{children}</body>
     </html>
   );
 }

@@ -1,35 +1,22 @@
 import { randomUUID } from "crypto";
 import {
-  getActiveAssets,
   getAdminMiningCalculationErrors,
   getAdminMiningCalculationRuns,
   getAdminMiningIssuanceControls,
-  getAdminMiningContractCancellations,
   getAdminMiningDailySummary,
   getAdminMiningReconciliationSummary,
   getAdminMiningRewardEvents,
   getAdminMiningRewardCorrections,
-  getAdminMiningContracts,
-  getAdminMiningProductVersions,
-  getAdminMiningProducts,
-  getMiningMemberCandidates,
   getMiningSettings
 } from "@apex-matrix/database";
 import { requireAdminUser } from "@/lib/auth";
 import {
-  cancelContract,
-  publishVersion,
-  recalculateContract,
   recoverStaleRuns,
   retryCalculationError,
   runMiningNow,
   submitRewardCorrection,
   saveMiningSettings,
-  submitMiningContract,
-  submitMiningProduct,
-  submitMiningVersion,
-  saveMiningIssuancePolicy,
-  updateProduct
+  saveMiningIssuancePolicy
 } from "./actions";
 
 export const instant = false;
@@ -68,10 +55,6 @@ const statusLabel: Record<string, string> = {
 function Notice({ success, error }: { success?: string; error?: string }) {
   if (success) {
     const messages: Record<string, string> = {
-      product_created: "채굴 상품 초안을 생성했습니다.",
-      product_updated: "채굴 상품 정보를 저장했습니다.",
-      version_created: "새 상품 버전을 생성했습니다.",
-      version_published: "상품 버전을 발행했습니다.",
       contract_created: "회원 채굴 계약을 활성화했습니다.",
       calculation_run: "채굴 계산 엔진을 즉시 실행했습니다.",
       contract_cancelled: "채굴 계약을 취소하고 취소 시각까지 계산·정산했습니다.",
@@ -112,50 +95,32 @@ export default async function MiningAdminPage({
   const error = first(params.error);
 
   const [
-    productsResult,
-    versionsResult,
-    assetsResult,
     settingsResult,
-    membersResult,
-    contractsResult,
     runsResult,
     reconciliationResult,
     errorsResult,
     dailySummaryResult,
     rewardEventsResult,
-    cancellationsResult,
     correctionsResult,
     issuanceControlsResult
   ] = await Promise.all([
-    getAdminMiningProducts(supabase),
-    getAdminMiningProductVersions(supabase),
-    getActiveAssets(supabase),
     getMiningSettings(supabase),
-    getMiningMemberCandidates(supabase),
-    getAdminMiningContracts(supabase),
     getAdminMiningCalculationRuns(supabase),
     getAdminMiningReconciliationSummary(supabase),
     getAdminMiningCalculationErrors(supabase),
     getAdminMiningDailySummary(supabase),
     getAdminMiningRewardEvents(supabase),
-    getAdminMiningContractCancellations(supabase),
     getAdminMiningRewardCorrections(supabase),
     getAdminMiningIssuanceControls(supabase)
   ]);
 
   if (
-    productsResult.error ||
-    versionsResult.error ||
-    assetsResult.error ||
     settingsResult.error ||
-    membersResult.error ||
-    contractsResult.error ||
     runsResult.error ||
     reconciliationResult.error ||
     errorsResult.error ||
     dailySummaryResult.error ||
     rewardEventsResult.error ||
-    cancellationsResult.error ||
     correctionsResult.error ||
     issuanceControlsResult.error
   ) {
@@ -165,7 +130,7 @@ export default async function MiningAdminPage({
           MINING / SETTLEMENT
         </div>
         <h1 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">
-          채굴 상품 · 자동 계산
+          채굴 엔진 · 정산
         </h1>
         <p className="mt-2 text-sm leading-6 text-zinc-500">
           채굴 운영 데이터를 불러오지 못했습니다. mining.read 권한과 DB 정책을 확인해 주세요.
@@ -174,24 +139,13 @@ export default async function MiningAdminPage({
     );
   }
 
-  const products = productsResult.data ?? [];
-  const versions = versionsResult.data ?? [];
-  const assets = assetsResult.data ?? [];
   const settings = settingsResult.data;
-  const members = membersResult.data ?? [];
-  const contracts = contractsResult.data ?? [];
   const runs = runsResult.data ?? [];
   const reconciliation = reconciliationResult.data;
   const errors = errorsResult.data ?? [];
   const dailySummary = dailySummaryResult.data ?? [];
   const rewardEvents = rewardEventsResult.data ?? [];
-  const cancellations = cancellationsResult.data ?? [];
   const corrections = correctionsResult.data ?? [];
-
-  const publishedVersions = versions.filter(
-    (version) => version.status === "published"
-  );
-  const activeMembers = members.filter((member) => member.status === "active");
 
   return (
     <section className="space-y-4">
@@ -200,10 +154,10 @@ export default async function MiningAdminPage({
           MINING / SETTLEMENT
         </div>
         <h1 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">
-          채굴 상품 · 자동 계산
+          채굴 엔진 · 정산
         </h1>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-500">
-          상품 버전을 고정한 회원 채굴 계약을 운영하고, 자동 계산 엔진의 실행 상태와 보상 지급 기록을 확인합니다. 계산은 설정이 활성화된 경우에만 실행되며, 계산 주기는 DB 설정으로 통제됩니다.
+          자동 계산 엔진의 실행 상태, 정산 대사, 보상 지급·정정 기록과 발행 안전 제어를 관리합니다. 계산과 실제 지급은 각각 별도 잠금으로 통제됩니다.
         </p>
         <div className="mt-4">
           <Notice success={success} error={error} />
@@ -281,8 +235,8 @@ export default async function MiningAdminPage({
               </tr>
             </thead>
             <tbody className="divide-y divide-white/[0.05]">
-              {runs.map((run) => (
-                <tr key={run.id ?? randomUUID()}>
+              {runs.map((run, index) => (
+                <tr key={run.id ?? run.run_key ?? `${run.started_at ?? "run"}-${index}`}>
                   <td className="px-3 py-3 text-zinc-400">{formatDate(run.started_at)}</td>
                   <td className="px-3 py-3 text-[10px] text-zinc-500">{run.run_type ?? "scheduled"}</td>
                   <td className="px-3 py-3">
@@ -536,444 +490,6 @@ export default async function MiningAdminPage({
         </div>
       </section>
 
-      <section className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
-        <div>
-          <h2 className="text-sm font-semibold">회원 채굴 계약 활성화</h2>
-          <p className="mt-1 text-[11px] leading-5 text-zinc-600">
-            상품의 발행된 버전을 선택하면 해당 버전의 보상 기준이 계약에 고정됩니다. 활성화 시 현재 시각부터 계산이 시작되며, 상품 버전을 나중에 변경해도 기존 계약의 기준값은 바뀌지 않습니다.
-          </p>
-        </div>
-
-        <form action={submitMiningContract} className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-          <select
-            name="user_id"
-            required
-            defaultValue=""
-            className="rounded-xl border border-white/10 bg-black/20 px-3 py-3 text-xs text-white outline-none"
-          >
-            <option value="" disabled>
-              활성 회원 선택
-            </option>
-            {activeMembers.map((member) => (
-              <option key={member.user_id} value={member.user_id ?? ""}>
-                {(member.display_name || member.username || member.email || "회원")}{" "}
-                {member.username ? `(@${member.username})` : ""}
-              </option>
-            ))}
-          </select>
-
-          <select
-            name="product_version_id"
-            required
-            defaultValue=""
-            className="rounded-xl border border-white/10 bg-black/20 px-3 py-3 text-xs text-white outline-none"
-          >
-            <option value="" disabled>
-              발행 상품 버전 선택
-            </option>
-            {publishedVersions.map((version) => (
-              <option key={version.id} value={version.id ?? ""}>
-                {version.product_code} · v{version.version} ·{" "}
-                {version.reward_asset_code} ·{" "}
-                {version.capacity_unit}
-              </option>
-            ))}
-          </select>
-
-          <input
-            name="capacity"
-            required
-            inputMode="decimal"
-            pattern="^(?:\d+)(?:\.\d{1,18})?$"
-            placeholder="용량 예: 10"
-            className="rounded-xl border border-white/10 bg-black/20 px-3 py-3 text-xs text-white outline-none"
-          />
-
-          <input
-            type="hidden"
-            name="idempotency_key"
-            value={`mining-contract:${randomUUID()}`}
-          />
-
-          <button
-            type="submit"
-            disabled={!activeMembers.length || !publishedVersions.length}
-            className="rounded-xl bg-emerald-300 px-4 py-3 text-xs font-bold text-zinc-950 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            채굴 계약 활성화
-          </button>
-
-          <div className="text-[11px] leading-5 text-zinc-600 md:col-span-2 xl:col-span-5">
-            회원 선택 목록에는 mining 권한 범위에서 활성 회원의 기본 식별 정보만 표시됩니다.
-            상품이 일시 중지되어도 이미 시작된 계약은 별도 취소 정책이 만들어지기 전까지 계약 기간에 따라 계속 계산됩니다.
-          </div>
-        </form>
-      </section>
-
-      <section className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 className="text-sm font-semibold">채굴 계약 현황</h2>
-            <p className="mt-1 text-[11px] text-zinc-600">
-              계약 종료 시각과 취소 시각을 구분해 확인합니다. 활성 계약은 취소 시점까지 자동 계산·지급한 뒤 종료할 수 있습니다.
-            </p>
-          </div>
-          <span className="rounded-full border border-white/10 px-2.5 py-1 text-[10px] text-zinc-500">
-            {contracts.length}개 계약
-          </span>
-        </div>
-
-        <div className="mt-4 overflow-x-auto">
-          <table className="min-w-[1500px] w-full text-left text-xs">
-            <thead className="border-b border-white/[0.06] text-[10px] uppercase tracking-[0.16em] text-zinc-600">
-              <tr>
-                <th className="px-3 py-2">회원</th>
-                <th className="px-3 py-2">상품</th>
-                <th className="px-3 py-2">용량</th>
-                <th className="px-3 py-2">누적 채굴</th>
-                <th className="px-3 py-2">누적 지급</th>
-                <th className="px-3 py-2">미지급</th>
-                <th className="px-3 py-2">상태</th>
-                <th className="px-3 py-2">시작</th>
-                <th className="px-3 py-2">종료 예정</th>
-                <th className="px-3 py-2">최근 계산</th>
-                <th className="px-3 py-2">관리</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/[0.05]">
-              {contracts.map((contract) => (
-                <tr key={contract.contract_id ?? randomUUID()} className="text-zinc-300">
-                  <td className="px-3 py-4">
-                    <div className="font-medium">
-                      {contract.display_name || contract.username || contract.email || "회원"}
-                    </div>
-                    <div className="mt-1 text-[10px] text-zinc-600">
-                      {contract.email ?? contract.user_id ?? "-"}
-                    </div>
-                  </td>
-                  <td className="px-3 py-4">
-                    <div className="font-medium">{contract.product_code ?? "-"}</div>
-                    <div className="mt-1 text-[10px] text-zinc-600">
-                      {contract.product_name ?? "-"} · v{String(contract.version ?? "-")}
-                    </div>
-                  </td>
-                  <td className="px-3 py-4">
-                    {formatAmount(contract.capacity)} {contract.capacity_unit ?? ""}
-                  </td>
-                  <td className="px-3 py-4">
-                    {formatAmount(contract.total_reward_earned)} {contract.reward_asset_code ?? ""}
-                  </td>
-                  <td className="px-3 py-4">
-                    {formatAmount(contract.total_reward_paid)} {contract.reward_asset_code ?? ""}
-                  </td>
-                  <td className="px-3 py-4">
-                    {formatAmount(contract.pending_reward)} {contract.reward_asset_code ?? ""}
-                  </td>
-                  <td className="px-3 py-4">
-                    {statusLabel[contract.status ?? ""] ?? contract.status ?? "-"}
-                    {contract.cancelled_at ? (
-                      <div className="mt-1 text-[10px] text-amber-200/60">
-                        취소 {formatDate(contract.cancelled_at)}
-                      </div>
-                    ) : null}
-                    {contract.completed_at ? (
-                      <div className="mt-1 text-[10px] text-emerald-200/60">
-                        완료 {formatDate(contract.completed_at)}
-                      </div>
-                    ) : null}
-                  </td>
-                  <td className="px-3 py-4 text-zinc-500">{formatDate(contract.started_at)}</td>
-                  <td className="px-3 py-4 text-zinc-500">{formatDate(contract.scheduled_end_at)}</td>
-                  <td className="px-3 py-4 text-zinc-500">{formatDate(contract.last_calculated_at)}</td>
-                  <td className="px-3 py-4">
-                    {contract.status === "active" ? (
-                      <div className="grid min-w-[240px] gap-2">
-                        <form action={recalculateContract}>
-                          <input type="hidden" name="contract_id" value={contract.contract_id ?? ""} />
-                          <input type="hidden" name="idempotency_key" value={"mining-recalc:" + randomUUID()} />
-                          <button
-                            type="submit"
-                            className="w-full rounded-lg border border-sky-300/15 bg-sky-300/[0.04] px-3 py-2 text-[10px] font-semibold text-sky-200"
-                          >
-                            이 계약만 즉시 재계산
-                          </button>
-                        </form>
-                        <form action={cancelContract} className="grid gap-2">
-                          <input type="hidden" name="contract_id" value={contract.contract_id ?? ""} />
-                          <input type="hidden" name="idempotency_key" value={"mining-cancel:" + randomUUID()} />
-                          <input
-                            name="reason"
-                            required
-                            minLength={3}
-                            maxLength={1000}
-                            placeholder="취소 사유 입력"
-                            className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-[10px] outline-none"
-                          />
-                          <button
-                            type="submit"
-                            className="rounded-lg border border-rose-300/15 bg-rose-300/[0.04] px-3 py-2 text-[10px] font-semibold text-rose-200"
-                          >
-                            계약 취소 + 최종 계산
-                          </button>
-                        </form>
-                      </div>
-                    ) : (
-                      <span className="text-[10px] text-zinc-600">터미널 계약</span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {!contracts.length ? (
-            <div className="py-8 text-center text-xs text-zinc-600">
-              활성화된 채굴 계약이 없습니다.
-            </div>
-          ) : null}
-        </div>
-      </section>
-
-      <section className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
-        <h2 className="text-sm font-semibold">계약 취소 이력</h2>
-        <p className="mt-1 text-[11px] text-zinc-600">
-          취소 시점까지 확정된 계산·지급 결과와 운영자 사유를 별도 기록으로 남깁니다.
-        </p>
-        <div className="mt-4 overflow-x-auto">
-          <table className="min-w-[1100px] w-full text-left text-xs">
-            <thead className="border-b border-white/[0.06] text-[10px] uppercase tracking-[0.16em] text-zinc-600">
-              <tr>
-                <th className="px-3 py-2">취소 시각</th>
-                <th className="px-3 py-2">회원</th>
-                <th className="px-3 py-2">상품</th>
-                <th className="px-3 py-2">취소 전 계산 완료</th>
-                <th className="px-3 py-2">누적 지급</th>
-                <th className="px-3 py-2">잔여</th>
-                <th className="px-3 py-2">사유</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/[0.05]">
-              {cancellations.map((item) => (
-                <tr key={item.cancellation_id}>
-                  <td className="px-3 py-3 text-[10px] text-zinc-500">{formatDate(item.created_at)}</td>
-                  <td className="px-3 py-3">{item.display_name || item.username || item.email || item.user_id || "-"}</td>
-                  <td className="px-3 py-3">{item.product_code ?? "-"}</td>
-                  <td className="px-3 py-3 text-[10px] text-zinc-500">{formatDate(item.calculated_until)}</td>
-                  <td className="px-3 py-3">{formatAmount(item.reward_paid_on_cancel)}</td>
-                  <td className="px-3 py-3">{formatAmount(item.pending_reward_after_cancel)}</td>
-                  <td className="max-w-[420px] truncate px-3 py-3 text-[10px] text-zinc-500" title={item.reason ?? ""}>{item.reason ?? "-"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {!cancellations.length ? (
-            <div className="py-8 text-center text-xs text-zinc-600">계약 취소 이력이 없습니다.</div>
-          ) : null}
-        </div>
-      </section>
-
-      <section className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 className="text-sm font-semibold">채굴 계약 현황</h2>
-            <p className="mt-1 text-[11px] text-zinc-600">
-              현재 계약의 누적 채굴량, 지급량, 미지급 잔여량을 확인합니다.
-            </p>
-          </div>
-          <span className="rounded-full border border-white/10 px-2.5 py-1 text-[10px] text-zinc-500">
-            {contracts.length}개 계약
-          </span>
-        </div>
-
-        <div className="mt-4 overflow-x-auto">
-          <table className="min-w-[1320px] w-full text-left text-xs">
-            <thead className="border-b border-white/[0.06] text-[10px] uppercase tracking-[0.16em] text-zinc-600">
-              <tr>
-                <th className="px-3 py-2">회원</th>
-                <th className="px-3 py-2">상품</th>
-                <th className="px-3 py-2">용량</th>
-                <th className="px-3 py-2">누적 채굴</th>
-                <th className="px-3 py-2">누적 지급</th>
-                <th className="px-3 py-2">미지급</th>
-                <th className="px-3 py-2">상태</th>
-                <th className="px-3 py-2">시작</th>
-                <th className="px-3 py-2">종료</th>
-                <th className="px-3 py-2">최근 계산</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/[0.05]">
-              {contracts.map((contract) => (
-                <tr key={contract.contract_id ?? randomUUID()} className="text-zinc-300">
-                  <td className="px-3 py-4">
-                    <div className="font-medium">
-                      {contract.display_name || contract.username || contract.email || "회원"}
-                    </div>
-                    <div className="mt-1 text-[10px] text-zinc-600">
-                      {contract.email ?? contract.user_id ?? "-"}
-                    </div>
-                  </td>
-                  <td className="px-3 py-4">
-                    <div className="font-medium">{contract.product_code ?? "-"}</div>
-                    <div className="mt-1 text-[10px] text-zinc-600">
-                      {contract.product_name ?? "-"} · v{String(contract.version ?? "-")}
-                    </div>
-                  </td>
-                  <td className="px-3 py-4">
-                    {formatAmount(contract.capacity)} {contract.capacity_unit ?? ""}
-                  </td>
-                  <td className="px-3 py-4">
-                    {formatAmount(contract.total_reward_earned)} {contract.reward_asset_code ?? ""}
-                  </td>
-                  <td className="px-3 py-4">
-                    {formatAmount(contract.total_reward_paid)} {contract.reward_asset_code ?? ""}
-                  </td>
-                  <td className="px-3 py-4">
-                    {formatAmount(contract.pending_reward)} {contract.reward_asset_code ?? ""}
-                  </td>
-                  <td className="px-3 py-4">
-                    {statusLabel[contract.status ?? ""] ?? contract.status ?? "-"}
-                  </td>
-                  <td className="px-3 py-4 text-zinc-500">{formatDate(contract.started_at)}</td>
-                  <td className="px-3 py-4 text-zinc-500">{formatDate(contract.scheduled_end_at)}</td>
-                  <td className="px-3 py-4 text-zinc-500">{formatDate(contract.last_calculated_at)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {!contracts.length ? (
-            <div className="py-8 text-center text-xs text-zinc-600">
-              활성화된 채굴 계약이 없습니다.
-            </div>
-          ) : null}
-        </div>
-      </section>
-
-      <section className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
-        <div>
-          <h2 className="text-sm font-semibold">채굴 상품 · 버전 관리</h2>
-          <p className="mt-1 text-[11px] text-zinc-600">
-            상품 정의를 관리하고, 실제 계산에 사용될 값은 발행된 버전 스냅샷으로 고정합니다.
-          </p>
-        </div>
-
-        <div className="mt-4 grid gap-4 xl:grid-cols-[0.8fr_1.2fr]">
-          <div className="rounded-xl border border-white/[0.06] bg-black/10 p-4">
-            <h3 className="text-xs font-semibold">새 채굴 상품</h3>
-            <form action={submitMiningProduct} className="mt-4 grid gap-3">
-              <input name="code" required maxLength={64} placeholder="상품 코드 예: BASIC_01" className="rounded-xl border border-white/10 bg-black/20 px-3 py-3 text-xs outline-none" />
-              <input name="name" required maxLength={120} placeholder="상품명" className="rounded-xl border border-white/10 bg-black/20 px-3 py-3 text-xs outline-none" />
-              <textarea name="description" rows={4} maxLength={2000} placeholder="상품 설명" className="rounded-xl border border-white/10 bg-black/20 px-3 py-3 text-xs outline-none" />
-              <input name="sort_order" type="number" min={0} max={100000} defaultValue={0} placeholder="정렬 순서" className="rounded-xl border border-white/10 bg-black/20 px-3 py-3 text-xs outline-none" />
-              <button type="submit" className="rounded-xl bg-white px-4 py-3 text-xs font-bold text-zinc-950">상품 초안 생성</button>
-            </form>
-          </div>
-
-          <div className="space-y-4">
-            {products.map((product) => {
-              const productId = product.product_id ?? "";
-              const status = product.status ?? "draft";
-              const isPublic = Boolean(product.is_public);
-              return (
-                <article key={productId} className="rounded-xl border border-white/[0.06] bg-black/10 p-4">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div>
-                      <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-300/70">{product.product_code ?? "PRODUCT"}</div>
-                      <div className="mt-1 text-base font-semibold">{product.product_name ?? "이름 없음"}</div>
-                      <div className="mt-1 text-[11px] text-zinc-600">
-                        {statusLabel[status] ?? status}
-                        {isPublic ? " · 사용자 공개" : " · 비공개"}
-                        {product.published_version ? ` · v${product.published_version} 발행` : " · 발행 버전 없음"}
-                      </div>
-                    </div>
-                    <div className="text-right text-[10px] text-zinc-600">생성 {formatDate(product.created_at)}</div>
-                  </div>
-
-                  <div className="mt-3 text-xs leading-5 text-zinc-500">{product.description || "상품 설명 없음"}</div>
-
-                  <form action={updateProduct} className="mt-4 grid gap-2 lg:grid-cols-[1fr_1fr_110px_140px_120px]">
-                    <input type="hidden" name="product_id" value={productId} />
-                    <input name="name" required defaultValue={product.product_name ?? ""} className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-xs outline-none" />
-                    <input name="description" defaultValue={product.description ?? ""} maxLength={2000} className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-xs outline-none" />
-                    <input name="sort_order" type="number" min={0} max={100000} defaultValue={product.sort_order ?? 0} className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-xs outline-none" />
-                    <select name="status" defaultValue={status} className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-xs outline-none">
-                      <option value="draft">초안</option>
-                      <option value="active">운영 중</option>
-                      <option value="paused">일시 중지</option>
-                      <option value="archived">보관</option>
-                    </select>
-                    <select name="is_public" defaultValue={isPublic ? "true" : "false"} className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-xs outline-none">
-                      <option value="false">비공개</option>
-                      <option value="true">공개</option>
-                    </select>
-                    <button type="submit" className="rounded-lg border border-white/10 px-3 py-2 text-[10px] font-semibold text-zinc-200 lg:col-span-full lg:justify-self-end">상품 정보 저장</button>
-                  </form>
-
-                  <div className="mt-4 rounded-xl border border-white/[0.05] bg-white/[0.015] p-4">
-                    <div className="text-[10px] font-semibold text-zinc-300">새 버전 작성</div>
-                    <form action={submitMiningVersion} className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-4">
-                      <input type="hidden" name="product_id" value={productId} />
-                      <select name="reward_asset_id" required className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-xs outline-none">
-                        {assets.map((asset) => (
-                          <option key={asset.id} value={asset.id}>{asset.code} · {asset.name}</option>
-                        ))}
-                      </select>
-                      <input name="capacity_unit" required maxLength={32} placeholder="기준 단위 예: TH/s" className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-xs outline-none" />
-                      <input name="reward_per_unit_per_day" required inputMode="decimal" placeholder="단위당 하루 보상" className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-xs outline-none" />
-                      <input name="min_capacity" required inputMode="decimal" placeholder="최소 용량" className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-xs outline-none" />
-                      <input name="max_capacity" inputMode="decimal" placeholder="최대 용량 (선택)" className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-xs outline-none" />
-                      <input name="term_days" type="number" min={1} max={3650} defaultValue={1} placeholder="기간(일)" className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-xs outline-none" />
-                      <button type="submit" className="rounded-lg border border-emerald-300/15 bg-emerald-300/[0.05] px-3 py-2 text-[10px] font-semibold text-emerald-200 md:col-span-2 xl:col-span-2">새 버전 저장</button>
-                    </form>
-                  </div>
-                </article>
-              );
-            })}
-            {!products.length ? <div className="py-8 text-center text-xs text-zinc-600">등록된 채굴 상품이 없습니다.</div> : null}
-          </div>
-        </div>
-
-        <div className="mt-5 overflow-x-auto">
-          <table className="min-w-full text-left text-xs">
-            <thead className="text-[10px] uppercase tracking-[0.16em] text-zinc-600">
-              <tr>
-                <th className="px-3 py-2">상품</th>
-                <th className="px-3 py-2">버전</th>
-                <th className="px-3 py-2">보상</th>
-                <th className="px-3 py-2">용량</th>
-                <th className="px-3 py-2">기간</th>
-                <th className="px-3 py-2">상태</th>
-                <th className="px-3 py-2" />
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/[0.05]">
-              {versions.map((version) => (
-                <tr key={version.id}>
-                  <td className="px-3 py-3">
-                    <div className="font-semibold">{version.product_code ?? "-"}</div>
-                    <div className="mt-0.5 text-[10px] text-zinc-600">{version.product_name ?? "-"}</div>
-                  </td>
-                  <td className="px-3 py-3 font-semibold">v{String(version.version ?? "-")}</td>
-                  <td className="px-3 py-3">
-                    <div>{version.reward_asset_code ?? "-"}</div>
-                    <div className="mt-0.5 text-[10px] text-zinc-600">{String(version.reward_per_unit_per_day ?? 0)} / {version.capacity_unit ?? "-"} / 일</div>
-                  </td>
-                  <td className="px-3 py-3">{String(version.min_capacity ?? 0)} ~ {formatAmount(version.max_capacity)} {version.capacity_unit ?? ""}</td>
-                  <td className="px-3 py-3">{String(version.term_days ?? "-")}일</td>
-                  <td className="px-3 py-3">{statusLabel[version.status ?? ""] ?? version.status ?? "-"}</td>
-                  <td className="px-3 py-3 text-right">
-                    {version.status === "draft" ? (
-                      <form action={publishVersion}>
-                        <input type="hidden" name="version_id" value={version.id ?? ""} />
-                        <button type="submit" className="rounded-lg border border-emerald-300/15 px-3 py-2 text-[10px] font-semibold text-emerald-200">버전 발행</button>
-                      </form>
-                    ) : null}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {!versions.length ? <div className="py-8 text-center text-xs text-zinc-600">생성된 상품 버전이 없습니다.</div> : null}
-        </div>
-      </section>
 
       <section className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
         <h2 className="text-sm font-semibold">채굴 계산 설정</h2>
@@ -1012,6 +528,10 @@ export default async function MiningAdminPage({
           <label className="grid gap-2 text-xs text-zinc-400">
             1회 처리 최대 계약 수
             <input name="max_accounts_per_run" type="number" min={1} max={100000} defaultValue={settings?.max_accounts_per_run ?? 1000} className="rounded-xl border border-white/10 bg-black/20 px-3 py-3 text-sm text-white outline-none" />
+          </label>
+          <label className="flex items-start gap-3 rounded-xl border border-amber-300/10 bg-amber-300/[0.03] p-4 text-[11px] leading-5 text-amber-100/80 sm:col-span-2 lg:col-span-5">
+            <input type="checkbox" name="enable_confirmation" value="confirmed" className="mt-0.5 h-4 w-4" />
+            자동 계산을 활성화하는 경우 실제 계약 계산과 지급 경로가 동작할 수 있음을 확인했습니다. 비활성화 저장에는 체크가 필요하지 않습니다.
           </label>
           <div className="sm:col-span-2 lg:col-span-5">
             <button type="submit" className="rounded-xl bg-white px-4 py-3 text-xs font-bold text-zinc-950">계산 설정 저장</button>
@@ -1111,6 +631,10 @@ export default async function MiningAdminPage({
                   <label className="grid gap-2 text-xs text-zinc-400">
                     최소 준비금 기준
                     <input name="minimum_reserve_balance" inputMode="decimal" defaultValue={control.minimum_reserve_balance == null ? "" : String(control.minimum_reserve_balance)} placeholder="설정하지 않으려면 비워두세요" className="rounded-xl border border-white/10 bg-black/20 px-3 py-3 text-sm text-white outline-none" />
+                  </label>
+                  <label className="flex items-start gap-3 rounded-xl border border-amber-300/10 bg-amber-300/[0.03] p-4 text-[11px] leading-5 text-amber-100/80 sm:col-span-2">
+                    <input type="checkbox" name="enable_confirmation" value="confirmed" className="mt-0.5 h-4 w-4" />
+                    보상 발행을 허용하는 경우 자산 원장 지급이 실행될 수 있음을 확인했습니다. 발행 중지 저장에는 체크가 필요하지 않습니다.
                   </label>
                   <div className="sm:col-span-2">
                     <button type="submit" className="rounded-xl bg-white px-4 py-3 text-xs font-bold text-zinc-950">안전설정 저장</button>

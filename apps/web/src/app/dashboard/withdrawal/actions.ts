@@ -6,6 +6,7 @@ import {
   createWithdrawalRequest
 } from "@apex-matrix/database";
 import { requireWebUser } from "@/lib/auth";
+import { localizeHref, normalizeLocale } from "@apex-matrix/i18n";
 
 function readText(formData: FormData, name: string) {
   return String(formData.get(name) ?? "").trim();
@@ -16,8 +17,12 @@ function validAmount(value: string) {
   return /[1-9]/.test(value);
 }
 
-function financeErrorRedirect(path: string) {
-  redirect(`${path}?error=failed` as never);
+function localizedPath(formData: FormData, path: string) {
+  return localizeHref(path, normalizeLocale(readText(formData, "locale")));
+}
+
+function financeErrorRedirect(formData: FormData, path: string) {
+  redirect(`${localizedPath(formData, path)}?error=failed` as never);
 }
 
 export async function submitWithdrawalRequest(formData: FormData) {
@@ -32,11 +37,11 @@ export async function submitWithdrawalRequest(formData: FormData) {
   const userNote = readText(formData, "user_note");
 
   if (!/^[0-9a-f-]{36}$/i.test(assetId) || !validAmount(amount)) {
-    redirect("/dashboard/withdrawal?error=invalid");
+    redirect(`${localizedPath(formData, "/dashboard/withdrawal")}?error=invalid` as never);
   }
 
   if (!/^[0-9a-f-]{36}$/i.test(requestKey)) {
-    redirect("/dashboard/withdrawal?error=request");
+    redirect(`${localizedPath(formData, "/dashboard/withdrawal")}?error=request` as never);
   }
 
   const { error } = await createWithdrawalRequest(supabase, {
@@ -50,8 +55,8 @@ export async function submitWithdrawalRequest(formData: FormData) {
     userNote
   });
 
-  if (error) financeErrorRedirect("/dashboard/withdrawal");
-  redirect("/dashboard/withdrawal?success=1");
+  if (error) financeErrorRedirect(formData, "/dashboard/withdrawal");
+  redirect(`${localizedPath(formData, "/dashboard/withdrawal")}?success=1` as never);
 }
 
 export async function cancelWithdrawal(formData: FormData) {
@@ -59,11 +64,11 @@ export async function cancelWithdrawal(formData: FormData) {
   const requestId = readText(formData, "request_id");
 
   if (!/^[0-9a-f-]{36}$/i.test(requestId)) {
-    redirect("/dashboard/withdrawal?error=invalid");
+    redirect(`${localizedPath(formData, "/dashboard/withdrawal")}?error=invalid` as never);
   }
 
   const { error } = await cancelWithdrawalRequest(supabase, requestId);
 
-  if (error) financeErrorRedirect("/dashboard/withdrawal");
-  redirect("/dashboard/withdrawal?cancelled=1");
+  if (error) financeErrorRedirect(formData, "/dashboard/withdrawal");
+  redirect(`${localizedPath(formData, "/dashboard/withdrawal")}?cancelled=1` as never);
 }

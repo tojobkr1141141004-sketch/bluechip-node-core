@@ -1,12 +1,16 @@
+import type { Route } from "next";
 import { redirect } from "next/navigation";
+import { getRequestLocale } from "@/lib/locale";
 import { createWebServerSupabaseClient } from "@/lib/supabase/server";
 
 export async function requireWebUser() {
+  const locale = await getRequestLocale();
+
   if (
     !process.env.NEXT_PUBLIC_SUPABASE_URL ||
     !process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
   ) {
-    redirect("/login?error=configuration");
+    redirect(`/${locale}/login?error=configuration` as Route);
   }
 
   const supabase = await createWebServerSupabaseClient();
@@ -15,7 +19,7 @@ export async function requireWebUser() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/login?next=/dashboard");
+    redirect(`/${locale}/login?next=/${locale}/dashboard` as Route);
   }
 
   return { supabase, user };

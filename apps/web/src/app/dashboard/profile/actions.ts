@@ -23,7 +23,7 @@ export async function saveProfile(formData: FormData) {
     displayName.length < 1 ||
     displayName.length > 80 ||
     !validUsername ||
-    !["ko-KR", "en-US"].includes(locale)
+    !["ko-KR", "ja-JP", "en-US"].includes(locale)
   ) {
     redirect("/dashboard/profile?error=invalid" as never);
   }
@@ -49,7 +49,7 @@ export async function saveProfile(formData: FormData) {
     .upsert({
       user_id: user.id,
       locale,
-      timezone: "Asia/Seoul"
+      timezone: locale === "ja-JP" ? "Asia/Tokyo" : locale === "en-US" ? "UTC" : "Asia/Seoul"
     });
 
   if (settingsError) redirect("/dashboard/profile?error=save_failed" as never);

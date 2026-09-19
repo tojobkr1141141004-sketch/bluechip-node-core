@@ -49,6 +49,7 @@ export {
   getAdminMiningReconciliationSummary,
   getAdminMiningRewardEvents,
   getAdminMiningProductVersions,
+  getAdminMiningProductLocalizations,
   getAdminMiningProducts,
   getMiningMemberCandidates,
   getMiningSettings,
@@ -65,6 +66,7 @@ export {
   updateMiningIssuancePolicy,
   runMiningCalculationNow,
   updateMiningProduct,
+  upsertMiningProductLocalization,
   updateMiningSettings,
 } from "./mining";
 

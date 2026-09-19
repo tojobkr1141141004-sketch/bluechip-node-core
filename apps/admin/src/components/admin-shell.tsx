@@ -3,15 +3,17 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AdminThemeToggle } from "./admin-theme-toggle";
-import { Bell, ClipboardList, Coins, FileSearch, LayoutDashboard, LogOut, Rocket, Settings2, ShieldCheck, UsersRound } from "lucide-react";
+import { Bell, ClipboardList, Coins, FileClock, Handshake, LayoutDashboard, LogOut, PackageOpen, Rocket, Settings2, ShieldCheck, UsersRound } from "lucide-react";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "운영 대시보드", icon: LayoutDashboard },
   { href: "/dashboard/members", label: "회원 관리", icon: UsersRound },
-  { href: "/dashboard/kyc", label: "KYC", icon: FileSearch },
   { href: "/dashboard/finance", label: "금융 운영", icon: Coins },
+  { href: "/dashboard/products", label: "상품 관리", icon: PackageOpen },
+  { href: "/dashboard/contracts", label: "계약 관리", icon: Handshake },
   { href: "/dashboard/mining", label: "채굴·정산", icon: ClipboardList },
   { href: "/dashboard/notifications", label: "운영 알림", icon: Bell },
+  { href: "/dashboard/audit", label: "감사 기록", icon: FileClock },
   { href: "/dashboard/launch-readiness", label: "출시 준비", icon: Rocket },
   { href: "/dashboard/system", label: "시스템", icon: Settings2 }
 ] as const;

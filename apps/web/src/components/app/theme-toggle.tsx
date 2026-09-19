@@ -2,8 +2,12 @@
 
 import { Moon, Sun } from "lucide-react";
 import { useEffect } from "react";
+import { commonMessages, localeFromPathname } from "@apex-matrix/i18n";
+import { usePathname } from "next/navigation";
 
 export function ThemeToggle() {
+  const pathname = usePathname();
+  const label = commonMessages[localeFromPathname(pathname)].shell.themeToggle;
   useEffect(() => {
     const stored = window.localStorage.getItem("apex-theme");
     const next =
@@ -29,9 +33,9 @@ export function ThemeToggle() {
     <button
       type="button"
       onClick={toggleTheme}
-      aria-label="밝은 모드와 어두운 모드 전환"
-      title="밝은/어두운 모드 전환"
-      className="theme-toggle inline-flex h-10 w-10 items-center justify-center rounded-xl border transition"
+      aria-label={label}
+      title={label}
+      className="theme-toggle inline-flex h-11 w-11 items-center justify-center rounded-xl border transition"
     >
       <Sun className="h-4 w-4 theme-icon-light" aria-hidden="true" />
       <Moon className="hidden h-4 w-4 theme-icon-dark" aria-hidden="true" />

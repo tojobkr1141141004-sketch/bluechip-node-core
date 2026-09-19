@@ -14,48 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      user_notifications: {
-        Row: {
-          created_at: string
-          href: string
-          id: string
-          message: string
-          metadata: Json
-          notification_key: string
-          notification_type: string
-          read_at: string | null
-          title: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          href?: string
-          id?: string
-          message: string
-          metadata?: Json
-          notification_key: string
-          notification_type: string
-          read_at?: string | null
-          title: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          href?: string
-          id?: string
-          message?: string
-          metadata?: Json
-          notification_key?: string
-          notification_type?: string
-          read_at?: string | null
-          title?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       admin_notification_events: {
         Row: {
           actor_user_id: string | null
@@ -1116,6 +1074,13 @@ export type Database = {
             foreignKeyName: "mining_contracts_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
+            referencedRelation: "admin_mining_product_localizations"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "mining_contracts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
             referencedRelation: "admin_mining_products"
             referencedColumns: ["product_id"]
           },
@@ -1131,6 +1096,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "user_mining_products"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "mining_contracts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "user_mining_products_i18n"
             referencedColumns: ["product_id"]
           },
           {
@@ -1159,6 +1131,13 @@ export type Database = {
             columns: ["product_version_id"]
             isOneToOne: false
             referencedRelation: "user_mining_products"
+            referencedColumns: ["version_id"]
+          },
+          {
+            foreignKeyName: "mining_contracts_product_version_id_fkey"
+            columns: ["product_version_id"]
+            isOneToOne: false
+            referencedRelation: "user_mining_products_i18n"
             referencedColumns: ["version_id"]
           },
         ]
@@ -1302,6 +1281,72 @@ export type Database = {
           },
         ]
       }
+      mining_product_localizations: {
+        Row: {
+          created_at: string
+          description: string
+          locale: string
+          name: string
+          product_id: string
+          risk_notice: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string
+          locale: string
+          name: string
+          product_id: string
+          risk_notice?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          locale?: string
+          name?: string
+          product_id?: string
+          risk_notice?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mining_product_localizations_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_product_localizations"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "mining_product_localizations_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_mining_products"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "mining_product_localizations_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "mining_products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_product_localizations_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "user_mining_products"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "mining_product_localizations_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "user_mining_products_i18n"
+            referencedColumns: ["product_id"]
+          },
+        ]
+      }
       mining_product_versions: {
         Row: {
           capacity_unit: string
@@ -1353,6 +1398,13 @@ export type Database = {
             foreignKeyName: "mining_product_versions_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
+            referencedRelation: "admin_mining_product_localizations"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "mining_product_versions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
             referencedRelation: "admin_mining_products"
             referencedColumns: ["product_id"]
           },
@@ -1368,6 +1420,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "user_mining_products"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "mining_product_versions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "user_mining_products_i18n"
             referencedColumns: ["product_id"]
           },
           {
@@ -1388,6 +1447,7 @@ export type Database = {
       }
       mining_products: {
         Row: {
+          category: string
           code: string
           created_at: string
           description: string
@@ -1399,6 +1459,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          category?: string
           code: string
           created_at?: string
           description?: string
@@ -1410,6 +1471,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          category?: string
           code?: string
           created_at?: string
           description?: string
@@ -1538,6 +1600,13 @@ export type Database = {
             columns: ["product_version_id"]
             isOneToOne: false
             referencedRelation: "user_mining_products"
+            referencedColumns: ["version_id"]
+          },
+          {
+            foreignKeyName: "mining_reward_accruals_product_version_id_fkey"
+            columns: ["product_version_id"]
+            isOneToOne: false
+            referencedRelation: "user_mining_products_i18n"
             referencedColumns: ["version_id"]
           },
         ]
@@ -1972,6 +2041,48 @@ export type Database = {
           status?: string
           updated_at?: string
           username?: string | null
+        }
+        Relationships: []
+      }
+      user_notifications: {
+        Row: {
+          created_at: string
+          href: string
+          id: string
+          message: string
+          metadata: Json
+          notification_key: string
+          notification_type: string
+          read_at: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          href?: string
+          id?: string
+          message: string
+          metadata?: Json
+          notification_key: string
+          notification_type: string
+          read_at?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          href?: string
+          id?: string
+          message?: string
+          metadata?: Json
+          notification_key?: string
+          notification_type?: string
+          read_at?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -2447,6 +2558,13 @@ export type Database = {
             foreignKeyName: "mining_contracts_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
+            referencedRelation: "admin_mining_product_localizations"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "mining_contracts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
             referencedRelation: "admin_mining_products"
             referencedColumns: ["product_id"]
           },
@@ -2462,6 +2580,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "user_mining_products"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "mining_contracts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "user_mining_products_i18n"
             referencedColumns: ["product_id"]
           },
           {
@@ -2490,6 +2615,13 @@ export type Database = {
             columns: ["product_version_id"]
             isOneToOne: false
             referencedRelation: "user_mining_products"
+            referencedColumns: ["version_id"]
+          },
+          {
+            foreignKeyName: "mining_contracts_product_version_id_fkey"
+            columns: ["product_version_id"]
+            isOneToOne: false
+            referencedRelation: "user_mining_products_i18n"
             referencedColumns: ["version_id"]
           },
         ]
@@ -2524,6 +2656,20 @@ export type Database = {
           },
         ]
       }
+      admin_mining_product_localizations: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          locale: string | null
+          name: string | null
+          product_category: string | null
+          product_code: string | null
+          product_id: string | null
+          risk_notice: string | null
+          updated_at: string | null
+        }
+        Relationships: []
+      }
       admin_mining_product_versions: {
         Row: {
           capacity_unit: string | null
@@ -2549,6 +2695,13 @@ export type Database = {
             foreignKeyName: "mining_product_versions_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
+            referencedRelation: "admin_mining_product_localizations"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "mining_product_versions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
             referencedRelation: "admin_mining_products"
             referencedColumns: ["product_id"]
           },
@@ -2564,6 +2717,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "user_mining_products"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "mining_product_versions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "user_mining_products_i18n"
             referencedColumns: ["product_id"]
           },
           {
@@ -2835,6 +2995,13 @@ export type Database = {
             columns: ["product_version_id"]
             isOneToOne: false
             referencedRelation: "user_mining_products"
+            referencedColumns: ["version_id"]
+          },
+          {
+            foreignKeyName: "mining_reward_accruals_product_version_id_fkey"
+            columns: ["product_version_id"]
+            isOneToOne: false
+            referencedRelation: "user_mining_products_i18n"
             referencedColumns: ["version_id"]
           },
           {
@@ -3157,6 +3324,13 @@ export type Database = {
             foreignKeyName: "mining_contracts_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
+            referencedRelation: "admin_mining_product_localizations"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "mining_contracts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
             referencedRelation: "admin_mining_products"
             referencedColumns: ["product_id"]
           },
@@ -3172,6 +3346,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "user_mining_products"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "mining_contracts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "user_mining_products_i18n"
             referencedColumns: ["product_id"]
           },
           {
@@ -3203,6 +3384,13 @@ export type Database = {
             referencedColumns: ["version_id"]
           },
           {
+            foreignKeyName: "mining_contracts_product_version_id_fkey"
+            columns: ["product_version_id"]
+            isOneToOne: false
+            referencedRelation: "user_mining_products_i18n"
+            referencedColumns: ["version_id"]
+          },
+          {
             foreignKeyName: "mining_product_versions_reward_asset_id_fkey"
             columns: ["reward_asset_id"]
             isOneToOne: false
@@ -3224,6 +3412,48 @@ export type Database = {
           description: string | null
           max_capacity: number | null
           min_capacity: number | null
+          product_code: string | null
+          product_id: string | null
+          product_name: string | null
+          published_at: string | null
+          reward_asset_code: string | null
+          reward_asset_decimals: number | null
+          reward_asset_id: string | null
+          reward_asset_name: string | null
+          reward_per_unit_per_day: number | null
+          sort_order: number | null
+          term_days: number | null
+          version: number | null
+          version_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mining_product_versions_reward_asset_id_fkey"
+            columns: ["reward_asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mining_product_versions_reward_asset_id_fkey"
+            columns: ["reward_asset_id"]
+            isOneToOne: false
+            referencedRelation: "user_asset_balances"
+            referencedColumns: ["asset_id"]
+          },
+        ]
+      }
+      user_mining_products_i18n: {
+        Row: {
+          capacity_unit: string | null
+          description: string | null
+          locale: string | null
+          localized_description: string | null
+          localized_product_name: string | null
+          localized_risk_notice: string | null
+          max_capacity: number | null
+          min_capacity: number | null
+          product_category: string | null
           product_code: string | null
           product_id: string | null
           product_name: string | null
@@ -3443,6 +3673,13 @@ export type Database = {
             columns: ["product_version_id"]
             isOneToOne: false
             referencedRelation: "user_mining_products"
+            referencedColumns: ["version_id"]
+          },
+          {
+            foreignKeyName: "mining_reward_accruals_product_version_id_fkey"
+            columns: ["product_version_id"]
+            isOneToOne: false
+            referencedRelation: "user_mining_products_i18n"
             referencedColumns: ["version_id"]
           },
         ]
@@ -3693,14 +3930,6 @@ export type Database = {
         }
         Returns: string
       }
-      start_my_mining_contract: {
-        Args: {
-          p_capacity: number
-          p_idempotency_key: string
-          p_product_version_id: string
-        }
-        Returns: string
-      },
       create_mining_product: {
         Args: {
           p_code: string
@@ -3743,16 +3972,6 @@ export type Database = {
         Args: { p_reason: string; p_request_id: string }
         Returns: string
       }
-      mark_all_my_notifications_read: {
-        Args: never
-        Returns: number
-      }
-      mark_my_notification_read: {
-        Args: {
-          p_notification_id: string
-        }
-        Returns: number
-      },
       get_admin_finance_request_events: {
         Args: { p_limit?: number }
         Returns: {
@@ -3868,6 +4087,11 @@ export type Database = {
           transaction_id: string
         }[]
       }
+      mark_all_my_notifications_read: { Args: never; Returns: number }
+      mark_my_notification_read: {
+        Args: { p_notification_id: string }
+        Returns: number
+      }
       post_ledger_transaction: {
         Args: {
           p_asset_id: string
@@ -3944,6 +4168,14 @@ export type Database = {
         Args: { p_request_id: string }
         Returns: undefined
       }
+      start_my_mining_contract: {
+        Args: {
+          p_capacity: number
+          p_idempotency_key: string
+          p_product_version_id: string
+        }
+        Returns: string
+      }
       start_withdrawal_review: {
         Args: { p_request_id: string }
         Returns: undefined
@@ -3978,6 +4210,17 @@ export type Database = {
           p_calculation_timezone: string
           p_max_accounts_per_run: number
           p_reward_precision: number
+        }
+        Returns: undefined
+      }
+      upsert_mining_product_localization: {
+        Args: {
+          p_category: string
+          p_description?: string
+          p_locale: string
+          p_name: string
+          p_product_id: string
+          p_risk_notice?: string
         }
         Returns: undefined
       }

@@ -3,6 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  commonMessages,
+  localeFromPathname,
+  localizeHref,
+  stripLocaleFromPathname
+} from "@apex-matrix/i18n";
+import {
   ArrowDownToLine,
   ArrowUpFromLine,
   Bell,
@@ -16,25 +22,32 @@ import {
   Wallet
 } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
+import { LanguageSwitcher } from "./language-switcher";
 
-const NAV_ITEMS = [
-  { href: "/dashboard", label: "대시보드", icon: LayoutDashboard },
-  { href: "/dashboard/notifications", label: "알림", icon: Bell },
-  { href: "/dashboard/mining", label: "채굴 현황", icon: Pickaxe },
-  { href: "/dashboard/assets", label: "내 자산", icon: Wallet },
-  { href: "/dashboard/deposit", label: "입금", icon: ArrowDownToLine },
-  { href: "/dashboard/withdrawal", label: "출금", icon: ArrowUpFromLine },
-  { href: "/dashboard/history", label: "활동 기록", icon: History },
-  { href: "/dashboard/profile", label: "내 정보", icon: UserRound },
-  { href: "/dashboard/security", label: "보안 설정", icon: ShieldCheck }
+const PRIMARY_NAV_ITEMS = [
+  { href: "/dashboard", labelKey: "home", icon: LayoutDashboard },
+  { href: "/dashboard/mining", labelKey: "mining", icon: Pickaxe },
+  { href: "/dashboard/assets", labelKey: "assets", icon: Wallet },
+  { href: "/dashboard/history", labelKey: "activity", icon: History },
+  { href: "/dashboard/more", labelKey: "more", icon: Menu }
 ] as const;
 
-const MOBILE_ITEMS = NAV_ITEMS.slice(0, 5);
+const SECONDARY_NAV_ITEMS = [
+  { href: "/dashboard/notifications", labelKey: "notifications", icon: Bell },
+  { href: "/dashboard/deposit", labelKey: "deposit", icon: ArrowDownToLine },
+  { href: "/dashboard/withdrawal", labelKey: "withdrawal", icon: ArrowUpFromLine },
+  { href: "/dashboard/profile", labelKey: "profile", icon: UserRound },
+  { href: "/dashboard/security", labelKey: "security", icon: ShieldCheck }
+] as const;
+
+const NAV_ITEMS = [...PRIMARY_NAV_ITEMS, ...SECONDARY_NAV_ITEMS] as const;
+const MOBILE_ITEMS = PRIMARY_NAV_ITEMS;
 
 function isCurrentPath(pathname: string, href: string) {
+  const currentPath = stripLocaleFromPathname(pathname);
   return href === "/dashboard"
-    ? pathname === href
-    : pathname === href || pathname.startsWith(href + "/");
+    ? currentPath === href
+    : currentPath === href || currentPath.startsWith(href + "/");
 }
 
 export function UserShell({
@@ -47,12 +60,14 @@ export function UserShell({
   unreadNotificationCount?: number;
 }) {
   const pathname = usePathname();
+  const locale = localeFromPathname(pathname);
+  const messages = commonMessages[locale];
 
   return (
     <div className="app-shell">
       <header className="app-header sticky top-0 z-50">
         <div className="mx-auto flex h-[72px] max-w-[1480px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-          <Link href="/dashboard" className="flex min-w-0 items-center gap-3">
+          <Link href={localizeHref("/dashboard", locale) as never} className="flex min-w-0 items-center gap-3">
             <span
               aria-hidden="true"
               className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-emerald-300 via-emerald-400 to-cyan-400 text-sm font-black text-slate-950 shadow-lg shadow-emerald-500/10"
@@ -64,7 +79,7 @@ export function UserShell({
                 APEX-MATRIX
               </span>
               <span className="app-muted block text-[10px] font-medium">
-                Digital Operations Center
+                {messages.shell.subtitle}
               </span>
             </span>
           </Link>
@@ -75,17 +90,17 @@ export function UserShell({
                 {(email?.[0] ?? "U").toUpperCase()}
               </span>
               <span className="max-w-[230px] truncate text-[11px] font-medium" style={{ color: "var(--muted-strong)" }}>
-                {email ?? "사용자"}
+                {email ?? messages.shell.user}
               </span>
             </div>
             <Link
-              href="/dashboard/notifications"
+              href={localizeHref("/dashboard/notifications", locale) as never}
               aria-label={
                 unreadNotificationCount > 0
-                  ? `읽지 않은 알림 ${unreadNotificationCount}개`
-                  : "알림"
+                  ? messages.shell.unreadNotifications(unreadNotificationCount)
+                  : messages.shell.notification
               }
-              className="relative grid h-10 w-10 place-items-center rounded-xl border transition"
+              className="relative grid h-11 w-11 place-items-center rounded-xl border transition"
               style={{
                 borderColor: "var(--border)",
                 color: "var(--muted-strong)",
@@ -102,15 +117,18 @@ export function UserShell({
                 </span>
               ) : null}
             </Link>
+            <div className="hidden md:block">
+              <LanguageSwitcher compact />
+            </div>
             <ThemeToggle />
             <form action="/auth/signout" method="post">
               <button
                 type="submit"
-                className="inline-flex h-10 items-center gap-2 rounded-xl border px-3 text-[11px] font-semibold transition"
+                className="inline-flex h-11 items-center gap-2 rounded-xl border px-3 text-[11px] font-semibold transition"
                 style={{ borderColor: "var(--border)", color: "var(--muted-strong)", background: "var(--surface-soft)" }}
               >
                 <LogOut className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">로그아웃</span>
+                <span className="hidden sm:inline">{messages.shell.logout}</span>
               </button>
             </form>
           </div>
@@ -121,18 +139,19 @@ export function UserShell({
         <aside className="desktop-sidebar app-sidebar h-fit rounded-3xl p-3 lg:sticky lg:top-[96px]">
           <div className="px-3 pb-3 pt-2">
             <div className="text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: "var(--muted)" }}>
-              Workspace
+              {messages.shell.workspace}
             </div>
-            <div className="mt-1 text-sm font-semibold">내 운영공간</div>
+            <div className="mt-1 text-sm font-semibold">{messages.shell.workspaceTitle}</div>
           </div>
 
-          <nav aria-label="사용자 메뉴" className="grid gap-1.5">
-            {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+          <nav aria-label={messages.shell.navigation} className="grid gap-1.5">
+            {NAV_ITEMS.map(({ href, labelKey, icon: Icon }) => {
               const active = isCurrentPath(pathname, href);
+              const label = messages.nav[labelKey];
               return (
                 <Link
                   key={href}
-                  href={href}
+                  href={localizeHref(href, locale) as never}
                   aria-current={active ? "page" : undefined}
                   className={
                     "app-nav inline-flex items-center gap-3 rounded-2xl border px-3 py-3 text-xs font-medium transition " +
@@ -154,10 +173,10 @@ export function UserShell({
           <div className="mt-4 rounded-2xl border p-4" style={{ borderColor: "var(--border)", background: "linear-gradient(145deg, var(--accent-soft), var(--surface-soft))" }}>
             <div className="flex items-center gap-2 text-xs font-semibold">
               <ShieldCheck className="h-4 w-4" style={{ color: "var(--accent)" }} />
-              계정 보호
+              {messages.shell.protectedAccount}
             </div>
             <p className="app-muted mt-2 text-[10px] leading-5">
-              금융·채굴 데이터는 로그인한 본인 계정 범위에서만 조회됩니다.
+              {messages.shell.protectedDescription}
             </p>
           </div>
         </aside>
@@ -166,17 +185,23 @@ export function UserShell({
       </div>
 
       <nav
-        aria-label="빠른 메뉴"
-        className="fixed inset-x-3 bottom-3 z-50 grid grid-cols-5 rounded-2xl border p-2 shadow-2xl backdrop-blur-xl lg:hidden"
-        style={{ borderColor: "var(--border)", background: "color-mix(in srgb, var(--surface) 94%, transparent)" }}
+        aria-label={messages.shell.quickMenu}
+        className="mobile-bottom-nav fixed inset-x-3 bottom-3 z-50 grid grid-cols-5 rounded-2xl border p-2 shadow-2xl lg:hidden"
+        style={{
+          bottom: "max(0.75rem, env(safe-area-inset-bottom))",
+          borderColor: "var(--border)",
+          background: "color-mix(in srgb, var(--surface) 94%, transparent)"
+        }}
       >
-        {MOBILE_ITEMS.map(({ href, label, icon: Icon }) => {
+        {MOBILE_ITEMS.map(({ href, labelKey, icon: Icon }) => {
           const active = isCurrentPath(pathname, href);
+          const label = messages.nav[labelKey];
           return (
             <Link
               key={href}
-              href={href}
-              className="flex min-w-0 flex-col items-center gap-1 rounded-xl px-1 py-2 text-[9px] font-semibold transition"
+              href={localizeHref(href, locale) as never}
+              aria-current={active ? "page" : undefined}
+              className="flex min-h-12 min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-[9px] font-semibold transition"
               style={{
                 color: active ? "var(--accent-strong)" : "var(--muted)",
                 background: active ? "var(--accent-soft)" : "transparent"
@@ -187,13 +212,6 @@ export function UserShell({
             </Link>
           );
         })}
-        <Link
-          href="/dashboard/security"
-          className="col-span-5 mt-1 hidden items-center justify-center gap-1 border-t pt-2 text-[9px] font-semibold sm:flex"
-          style={{ borderColor: "var(--border)", color: "var(--muted)" }}
-        >
-          <Menu className="h-3.5 w-3.5" /> 계정 보안 설정
-        </Link>
       </nav>
     </div>
   );

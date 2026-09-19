@@ -17,7 +17,13 @@ import {
   getUserLedgerHistory,
   getUserMiningContracts
 } from "@apex-matrix/database";
+import {
+  dashboardMessages,
+  localeFormats,
+  localizeHref
+} from "@apex-matrix/i18n";
 import { requireWebUser } from "@/lib/auth";
+import { getRequestLocale } from "@/lib/locale";
 
 export const instant = false;
 
@@ -25,10 +31,13 @@ function valueOf(value: unknown) {
   return value == null ? "0" : String(value);
 }
 
-function dateOf(value: string | null | undefined) {
+function dateOf(
+  value: string | null | undefined,
+  format: { intlLocale: string; timeZone: string }
+) {
   return value
-    ? new Date(value).toLocaleString("ko-KR", {
-        timeZone: "Asia/Seoul",
+    ? new Date(value).toLocaleString(format.intlLocale, {
+        timeZone: format.timeZone,
         month: "short",
         day: "numeric",
         hour: "2-digit",
@@ -39,6 +48,10 @@ function dateOf(value: string | null | undefined) {
 
 export default async function UserDashboardPage() {
   const { supabase, user } = await requireWebUser();
+  const locale = await getRequestLocale();
+  const messages = dashboardMessages[locale];
+  const dateFormat = localeFormats[locale];
+  const href = (path: string) => localizeHref(path, locale) as never;
 
   const [profileResult, assetsResult, balancesResult, contractsResult, historyResult] =
     await Promise.all([
@@ -81,24 +94,24 @@ export default async function UserDashboardPage() {
                 USER CENTER
               </div>
               <h1 className="mt-3 text-3xl font-semibold tracking-[-0.05em] sm:text-4xl">
-                {profile?.display_name ?? "회원"}님, 환영합니다.
+                {messages.welcome(profile?.display_name ?? messages.userFallback)}
               </h1>
               <p className="app-muted mt-3 max-w-2xl text-sm leading-6">
-                오늘의 자산 상태와 채굴 활동을 한눈에 확인하고 필요한 금융 업무를 빠르게 시작하세요.
+                {messages.description}
               </p>
             </div>
 
             <div className="app-badge px-3 py-2 text-[10px] font-semibold">
               <CheckCircle2 className="h-3.5 w-3.5" />
-              계정 인증 완료
+              {messages.verified}
             </div>
           </div>
 
           <div className="mt-8 grid gap-3 sm:grid-cols-3">
             {[
-              ["이메일", user.email ?? "미등록"],
-              ["아이디", profile?.username ?? "미설정"],
-              ["계정 상태", profile?.status ?? "확인 중"]
+              [messages.email, user.email ?? messages.notRegistered],
+              [messages.username, profile?.username ?? messages.notSet],
+              [messages.accountStatus, profile?.status === "active" ? messages.verifiedAccount : messages.checking]
             ].map(([label, value]) => (
               <div key={label} className="rounded-2xl border px-4 py-3.5" style={{ borderColor: "var(--border)", background: "var(--surface-soft)" }}>
                 <div className="text-[10px]" style={{ color: "var(--muted)" }}>{label}</div>
@@ -112,11 +125,11 @@ export default async function UserDashboardPage() {
       <div>
         <div className="mb-3 flex items-end justify-between">
           <div>
-            <div className="text-sm font-semibold">현재 자산</div>
-            <div className="app-muted mt-1 text-[11px]">원장 기준으로 확인되는 내 자산 잔액</div>
+            <div className="text-sm font-semibold">{messages.currentAssets}</div>
+            <div className="app-muted mt-1 text-[11px]">{messages.currentAssetsDescription}</div>
           </div>
-          <Link href="/dashboard/assets" className="app-muted inline-flex items-center gap-1 text-[10px] font-semibold hover:underline">
-            전체 보기 <ArrowRight className="h-3 w-3" />
+          <Link href={href("/dashboard/assets")} className="app-muted inline-flex items-center gap-1 text-[10px] font-semibold hover:underline">
+            {messages.viewAll} <ArrowRight className="h-3 w-3" />
           </Link>
         </div>
 
@@ -135,14 +148,14 @@ export default async function UserDashboardPage() {
                 <div className="mt-2 break-all text-2xl font-semibold tracking-[-0.04em]">
                   {hasDataError ? "—" : valueOf(balance?.balance)}
                 </div>
-                <div className="app-muted mt-1 text-[10px]">정밀도 {asset.decimals}자리</div>
+                <div className="app-muted mt-1 text-[10px]">{messages.precision(asset.decimals)}</div>
               </article>
             );
           })}
 
           {!assets.length ? (
             <div className="app-card rounded-2xl p-6 text-sm md:col-span-3">
-              <div className="app-muted">현재 활성화된 자산이 없습니다.</div>
+              <div className="app-muted">{messages.noAssets}</div>
             </div>
           ) : null}
         </div>
@@ -152,11 +165,11 @@ export default async function UserDashboardPage() {
         <section className="app-panel rounded-[24px] p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <div className="text-sm font-semibold">채굴 현황</div>
-              <div className="app-muted mt-1 text-[11px]">자동 계산 대상 계약과 최근 상태</div>
+              <div className="text-sm font-semibold">{messages.miningStatus}</div>
+              <div className="app-muted mt-1 text-[11px]">{messages.miningStatusDescription}</div>
             </div>
-            <Link href="/dashboard/mining" className="app-muted inline-flex items-center gap-1 text-[10px] font-semibold">
-              채굴센터 <ArrowRight className="h-3 w-3" />
+            <Link href={href("/dashboard/mining")} className="app-muted inline-flex items-center gap-1 text-[10px] font-semibold">
+              {messages.miningCenter} <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
 
@@ -170,26 +183,26 @@ export default async function UserDashboardPage() {
                         <Pickaxe className="h-5 w-5" />
                       </div>
                       <div>
-                        <div className="text-xs font-semibold">{contract.product_name ?? "채굴 상품"}</div>
+                        <div className="text-xs font-semibold">{contract.product_name ?? messages.miningProduct}</div>
                         <div className="app-muted mt-1 text-[10px]">{contract.product_code ?? "PRODUCT"} · v{String(contract.version ?? "-")}</div>
                       </div>
                     </div>
                     <span className="app-badge px-2.5 py-1 text-[9px]">
                       <span className="h-1.5 w-1.5 rounded-full" style={{ background: "var(--accent)" }} />
-                      채굴 중
+                      {messages.miningActive}
                     </span>
                   </div>
                   <div className="mt-4 grid gap-3 sm:grid-cols-3">
                     <div>
-                      <div className="app-muted text-[10px]">누적 채굴량</div>
+                      <div className="app-muted text-[10px]">{messages.totalMined}</div>
                       <div className="mt-1 text-sm font-semibold">{valueOf(contract.total_reward_earned)} {contract.reward_asset_code ?? ""}</div>
                     </div>
                     <div>
-                      <div className="app-muted text-[10px]">누적 지급량</div>
+                      <div className="app-muted text-[10px]">{messages.totalPaid}</div>
                       <div className="mt-1 text-sm font-semibold">{valueOf(contract.total_reward_paid)} {contract.reward_asset_code ?? ""}</div>
                     </div>
                     <div>
-                      <div className="app-muted text-[10px]">미지급 잔여</div>
+                      <div className="app-muted text-[10px]">{messages.pendingReward}</div>
                       <div className="mt-1 text-sm font-semibold" style={{ color: "var(--warning)" }}>{valueOf(contract.pending_reward)} {contract.reward_asset_code ?? ""}</div>
                     </div>
                   </div>
@@ -199,50 +212,50 @@ export default async function UserDashboardPage() {
           ) : (
             <div className="mt-5 rounded-2xl border p-8 text-center" style={{ borderColor: "var(--border)", background: "var(--surface-soft)" }}>
               <Pickaxe className="mx-auto h-7 w-7" style={{ color: "var(--muted)" }} />
-              <div className="mt-3 text-sm font-semibold">현재 활성 채굴 계약이 없습니다.</div>
-              <div className="app-muted mt-1 text-[10px]">운영자가 계약을 활성화하면 이곳에서 바로 확인할 수 있습니다.</div>
+              <div className="mt-3 text-sm font-semibold">{messages.noActiveContract}</div>
+              <div className="app-muted mt-1 text-[10px]">{messages.noActiveContractDescription}</div>
             </div>
           )}
         </section>
 
         <section className="app-panel rounded-[24px] p-6">
-          <div className="text-sm font-semibold">빠른 업무</div>
-          <div className="app-muted mt-1 text-[11px]">자주 사용하는 사용자 기능</div>
+          <div className="text-sm font-semibold">{messages.quickActions}</div>
+          <div className="app-muted mt-1 text-[11px]">{messages.quickActionsDescription}</div>
           <div className="mt-5 grid gap-2.5">
-            <Link href="/dashboard/deposit" className="group rounded-2xl border p-3.5 transition hover:-translate-y-0.5" style={{ borderColor: "var(--border)", background: "var(--surface-soft)" }}>
+            <Link href={href("/dashboard/deposit")} className="group rounded-2xl border p-3.5 transition hover:-translate-y-0.5" style={{ borderColor: "var(--border)", background: "var(--surface-soft)" }}>
               <div className="flex items-center gap-3">
                 <div className="grid h-9 w-9 place-items-center rounded-xl" style={{ background: "var(--surface-strong)", color: "var(--muted-strong)" }}>
                   <ArrowDownToLine className="h-4 w-4" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="text-xs font-semibold">입금 요청</div>
-                  <div className="app-muted mt-1 truncate text-[10px]">입금 사실을 운영자에게 전달</div>
+                  <div className="text-xs font-semibold">{messages.deposit}</div>
+                  <div className="app-muted mt-1 truncate text-[10px]">{messages.depositDescription}</div>
                 </div>
                 <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" style={{ color: "var(--muted)" }} />
               </div>
             </Link>
 
-            <Link href="/dashboard/withdrawal" className="group rounded-2xl border p-3.5 transition hover:-translate-y-0.5" style={{ borderColor: "var(--border)", background: "var(--surface-soft)" }}>
+            <Link href={href("/dashboard/withdrawal")} className="group rounded-2xl border p-3.5 transition hover:-translate-y-0.5" style={{ borderColor: "var(--border)", background: "var(--surface-soft)" }}>
               <div className="flex items-center gap-3">
                 <div className="grid h-9 w-9 place-items-center rounded-xl" style={{ background: "var(--surface-strong)", color: "var(--muted-strong)" }}>
                   <ArrowUpFromLine className="h-4 w-4" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="text-xs font-semibold">출금 요청</div>
-                  <div className="app-muted mt-1 truncate text-[10px]">보유 자산의 출금을 신청</div>
+                  <div className="text-xs font-semibold">{messages.withdrawal}</div>
+                  <div className="app-muted mt-1 truncate text-[10px]">{messages.withdrawalDescription}</div>
                 </div>
                 <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" style={{ color: "var(--muted)" }} />
               </div>
             </Link>
 
-            <Link href="/dashboard/history" className="group rounded-2xl border p-3.5 transition hover:-translate-y-0.5" style={{ borderColor: "var(--border)", background: "var(--surface-soft)" }}>
+            <Link href={href("/dashboard/history")} className="group rounded-2xl border p-3.5 transition hover:-translate-y-0.5" style={{ borderColor: "var(--border)", background: "var(--surface-soft)" }}>
               <div className="flex items-center gap-3">
                 <div className="grid h-9 w-9 place-items-center rounded-xl" style={{ background: "var(--surface-strong)", color: "var(--muted-strong)" }}>
                   <History className="h-4 w-4" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="text-xs font-semibold">활동 기록</div>
-                  <div className="app-muted mt-1 truncate text-[10px]">최근 금융 거래를 확인</div>
+                  <div className="text-xs font-semibold">{messages.activity}</div>
+                  <div className="app-muted mt-1 truncate text-[10px]">{messages.activityDescription}</div>
                 </div>
                 <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" style={{ color: "var(--muted)" }} />
               </div>
@@ -253,29 +266,29 @@ export default async function UserDashboardPage() {
 
       <section className="grid gap-4 md:grid-cols-3">
         <div className="rounded-2xl border p-5" style={{ borderColor: "var(--border)", background: "var(--surface-soft)" }}>
-          <div className="flex items-center gap-2 text-xs font-semibold"><Activity className="h-4 w-4" style={{ color: "var(--accent)" }} /> 활동 기록</div>
+          <div className="flex items-center gap-2 text-xs font-semibold"><Activity className="h-4 w-4" style={{ color: "var(--accent)" }} /> {messages.activity}</div>
           <div className="mt-3 text-2xl font-semibold">{hasDataError ? "—" : history.length}</div>
-          <div className="app-muted mt-1 text-[10px]">현재 조회 가능한 금융 활동</div>
+          <div className="app-muted mt-1 text-[10px]">{messages.availableActivity}</div>
         </div>
         <div className="rounded-2xl border p-5" style={{ borderColor: "var(--border)", background: "var(--surface-soft)" }}>
-          <div className="flex items-center gap-2 text-xs font-semibold"><Clock3 className="h-4 w-4" style={{ color: "var(--accent)" }} /> 활성 계약</div>
+          <div className="flex items-center gap-2 text-xs font-semibold"><Clock3 className="h-4 w-4" style={{ color: "var(--accent)" }} /> {messages.activeContracts}</div>
           <div className="mt-3 text-2xl font-semibold">{hasDataError ? "—" : activeContracts.length}</div>
-          <div className="app-muted mt-1 text-[10px]">현재 자동 계산 대상</div>
+          <div className="app-muted mt-1 text-[10px]">{messages.automaticCalculationTarget}</div>
         </div>
         <div className="rounded-2xl border p-5" style={{ borderColor: "var(--border)", background: "var(--surface-soft)" }}>
-          <div className="flex items-center gap-2 text-xs font-semibold"><ShieldCheck className="h-4 w-4" style={{ color: "var(--accent)" }} /> 보호 상태</div>
-          <div className="mt-3 text-sm font-semibold">인증 계정</div>
-          <div className="app-muted mt-1 text-[10px]">본인 계정 범위에서 데이터 조회</div>
+          <div className="flex items-center gap-2 text-xs font-semibold"><ShieldCheck className="h-4 w-4" style={{ color: "var(--accent)" }} /> {messages.protectionStatus}</div>
+          <div className="mt-3 text-sm font-semibold">{messages.verifiedAccount}</div>
+          <div className="app-muted mt-1 text-[10px]">{messages.ownAccountOnly}</div>
         </div>
       </section>
 
       <section className="app-panel rounded-[24px] p-6">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <div className="text-sm font-semibold">최근 금융 활동</div>
-            <div className="app-muted mt-1 text-[11px]">원장에 기록된 최신 항목</div>
+            <div className="text-sm font-semibold">{messages.recentActivity}</div>
+            <div className="app-muted mt-1 text-[11px]">{messages.recentActivityDescription}</div>
           </div>
-          <Link href="/dashboard/history" className="app-muted text-[10px] font-semibold">전체 기록</Link>
+          <Link href={href("/dashboard/history")} className="app-muted text-[10px] font-semibold">{messages.allRecords}</Link>
         </div>
 
         <div className="mt-5 divide-y" style={{ borderColor: "var(--border)" }}>
@@ -285,8 +298,8 @@ export default async function UserDashboardPage() {
                 <Wallet className="h-4 w-4" />
               </div>
               <div className="min-w-0 flex-1">
-                <div className="truncate text-xs font-semibold">{item.description || "금융 거래"}</div>
-                <div className="app-muted mt-1 text-[10px]">{item.asset_code ?? "자산"} · {dateOf(item.entry_created_at)}</div>
+                <div className="truncate text-xs font-semibold">{item.description || messages.financialTransaction}</div>
+                <div className="app-muted mt-1 text-[10px]">{item.asset_code ?? messages.asset} · {dateOf(item.entry_created_at, dateFormat)}</div>
               </div>
               <div className="text-xs font-semibold" style={{ color: item.direction === "credit" ? "var(--accent)" : "var(--warning)" }}>
                 {item.direction === "credit" ? "+" : "-"}{valueOf(item.amount)}
@@ -296,8 +309,8 @@ export default async function UserDashboardPage() {
           {!history.length ? (
             <div className="py-8 text-center">
               <History className="mx-auto h-6 w-6" style={{ color: "var(--muted)" }} />
-              <div className="mt-2 text-xs font-semibold">아직 금융 활동 기록이 없습니다.</div>
-              <div className="app-muted mt-1 text-[10px]">입금·출금·채굴 지급이 처리되면 이곳에 나타납니다.</div>
+              <div className="mt-2 text-xs font-semibold">{messages.noActivity}</div>
+              <div className="app-muted mt-1 text-[10px]">{messages.noActivityDescription}</div>
             </div>
           ) : null}
         </div>

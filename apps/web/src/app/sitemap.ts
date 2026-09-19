@@ -3,7 +3,11 @@ import type { MetadataRoute } from "next";
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl =
     process.env.NEXT_PUBLIC_APP_URL ??
-    "https://bluechip-node-core-putduk.vercel.app";
+    "http://localhost:3000";
 
-  return [{ url: baseUrl, changeFrequency: "weekly", priority: 1 }];
+  return ["ko", "ja", "en"].map((locale) => ({
+    url: `${baseUrl}/${locale}/dashboard`,
+    changeFrequency: "weekly" as const,
+    priority: locale === "ko" ? 1 : 0.9
+  }));
 }

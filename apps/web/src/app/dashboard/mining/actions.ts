@@ -1,8 +1,11 @@
 "use server";
 
+import type { Route } from "next";
 import { redirect } from "next/navigation";
 import { startMyMiningContract } from "@apex-matrix/database";
+import { localizeHref } from "@apex-matrix/i18n";
 import { requireWebUser } from "@/lib/auth";
+import { getRequestLocale } from "@/lib/locale";
 
 function readText(formData: FormData, name: string) {
   return String(formData.get(name) ?? "").trim();
@@ -18,6 +21,9 @@ function isPositiveDecimal(value: string) {
 
 export async function startMining(formData: FormData) {
   const { supabase } = await requireWebUser();
+  const locale = await getRequestLocale();
+  const target = (query: string) =>
+    localizeHref(`/dashboard/mining?${query}`, locale) as Route;
 
   const productVersionId = readText(formData, "product_version_id");
   const capacity = readText(formData, "capacity");
@@ -28,7 +34,7 @@ export async function startMining(formData: FormData) {
     !isPositiveDecimal(capacity) ||
     !/^mining-user-start:[0-9a-f-]{36}$/i.test(idempotencyKey)
   ) {
-    redirect("/dashboard/mining?error=invalid");
+    redirect(target("error=invalid"));
   }
 
   const { error } = await startMyMiningContract(supabase, {
@@ -40,15 +46,15 @@ export async function startMining(formData: FormData) {
   if (error) {
     const message = error.message ?? "";
     if (message.includes("capacity is outside product limits")) {
-      redirect("/dashboard/mining?error=capacity");
+      redirect(target("error=capacity"));
     }
 
     if (message.includes("public mining product version not found")) {
-      redirect("/dashboard/mining?error=unavailable");
+      redirect(target("error=unavailable"));
     }
 
-    redirect("/dashboard/mining?error=failed");
+    redirect(target("error=failed"));
   }
 
-  redirect("/dashboard/mining?success=started");
+  redirect(target("success=started"));
 }

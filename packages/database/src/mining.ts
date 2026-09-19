@@ -7,12 +7,16 @@ function safeLimit(limit: number, fallback: number, max: number) {
   return Math.min(Math.max(Number.isFinite(limit) ? Math.trunc(limit) : fallback, 1), max);
 }
 
-export async function getUserMiningProducts(client: DatabaseClient) {
+export async function getUserMiningProducts(
+  client: DatabaseClient,
+  locale: "ko" | "ja" | "en" = "ko"
+) {
   return client
-    .from("user_mining_products")
+    .from("user_mining_products_i18n")
     .select(
-      "product_id, product_code, product_name, description, sort_order, version_id, version, reward_asset_id, reward_asset_code, reward_asset_name, reward_asset_decimals, capacity_unit, reward_per_unit_per_day, min_capacity, max_capacity, term_days, published_at"
+      "product_id, product_code, product_category, localized_product_name, localized_description, localized_risk_notice, sort_order, version_id, version, reward_asset_id, reward_asset_code, reward_asset_name, reward_asset_decimals, capacity_unit, reward_per_unit_per_day, min_capacity, max_capacity, term_days, published_at"
     )
+    .eq("locale", locale)
     .order("sort_order", { ascending: true })
     .order("product_code", { ascending: true });
 }
@@ -44,6 +48,18 @@ export async function getAdminMiningProductVersions(
   }
 
   return query.limit(200);
+}
+
+export async function getAdminMiningProductLocalizations(
+  client: DatabaseClient
+) {
+  return client
+    .from("admin_mining_product_localizations")
+    .select(
+      "product_id, product_code, product_category, locale, name, description, risk_notice, created_at, updated_at"
+    )
+    .order("product_code", { ascending: true })
+    .order("locale", { ascending: true });
 }
 
 export async function getMiningSettings(client: DatabaseClient) {
@@ -208,6 +224,27 @@ export async function updateMiningProduct(
     p_sort_order: input.sortOrder,
     p_status: input.status,
     p_is_public: input.isPublic
+  });
+}
+
+export async function upsertMiningProductLocalization(
+  client: DatabaseClient,
+  input: {
+    productId: string;
+    category: "stock" | "crypto" | "gold" | "silver";
+    locale: "ko" | "ja" | "en";
+    name: string;
+    description?: string;
+    riskNotice?: string;
+  }
+) {
+  return client.rpc("upsert_mining_product_localization", {
+    p_product_id: input.productId,
+    p_category: input.category,
+    p_locale: input.locale,
+    p_name: input.name,
+    p_description: input.description ?? "",
+    p_risk_notice: input.riskNotice ?? ""
   });
 }
 

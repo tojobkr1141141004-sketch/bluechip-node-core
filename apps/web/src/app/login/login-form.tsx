@@ -2,8 +2,13 @@
 
 import { useState } from "react";
 import { CheckCircle2, Mail, UserRound } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { createBrowserSupabaseClient } from "@apex-matrix/database";
+import {
+  authMessages,
+  localeFromPathname,
+  localizeHref
+} from "@apex-matrix/i18n";
 
 function validateStrongPassword(password: string) {
   return (
@@ -17,6 +22,9 @@ function validateStrongPassword(password: string) {
 
 export function LoginForm() {
   const router = useRouter();
+  const pathname = usePathname();
+  const locale = localeFromPathname(pathname);
+  const messages = authMessages[locale];
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
@@ -33,7 +41,7 @@ export function LoginForm() {
 
       if (mode === "signup") {
         if (!validateStrongPassword(password)) {
-          setMessage("비밀번호는 12자 이상이며 영문 대문자·소문자·숫자·특수문자를 각각 1개 이상 포함해야 합니다.");
+          setMessage(messages.strongPasswordError);
           return;
         }
 
@@ -43,17 +51,19 @@ export function LoginForm() {
           options: {
             data: { display_name: displayName },
             emailRedirectTo:
-              window.location.origin + "/auth/confirm?next=/dashboard"
+              window.location.origin +
+              "/auth/confirm?next=" +
+              encodeURIComponent(localizeHref("/dashboard", locale))
           }
         });
 
         if (error) throw error;
 
         if (data.session) {
-          router.push("/dashboard");
+          router.push(localizeHref("/dashboard", locale) as never);
           router.refresh();
         } else {
-          setMessage("가입이 완료되었습니다. 받은 이메일에서 인증을 완료하면 로그인할 수 있습니다.");
+          setMessage(messages.signupComplete);
         }
         return;
       }
@@ -65,11 +75,11 @@ export function LoginForm() {
 
       if (error) throw error;
 
-      router.push("/dashboard");
+      router.push(localizeHref("/dashboard", locale) as never);
       router.refresh();
     } catch (error) {
       setMessage(
-        error instanceof Error ? error.message : "인증 처리에 실패했습니다."
+        error instanceof Error ? error.message : messages.authFailed
       );
     } finally {
       setLoading(false);
@@ -84,14 +94,14 @@ export function LoginForm() {
         <label className="grid gap-2 text-xs font-medium">
           <span className="flex items-center gap-2">
             <UserRound className="h-3.5 w-3.5" style={{ color: "var(--muted)" }} />
-            표시 이름
+            {messages.displayName}
           </span>
           <input
             value={displayName}
             onChange={(event) => setDisplayName(event.target.value)}
             className="app-input w-full rounded-2xl px-4 py-3.5 text-sm transition"
             autoComplete="name"
-            placeholder="서비스에서 사용할 이름"
+            placeholder={messages.displayNamePlaceholder}
             required
           />
         </label>
@@ -100,7 +110,7 @@ export function LoginForm() {
       <label className="grid gap-2 text-xs font-medium">
         <span className="flex items-center gap-2">
           <Mail className="h-3.5 w-3.5" style={{ color: "var(--muted)" }} />
-          이메일
+          {messages.email}
         </span>
         <input
           value={email}
@@ -114,7 +124,7 @@ export function LoginForm() {
       </label>
 
       <label className="grid gap-2 text-xs font-medium">
-        <span>비밀번호</span>
+        <span>{messages.password}</span>
         <input
           value={password}
           onChange={(event) => setPassword(event.target.value)}
@@ -122,7 +132,11 @@ export function LoginForm() {
           type="password"
           autoComplete={isSignup ? "new-password" : "current-password"}
           minLength={isSignup ? 12 : 1}
-          placeholder={isSignup ? "12자 이상" : "비밀번호 입력"}
+          placeholder={
+            isSignup
+              ? messages.passwordPlaceholderSignup
+              : messages.passwordPlaceholderLogin
+          }
           required
         />
       </label>
@@ -130,19 +144,13 @@ export function LoginForm() {
       {isSignup ? (
         <div className="grid gap-3 rounded-2xl border p-4" style={{ borderColor: "var(--border)", background: "var(--surface-soft)" }}>
           <p className="app-muted text-[10px] leading-5">
-            가입 비밀번호는 12자 이상이며 대문자·소문자·숫자·특수문자를 각각 포함해야 합니다.
+            {messages.passwordPolicy}
           </p>
-          <div className="text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: "var(--muted)" }}>
-            Password Policy
+          <div className="text-[10px] font-semibold tracking-[0.12em]" style={{ color: "var(--muted)" }}>
+            {messages.passwordPolicyLabel}
           </div>
           <div className="grid gap-2 text-[10px] sm:grid-cols-2" style={{ color: "var(--muted-strong)" }}>
-            {[
-              "12자 이상",
-              "영문 대문자 포함",
-              "영문 소문자 포함",
-              "숫자 포함",
-              "특수문자 포함"
-            ].map((rule) => (
+            {messages.passwordRules.map((rule) => (
               <div key={rule} className="flex items-center gap-2" style={{ color: "var(--muted-strong)" }}>
                 <CheckCircle2 className="h-3.5 w-3.5" style={{ color: "var(--accent)" }} />
                 {rule}
@@ -158,9 +166,9 @@ export function LoginForm() {
           className="rounded-2xl border p-4 text-xs leading-5"
           style={{
             borderColor:
-              message.includes("완료") ? "color-mix(in srgb, var(--accent) 20%, var(--border))" : "var(--border)",
+              message === messages.signupComplete ? "color-mix(in srgb, var(--accent) 20%, var(--border))" : "var(--border)",
             background:
-              message.includes("완료") ? "var(--accent-soft)" : "var(--surface-soft)",
+              message === messages.signupComplete ? "var(--accent-soft)" : "var(--surface-soft)",
             color: "var(--muted-strong)"
           }}
         >
@@ -174,7 +182,11 @@ export function LoginForm() {
         disabled={loading}
         className="app-button-primary w-full rounded-2xl px-4 py-3.5 text-xs font-bold transition disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {loading ? "처리 중..." : isSignup ? "회원가입하고 시작하기" : "안전하게 로그인"}
+        {loading
+          ? messages.loading
+          : isSignup
+            ? messages.signupButton
+            : messages.loginButton}
       </button>
 
       <button
@@ -190,7 +202,7 @@ export function LoginForm() {
           background: "var(--surface-soft)"
         }}
       >
-        {isSignup ? "기존 계정으로 로그인" : "새 계정 만들기"}
+        {isSignup ? messages.existingAccount : messages.newAccount}
       </button>
     </div>
   );

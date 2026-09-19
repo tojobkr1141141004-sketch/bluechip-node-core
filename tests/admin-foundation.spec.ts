@@ -17,6 +17,6 @@ test("admin health endpoint is available", async ({ request }) => {
   expect(response.ok()).toBeTruthy();
   await expect(response.json()).resolves.toMatchObject({
     status: "ok",
-    service: "bluechip-node-core-admin"
+    service: "apex-matrix-admin"
   });
 });

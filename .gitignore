@@ -6,6 +6,7 @@ playwright-report/
 test-results/
 .turbo/
 *.log
+*.tsbuildinfo
 .env
 .env.local
 .env.*.local

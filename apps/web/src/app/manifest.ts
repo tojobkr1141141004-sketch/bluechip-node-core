@@ -2,13 +2,19 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "BLUECHIP · Edge Asset Hub",
-    short_name: "BLUECHIP",
-    description: "엣지 노드 상태와 보호 흐름을 시각화하는 데모 대시보드.",
-    start_url: "/",
+    name: "APEX-MATRIX",
+    short_name: "APEX",
+    description: "Global platform for stock, crypto, gold, and silver mining products and asset records.",
+    start_url: "/ko/dashboard",
     display: "standalone",
-    background_color: "#06101d",
-    theme_color: "#06101d",
-    lang: "ko"
+    background_color: "#f5f7fb",
+    theme_color: "#f5f7fb",
+    lang: "en",
+    orientation: "portrait-primary",
+    icons: [
+      { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+      { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+      { src: "/icons/icon-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" }
+    ]
   };
 }
