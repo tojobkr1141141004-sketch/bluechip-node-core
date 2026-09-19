@@ -4,7 +4,7 @@ import { getActiveAssets } from "./finance";
 import { getAdminDepositRequests, getAdminWithdrawalRequests } from "./finance-requests";
 import { getAdminMiningIssuanceControls, getAdminMiningProducts, getAdminMiningProductVersions, getMiningSettings } from "./mining";
 import { getAdminNotificationSummary } from "./notifications";
-import { getAdminOperationsCenter } from "./operations-center";
+import { getAdminOperationsCenter, type OperationsCenterSnapshot } from "./operations-center";
 import { getAdminSessionSecurityStatus } from "./auth-security";
 
 type DatabaseClient = SupabaseClient<Database>;
@@ -79,7 +79,7 @@ export async function getAdminLaunchReadiness(client: DatabaseClient) {
   }
 
   const session = sessionResult.data;
-  const operations = operationsResult.data;
+  const operations = operationsResult.data as OperationsCenterSnapshot | null;
   const activeAssets = assetsResult.data ?? [];
   const products = productsResult.data ?? [];
   const versions = versionsResult.data ?? [];
