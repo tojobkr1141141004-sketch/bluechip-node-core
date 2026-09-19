@@ -79,6 +79,8 @@ export {
   type AdminNotificationSummary,
 } from "./notifications";
 
+export { getUserNotifications, getUserUnreadNotificationCount, markMyNotificationRead, markAllMyNotificationsRead } from "./user-notifications";
+
 export {
   getAdminSessionSecurityStatus,
   type AdminSessionSecurityStatus,
