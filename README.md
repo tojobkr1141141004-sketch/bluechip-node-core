@@ -27,6 +27,7 @@ APEX-MATRIX는 사용자 앱과 운영자 앱을 분리하고, Supabase를 데�
 - PHASE 21 ✅ USER 채굴 시작
 - PHASE 22 ✅ USER 알림센터
 - PHASE 23 ✅ USER 공개 함수 wrapper 보안 강화
+- PHASE 24 🔄 출시 전 통합 감사 / 운영 상태 검증
 
 ## PHASE 5 범위
 
@@ -52,6 +53,14 @@ Data API에 노출되는 USER용 public wrapper는 SECURITY INVOKER로 실행합
 ## Free 플랜 운영 원칙
 
 APEX-MATRIX의 기본 운영 환경은 Supabase Free 플랜을 유지합니다. 유료 전용 기능을 필수 전제로 삼지 않으며, 현재 제공 범위 밖의 Advisor 권고 항목은 별도 장애로 취급하지 않습니다.
+
+## PHASE 24 범위
+
+PHASE 24는 기능을 추가하는 단계가 아니라, 지금까지 구현된 USER / ADMIN / Auth / RBAC / RLS / Ledger / 수동 입출금 / 채굴 / 보상 / 알림 / Cron을 실제 운영 전제에서 통합 점검하는 단계입니다.
+
+읽기 전용 감사 스크립트 `supabase/verification/phase24_prelaunch_audit.sql`를 기준으로 공개 테이블 RLS, public SECURITY DEFINER 실행권한, Ledger 잔액 정합성, 운영 데이터 청결성, 채굴 계산 OFF 상태, 보상 발행 OFF 상태, Cron 최근 실패, 미해결 채굴 오류, 미처리 운영 알림을 확인합니다.
+
+출시 전 실제 금융·채굴 운영을 활성화할 때는 상품/버전 공개, 재원 정책, 계산 활성화, 금융 운영 정책을 별도의 운영 절차에 따라 순차적으로 켭니다.
 
 ## 앱 포트
 
