@@ -15,6 +15,16 @@ APEX-MATRIX는 사용자 앱과 운영자 앱을 분리하고, Supabase를 데�
 - PHASE 9 ✅ 자동 채굴 계산 / 보상 지급
 - PHASE 10 ✅ 채굴 정산 대사 / 운영 모니터링
 - PHASE 11 ✅ 채굴 계약 생명주기 / 안전한 취소 / 최종 정산
+- PHASE 12 ✅ 채굴 계산 안정화 / 복구 / 정정
+- PHASE 13 ✅ 채굴 보상 발행 / 재원 통제
+- PHASE 14 ✅ 금융 요청 이력 / 회원 투명성
+- PHASE 15 ✅ ADMIN 운영센터
+- PHASE 16 ✅ 운영 알림 / 장애 감시 기반
+- PHASE 17 ✅ 관리자 세션 보안
+- PHASE 18 ✅ RBAC / RLS / 실행권한 / 동시성 강화
+- PHASE 21 ✅ USER 채굴 시작
+- PHASE 22 ✅ USER 알림센터
+- PHASE 23 🔄 USER 공개 함수 wrapper 보안 강화
 
 ## PHASE 5 범위
 
@@ -23,6 +33,10 @@ USER에서는 본인 프로필과 사용자 설정을 수정할 수 있습니다
 ADMIN에서는 권한이 있는 운영자만 회원 검색과 상태 관리를 수행합니다. 인증 식별 정보는 auth.users를 직접 API에 노출하지 않고 member_directory로 동기화하며, admin_member_directory는 security-invoker view로 구성합니다.
 
 회원 상태 변경은 profiles 상태값을 변경하는 작업이며 변경 내역은 audit_logs에 기록됩니다. 금융 잔액이나 채굴 보상 변경은 이 Phase에 포함하지 않습니다.
+
+## PHASE 23 보안 원칙
+
+Data API에 노출되는 USER용 public wrapper는 SECURITY INVOKER로 실행합니다. 권한 상승이 실제로 필요한 구현은 private schema의 SECURITY DEFINER 함수로 격리합니다. private 구현 함수에는 USER wrapper가 내부적으로 호출할 수 있을 정도의 authenticated EXECUTE만 부여하고 public/anon EXECUTE는 차단하며, 실제 호출 주체는 private 함수 내부에서 auth.uid()로 다시 검증합니다.
 
 ## 앱 포트
 
