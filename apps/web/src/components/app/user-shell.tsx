@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   ArrowDownToLine,
   ArrowUpFromLine,
+  Bell,
   History,
   LayoutDashboard,
   LogOut,
@@ -18,6 +19,7 @@ import { ThemeToggle } from "./theme-toggle";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "대시보드", icon: LayoutDashboard },
+  { href: "/dashboard/notifications", label: "알림", icon: Bell },
   { href: "/dashboard/mining", label: "채굴 현황", icon: Pickaxe },
   { href: "/dashboard/assets", label: "내 자산", icon: Wallet },
   { href: "/dashboard/deposit", label: "입금", icon: ArrowDownToLine },
@@ -37,10 +39,12 @@ function isCurrentPath(pathname: string, href: string) {
 
 export function UserShell({
   children,
-  email
+  email,
+  unreadNotificationCount = 0
 }: {
   children: React.ReactNode;
   email: string | null | undefined;
+  unreadNotificationCount?: number;
 }) {
   const pathname = usePathname();
 
@@ -74,6 +78,30 @@ export function UserShell({
                 {email ?? "사용자"}
               </span>
             </div>
+            <Link
+              href="/dashboard/notifications"
+              aria-label={
+                unreadNotificationCount > 0
+                  ? `읽지 않은 알림 ${unreadNotificationCount}개`
+                  : "알림"
+              }
+              className="relative grid h-10 w-10 place-items-center rounded-xl border transition"
+              style={{
+                borderColor: "var(--border)",
+                color: "var(--muted-strong)",
+                background: "var(--surface-soft)"
+              }}
+            >
+              <Bell className="h-4 w-4" />
+              {unreadNotificationCount > 0 ? (
+                <span
+                  className="absolute -right-1 -top-1 grid min-h-4 min-w-4 place-items-center rounded-full px-1 text-[8px] font-bold text-slate-950"
+                  style={{ background: "var(--accent)" }}
+                >
+                  {unreadNotificationCount > 99 ? "99+" : unreadNotificationCount}
+                </span>
+              ) : null}
+            </Link>
             <ThemeToggle />
             <form action="/auth/signout" method="post">
               <button

@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      user_notifications: {
+        Row: {
+          created_at: string
+          href: string
+          id: string
+          message: string
+          metadata: Json
+          notification_key: string
+          notification_type: string
+          read_at: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          href?: string
+          id?: string
+          message: string
+          metadata?: Json
+          notification_key: string
+          notification_type: string
+          read_at?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          href?: string
+          id?: string
+          message?: string
+          metadata?: Json
+          notification_key?: string
+          notification_type?: string
+          read_at?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       admin_notification_events: {
         Row: {
           actor_user_id: string | null
@@ -3701,6 +3743,16 @@ export type Database = {
         Args: { p_reason: string; p_request_id: string }
         Returns: string
       }
+      mark_all_my_notifications_read: {
+        Args: never
+        Returns: number
+      }
+      mark_my_notification_read: {
+        Args: {
+          p_notification_id: string
+        }
+        Returns: number
+      },
       get_admin_finance_request_events: {
         Args: { p_limit?: number }
         Returns: {

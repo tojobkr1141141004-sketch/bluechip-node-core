@@ -1,0 +1,46 @@
+name: phase-22-web-build-check
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "apps/web/**"
+      - "packages/database/**"
+      - "tests/**"
+      - "supabase/**"
+      - "package.json"
+      - "pnpm-workspace.yaml"
+      - "turbo.json"
+
+permissions:
+  contents: read
+
+jobs:
+  web-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Web typecheck
+        run: pnpm --filter @apex-matrix/web typecheck
+
+      - name: Web lint
+        run: pnpm --filter @apex-matrix/web lint
+
+      - name: Web build
+        run: pnpm --filter @apex-matrix/web build
