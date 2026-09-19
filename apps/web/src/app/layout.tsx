@@ -5,7 +5,7 @@ import "./globals.css";
 
 const appUrl =
   process.env.NEXT_PUBLIC_APP_URL ??
-  "https://bluechip-node-core-putduk.vercel.app";
+  "https://bluechip-node-core.vercel.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(appUrl),
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "APEX-MATRIX",
     description:
-      "사용자 자산, 금융 요청, 채굴 및 원장 기반 활동 기록을 확인하는 사용자 운영센터.",
+      "APEX-MATRIX 사용자 운영센터. 자산, 입출금, 채굴 및 영구 활동 기록을 확인할 수 있습니다.",
     type: "website",
     siteName: "APEX-MATRIX"
   }
@@ -33,7 +33,10 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#06101d"
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f5f7fb" },
+    { media: "(prefers-color-scheme: dark)", color: "#07111f" }
+  ]
 };
 
 export default function RootLayout({
@@ -42,7 +45,9 @@ export default function RootLayout({
   return (
     <html
       lang="ko"
+      suppressHydrationWarning
       className={GeistSans.variable + " " + GeistMono.variable}
+      data-theme="dark"
     >
       <body>{children}</body>
     </html>
