@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./types";
-import { getActiveAssets, getAdminDepositRequests, getAdminWithdrawalRequests } from "./finance-requests";
+import { getActiveAssets } from "./finance";
+import { getAdminDepositRequests, getAdminWithdrawalRequests } from "./finance-requests";
 import { getAdminMiningIssuanceControls, getAdminMiningProducts, getAdminMiningProductVersions, getMiningSettings } from "./mining";
 import { getAdminNotificationSummary } from "./notifications";
 import { getAdminOperationsCenter } from "./operations-center";
