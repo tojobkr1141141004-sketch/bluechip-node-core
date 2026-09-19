@@ -147,9 +147,8 @@ export default async function DepositPage({
             입금 요청 접수
           </button>
         </form>
-      </div>
-
         </section>
+
         <aside className="app-card-soft h-fit rounded-[24px] p-5">
           <div className="text-xs font-semibold">입금 처리 안내</div>
           <p className="app-muted mt-2 text-[10px] leading-5">
