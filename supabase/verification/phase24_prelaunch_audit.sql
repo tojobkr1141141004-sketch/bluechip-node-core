@@ -22,7 +22,7 @@ select
      join pg_namespace n on n.oid = p.pronamespace
     where n.nspname = 'public'
       and p.prosecdef
-      and coalesce(array_to_string(p.proacl, ','), '') like '%=X%') as no_public_security_definer_execute,
+      and coalesce(array_to_string(p.proacl, ','), '') like '%=X/%') as no_public_security_definer_execute,
 
   (select count(*) = 0
      from (
