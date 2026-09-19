@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
+import type { Route } from "next";
 import { ArrowRight } from "lucide-react";
 
 export function PageHeader({
@@ -13,7 +14,7 @@ export function PageHeader({
   title: string;
   description: string;
   icon: LucideIcon;
-  action?: { href: string; label: string };
+  action?: { href: Route; label: string };
 }) {
   return (
     <div className="app-panel relative overflow-hidden rounded-[26px] p-6 sm:p-8">
